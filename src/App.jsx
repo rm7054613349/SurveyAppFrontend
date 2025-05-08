@@ -25,9 +25,15 @@ function App() {
   };
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'dark bg-dark-bg' : 'bg-light-bg'} transition-colors font-inter`}>
+    <div
+      className={`min-h-screen ${
+        darkMode ? 'dark bg-[#1F2937]' : 'bg-[#FFFFFF]'
+      } transition-colors font-inter pt-16 sm:pt-20`}
+    >
       <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
-      <AppRoutes />
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <AppRoutes />
+      </main>
     </div>
   );
 }
