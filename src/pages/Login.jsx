@@ -1,0 +1,92 @@
+import { useContext, useState } from 'react';
+import { motion } from 'framer-motion';
+import { useForm } from 'react-hook-form';
+import { Link } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
+import { pageTransition, buttonHover, fadeIn } from '../animations/framerAnimations';
+
+function Login() {
+  const { login } = useContext(AuthContext);
+  const { register, handleSubmit, formState: { errors } } = useForm();
+  const [loginError, setLoginError] = useState(false);
+
+  const onSubmit = async (data) => {
+    try {
+      await login(data.email, data.password, data.role);
+    } catch (err) {
+      setLoginError(true);
+    }
+  };
+
+  return (
+    <motion.div {...pageTransition} className="container mx-auto p-6 max-w-md content-box">
+      <motion.h2 {...fadeIn} className="text-3xl font-bold mb-6 text-primary-blue">Login</motion.h2>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-card-bg dark:bg-card-dark-bg p-8 rounded-lg shadow-lg content-box">
+        <motion.div {...fadeIn} transition={{ delay: 0.1 }}>
+          <label className="block mb-2 text-gray-700 dark:text-gray-300">Email</label>
+          <input
+            type="email"
+            {...register('email', {
+              required: 'Email is required',
+              pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Invalid email format' }
+            })}
+            className="w-full p-3 border rounded dark:bg-gray-800 dark:text-white"
+          />
+          {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
+        </motion.div>
+        <motion.div {...fadeIn} transition={{ delay: 0.2 }}>
+          <label className="block mb-2 text-gray-700 dark:text-gray-300">Password</label>
+          <input
+            type="password"
+            {...register('password', {
+              required: 'Password is required',
+              minLength: { value: 6, message: 'Password must be at least 6 characters' }
+            })}
+            className="w-full p-3 border rounded dark:bg-gray-800 dark:text-white"
+          />
+          {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
+        </motion.div>
+        <motion.div {...fadeIn} transition={{ delay: 0.3 }}>
+          <label className="block mb-2 text-gray-700 dark:text-gray-300">Role</label>
+          <select
+            {...register('role', { required: 'Role is required' })}
+            className="w-full p-3 border rounded dark:bg-gray-800 dark:text-white"
+          >
+            <option value="">Select Role</option>
+            <option value="employee">Employee</option>
+            <option value="admin">Admin</option>
+          </select>
+          {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role.message}</p>}
+        </motion.div>
+        <motion.button
+          whileHover={buttonHover}
+          {...fadeIn}
+          transition={{ delay: 0.4 }}
+          type="submit"
+          className="w-full bg-primary-blue text-white p-3 rounded-lg"
+        >
+          Login
+        </motion.button>
+        {loginError && (
+          <motion.div
+            {...fadeIn}
+            transition={{ delay: 0.5 }}
+            className="text-center"
+          >
+            <p className="text-red-500 mb-2">Invalid credentials. New user?</p>
+            <Link to="/signup">
+              <motion.button
+                whileHover={buttonHover}
+                className="bg-accent-orange text-white p-2 rounded-lg"
+              >
+                Go to Signup
+              </motion.button>
+            </Link>
+          </motion.div>
+        )}
+      </form>
+    </motion.div>
+  );
+}
+
+export default Login;
