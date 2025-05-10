@@ -4,21 +4,26 @@ import { toast } from 'react-toastify';
 import { createSurvey, getCategories } from '../services/api';
 import { pageTransition, buttonHover, fadeIn } from '../animations/framerAnimations';
 import ProtectedRoute from '../components/ProtectedRoute';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 function CreateQuestion() {
   const [newQuestion, setNewQuestion] = useState('');
   const [options, setOptions] = useState(['', '', '', '']);
   const [category, setCategory] = useState('');
-  const [correctOption, setCorrectOption] = useState(''); // New state for correct option
+  const [correctOption, setCorrectOption] = useState('');
   const [categories, setCategories] = useState([]);
   const [newCategory, setNewCategory] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
+        setLoading(true);
         const data = await getCategories();
         setCategories(data);
+        setLoading(false);
       } catch (err) {
+        setLoading(false);
         toast.error(err.message || 'Failed to fetch categories');
       }
     };
@@ -44,6 +49,7 @@ function CreateQuestion() {
       return;
     }
     try {
+      setLoading(true);
       const categoryId = category || await createCategory(newCategory);
       await createSurvey({ question: newQuestion, options, categoryId, correctOption });
       setNewQuestion('');
@@ -52,7 +58,9 @@ function CreateQuestion() {
       setNewCategory('');
       setCorrectOption('');
       toast.success('Survey created successfully!');
+      setLoading(false);
     } catch (err) {
+      setLoading(false);
       toast.error(err.message || 'Failed to create survey');
     }
   };
@@ -76,6 +84,17 @@ function CreateQuestion() {
       throw err;
     }
   };
+
+  if (loading) {
+    return (
+      <motion.div
+        {...fadeIn}
+        className="flex justify-center items-center h-screen bg-gray-50 dark:bg-gray-900"
+      >
+        <LoadingSpinner />
+      </motion.div>
+    );
+  }
 
   return (
     <ProtectedRoute allowedRole="admin">

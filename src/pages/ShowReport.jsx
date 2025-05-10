@@ -7,6 +7,20 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ProtectedRoute from '../components/ProtectedRoute';
 import CircularProgress from '../components/CircularProgress';
 
+// Define new animation for table rows
+const rowAnimation = {
+  initial: { opacity: 0, x: -20 },
+  animate: { opacity: 1, x: 0 },
+  transition: { duration: 0.3, ease: 'easeOut' }
+};
+
+// Animation for score and correct answer cells
+const cellAnimation = {
+  initial: { scale: 0.8, opacity: 0 },
+  animate: { scale: 1, opacity: 1 },
+  transition: { duration: 0.2, ease: 'easeInOut' }
+};
+
 function ShowReport() {
   const [responses, setResponses] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -15,7 +29,11 @@ function ShowReport() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [responseData, categoryData] = await Promise.all([getResponses(), getCategories()]);
+        const role = localStorage.getItem('role');
+        const [responseData, categoryData] = await Promise.all([
+          getResponses(role),
+          getCategories()
+        ]);
         setResponses(responseData);
         setCategories(categoryData);
         setLoading(false);
@@ -29,13 +47,20 @@ function ShowReport() {
 
   // Group responses by user and category
   const groupedResponses = responses.reduce((acc, response) => {
-    if (!response.userId || !response.userId._id) {
+    // Validate response data
+    if (!response?.userId?._id) {
       console.warn('Skipping response with invalid userId:', response);
       return acc;
     }
+    if (!response?.surveyId) {
+      console.warn('Skipping response with missing surveyId:', response);
+      return acc;
+    }
+
     const userId = response.userId._id;
-    const categoryId = response.surveyId && response.surveyId.categoryId?._id ? response.surveyId.categoryId._id : 'uncategorized';
-    const categoryName = response.surveyId && response.surveyId.categoryId?.name ? response.surveyId.categoryId.name : 'Uncategorized';
+    const categoryId = response.surveyId?.categoryId?._id || 'uncategorized';
+    const categoryName = response.surveyId?.categoryId?.name || 'Uncategorized';
+
     if (!acc[userId]) {
       acc[userId] = {
         email: response.userId.email || 'Unknown',
@@ -54,9 +79,9 @@ function ShowReport() {
       };
     }
     acc[userId].categories[categoryId].responses.push(response);
-    acc[userId].categories[categoryId].score += response.score;
+    acc[userId].categories[categoryId].score += response.score || 0;
     acc[userId].categories[categoryId].total += 1;
-    acc[userId].totalScore += response.score;
+    acc[userId].totalScore += response.score || 0;
     acc[userId].totalPossible += 1;
     return acc;
   }, {});
@@ -103,7 +128,9 @@ function ShowReport() {
                     <div className="flex justify-between items-center bg-purple-50 rounded-lg p-3 sm:p-4">
                       <span className="text-base sm:text-lg text-gray-700">Percentage:</span>
                       <span className="text-base sm:text-lg font-bold text-purple-600">
-                        {((userData.totalScore / userData.totalPossible) * 100).toFixed(2)}%
+                        {userData.totalPossible > 0
+                          ? ((userData.totalScore / userData.totalPossible) * 100).toFixed(2)
+                          : '0.00'}%
                       </span>
                     </div>
                   </div>
@@ -129,30 +156,52 @@ function ShowReport() {
                           Question
                         </th>
                         <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          Answer
+                          Your Answer
                         </th>
                         <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                           Score
+                        </th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Correct Answer
                         </th>
                       </tr>
                     </thead>
                     <tbody className="bg-card-bg dark:bg-card-dark-bg divide-y divide-gray-200 dark:divide-gray-700">
                       {Object.values(userData.categories).flatMap(category =>
-                        category.responses.map(response => (
-                          <tr key={response._id}>
+                        category.responses.map((response, rowIndex) => (
+                          <motion.tr
+                            key={response._id}
+                            {...rowAnimation}
+                            transition={{ delay: 0.1 * rowIndex }}
+                          >
                             <td className="px-2 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-gray-900 dark:text-gray-300">
                               {category.name}
                             </td>
                             <td className="px-2 sm:px-4 py-2 sm:py-3 text-gray-900 dark:text-gray-300">
-                              {response.surveyId.question}
+                              {response.surveyId?.question || 'N/A'}
                             </td>
                             <td className="px-2 sm:px-4 py-2 sm:py-3 text-gray-900 dark:text-gray-300">
-                              {response.answer}
+                              {response.answer || 'N/A'}
                             </td>
-                            <td className="px-2 sm:px-4 py-2 sm:py-3 text-gray-900 dark:text-gray-300">
-                              {response.score}
-                            </td>
-                          </tr>
+                            <motion.td
+                              className={`px-2 sm:px-4 py-2 sm:py-3 ${
+                                response.score > 0 ? 'text-gray-900 dark:text-gray-300' : 'text-red-500 dark:text-red-400'
+                              } font-semibold`}
+                              {...cellAnimation}
+                            >
+                              {response.score ?? 'N/A'}
+                            </motion.td>
+                            <motion.td
+                              className={`px-2 sm:px-4 py-2 sm:py-3 ${
+                                response.answer === response.surveyId?.correctOption
+                                  ? 'text-gray-900 dark:text-gray-300 font-semibold'
+                                  : 'text-gray-900 dark:text-gray-300'
+                              }`}
+                              {...cellAnimation}
+                            >
+                              {response.surveyId?.correctOption || 'N/A'}
+                            </motion.td>
+                          </motion.tr>
                         ))
                       )}
                     </tbody>

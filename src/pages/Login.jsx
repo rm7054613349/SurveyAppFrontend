@@ -4,19 +4,35 @@ import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { pageTransition, buttonHover, fadeIn } from '../animations/framerAnimations';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 function Login() {
   const { login } = useContext(AuthContext);
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [loginError, setLoginError] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const onSubmit = async (data) => {
     try {
+      setLoading(true);
       await login(data.email, data.password, data.role);
+      setLoading(false);
     } catch (err) {
+      setLoading(false);
       setLoginError(true);
     }
   };
+
+  if (loading) {
+    return (
+      <motion.div
+        {...fadeIn}
+        className="flex justify-center items-center h-screen bg-gray-50 dark:bg-gray-900"
+      >
+        <LoadingSpinner />
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div {...pageTransition} className="container mx-auto p-6 max-w-md content-box">

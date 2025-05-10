@@ -6,6 +6,13 @@ import { getResponses, getCategories } from '../services/api';
 import { pageTransition, fadeIn, cardAnimation, buttonHover } from '../animations/framerAnimations';
 import LoadingSpinner from '../components/LoadingSpinner';
 
+// Animation for response card fields
+const fieldAnimation = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5, ease: 'easeOut' }
+};
+
 function ThankYou() {
   const [responses, setResponses] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -24,14 +31,31 @@ function ThankYou() {
         setResponses(responseData);
         setCategories(categoryData);
 
+        // Filter valid responses (those with surveyId and question)
+        const validResponses = responseData.filter(
+          (response) => response?.surveyId && response.surveyId?.question
+        );
+
         // Calculate gained and total marks
-        const gained = responseData.reduce((sum, response) => sum + (response.score || 0), 0);
-        const total = responseData.length;
+        const gained = validResponses.reduce((sum, response) => {
+          // If answer is null, undefined, or empty, score is 0
+          const isUnselected = !response.answer || response.answer.trim() === '';
+          return sum + (isUnselected ? 0 : response.score || 0);
+        }, 0);
+        const total = validResponses.length;
         const percent = total > 0 ? (gained / total) * 100 : 0;
 
         setGainedMarks(gained);
         setTotalMarks(total);
         setPercentage(percent.toFixed(2));
+
+        // Log warnings for invalid responses
+        const invalidResponses = responseData.filter(
+          (response) => !response?.surveyId || !response.surveyId?.question
+        );
+        if (invalidResponses.length > 0) {
+          console.warn('Found invalid responses (missing surveyId or question):', invalidResponses);
+        }
 
         setLoading(false);
       } catch (err) {
@@ -49,6 +73,11 @@ function ThankYou() {
       </motion.div>
     );
   }
+
+  // Filter responses to only show those with valid surveyId and question
+  const validResponses = responses.filter(
+    (response) => response?.surveyId && response.surveyId?.question
+  );
 
   return (
     <motion.div
@@ -88,19 +117,20 @@ function ThankYou() {
       </motion.div>
 
       {/* Detailed Responses */}
-      {responses.length === 0 ? (
+      {validResponses.length === 0 ? (
         <motion.p
           {...fadeIn}
           className="text-gray-600 dark:text-gray-400 text-center text-lg md:text-xl"
         >
-          No responses found.
+          No valid responses found.
         </motion.p>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {responses.map((response, index) => {
+          {validResponses.map((response, index) => {
             const category = categories.find(
               (cat) => cat._id === response.surveyId?.categoryId?._id
             );
+            const isUnselected = !response.answer || response.answer.trim() === '';
             return (
               <motion.div
                 key={response._id}
@@ -109,23 +139,75 @@ function ThankYou() {
                 className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-200 dark:border-gray-700"
               >
                 <motion.h3
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 + 0.2, duration: 0.5 }}
+                  {...fieldAnimation}
+                  transition={{ delay: index * 0.1 + 0.2 }}
                   className="text-lg md:text-xl font-semibold mb-3 text-gray-900 dark:text-white line-clamp-2"
                 >
                   {response.surveyId?.question || 'No question available'}
                 </motion.h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-2 text-sm md:text-base">
+                <motion.p
+                  {...fieldAnimation}
+                  transition={{ delay: index * 0.1 + 0.3 }}
+                  className="text-gray-600 dark:text-gray-400 mb-2 text-sm md:text-base"
+                >
                   <strong>Category:</strong>{' '}
                   {category?.name || 'No category available'}
-                </p>
-                <p className="text-gray-600 dark:text-gray-400 mb-2 text-sm md:text-base">
-                  <strong>Your Answer:</strong> {response.answer}
-                </p>
-                <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base">
-                  <strong>Score:</strong> {response.score ?? 0}
-                </p>
+                </motion.p>
+                <motion.p
+                  {...fieldAnimation}
+                  transition={{ delay: index * 0.1 + 0.4 }}
+                  className="text-gray-600 dark:text-gray-400 mb-2 text-sm md:text-base"
+                >
+                  <strong>Your Answer:</strong>{' '}
+                  <span
+                    className={`${
+                      isUnselected
+                        ? 'text-red-500'
+                        : response.answer === response.surveyId?.correctOption
+                        ? 'text-green-600 dark:text-green-400 font-semibold'
+                        : 'text-red-500 dark:text-red-400'
+                    }`}
+                  >
+                    {response.answer || 'Unselected'}
+                    {response.answer && response.surveyId?.correctOption && (
+                      <span className="ml-2">
+                        {response.answer === response.surveyId.correctOption ? (
+                          <span className="text-green-500">✔</span>
+                        ) : (
+                          <span className="text-red-500">✘</span>
+                        )}
+                      </span>
+                    )}
+                  </span>
+                </motion.p>
+                <motion.p
+                  {...fieldAnimation}
+                  transition={{ delay: index * 0.1 + 0.5 }}
+                  className="text-gray-600 dark:text-gray-400 mb-2 text-sm md:text-base"
+                >
+                  <strong>Correct Answer:</strong>{' '}
+                  <span
+                    className={`${
+                      response.answer && response.answer === response.surveyId?.correctOption
+                        ? 'text-green-600 dark:text-green-400 font-semibold'
+                        : 'text-gray-600 dark:text-gray-400'
+                    }`}
+                  >
+                    {response.surveyId?.correctOption || 'N/A'}
+                  </span>
+                </motion.p>
+                <motion.p
+                  {...fieldAnimation}
+                  transition={{ delay: index * 0.1 + 0.6 }}
+                  className={`text-sm md:text-base ${
+                    isUnselected || response.score === 0
+                      ? 'text-red-500 dark:text-red-400'
+                      : 'text-green-600 dark:text-green-400'
+                  }`}
+                >
+                  <strong>Score:</strong>{' '}
+                  {isUnselected ? 0 : response.score ?? 0}
+                </motion.p>
               </motion.div>
             );
           })}
@@ -133,20 +215,20 @@ function ThankYou() {
       )}
 
       {/* View Detailed Report Button */}
-      <motion.div
+      {/* <motion.div
         {...fadeIn}
         transition={{ delay: 0.4 }}
         className="mt-12 text-center"
       >
-        {/* <Link to="/employee/show-report">
+        <Link to="/employee/show-report">
           <motion.button
             whileHover={buttonHover}
             className="bg-gradient-to-r from-blue-600 to-green-500 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:from-blue-700 hover:to-green-600 dark:hover:from-blue-500 dark:hover:to-green-400 transition-all duration-300 shadow-md hover:shadow-lg"
           >
             View Detailed Report
           </motion.button>
-        </Link> */}
-      </motion.div>
+        </Link>
+      </motion.div> */}
     </motion.div>
   );
 }

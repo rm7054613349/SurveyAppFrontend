@@ -1,16 +1,39 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
+import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { pageTransition, buttonHover, fadeIn,cardAnimation } from '../animations/framerAnimations';
+import { pageTransition, buttonHover, fadeIn } from '../animations/framerAnimations';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 function Signup() {
   const { signup } = useContext(AuthContext);
   const { register, handleSubmit, formState: { errors } } = useForm();
+  const [signupError, setSignupError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const onSubmit = async (data) => {
-    await signup(data.email, data.password, data.role);
+    try {
+      setLoading(true);
+      setSignupError(null);
+      await signup(data.email, data.password, data.role);
+      setLoading(false);
+    } catch (err) {
+      setLoading(false);
+      setSignupError(err.message || 'Signup failed. Please try again.');
+    }
   };
+
+  if (loading) {
+    return (
+      <motion.div
+        {...fadeIn}
+        className="flex justify-center items-center h-screen bg-gray-50 dark:bg-gray-900"
+      >
+        <LoadingSpinner />
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div {...pageTransition} className="container mx-auto p-6 max-w-md content-box">
@@ -65,6 +88,23 @@ function Signup() {
         >
           Signup
         </motion.button>
+        {signupError && (
+          <motion.div
+            {...fadeIn}
+            transition={{ delay: 0.5 }}
+            className="text-center"
+          >
+            <p className="text-red-500 mb-2">{signupError} Already have an account?</p>
+            <Link to="/login">
+              <motion.button
+                whileHover={buttonHover}
+                className="bg-accent-orange text-white p-2 rounded-lg"
+              >
+                Go to Login
+              </motion.button>
+            </Link>
+          </motion.div>
+        )}
       </form>
     </motion.div>
   );
