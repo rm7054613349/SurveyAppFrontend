@@ -65,6 +65,13 @@ function Navbar({ darkMode, toggleDarkMode }) {
     visible: { transition: { staggerChildren: 0.1 } },
   };
 
+  // Get the first letter of the user's email or a fallback
+  const getUserInitial = () => {
+    return user && user.email && typeof user.email === 'string' && user.email.length > 0
+      ? user.email[0].toUpperCase()
+      : 'U'; // Fallback to 'U' for "User"
+  };
+
   return (
     <motion.nav
       initial={{ y: -100 }}
@@ -129,7 +136,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
             <>
               <div className="flex items-center space-x-2">
                 <div className="w-10 h-10 bg-white dark:bg-[#E5E7EB] text-[#1E3A8A] dark:text-[#1E40AF] rounded-full flex items-center justify-center font-bold shadow-md">
-                  {user.email[0].toUpperCase()}
+                  {getUserInitial()}
                 </div>
                 <span className="text-sm font-semibold hidden lg:inline">
                   {/* {user.email.split('@')[0]} ({user.role}) */}
@@ -137,7 +144,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
               </div>
               <motion.div whileHover={{ scale: 1.05 }}>
                 <Link
-                  to={user.role === 'admin' ? '/admin/dashboard' : '/employee/dashboard'}
+                  to={user.role === 'admin' ? '/admin/dashboard' : '/employee'}
                   className="bg-white dark:bg-[#E5E7EB] text-[#1E3A8A] dark:text-[#1E40AF] px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-medium shadow-md hover:bg-[#E5E7EB] dark:hover:bg-[#D1D5DB] transition-colors focus:outline-none focus:ring-2 focus:ring-[#F97316]"
                 >
                   Dashboard
@@ -213,7 +220,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
             <>
               <motion.div variants={menuItemVariants} className="flex items-center space-x-2">
                 <div className="w-10 h-10 bg-white dark:bg-[#E5E7EB] text-[#1E3A8A] dark:text-[#1E40AF] rounded-full flex items-center justify-center font-bold shadow-md">
-                  {user.email[0].toUpperCase()}
+                  {getUserInitial()}
                 </div>
                 <motion.button
                   whileHover={buttonHover}
@@ -227,7 +234,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
               </motion.div>
               <motion.div variants={menuItemVariants} whileHover={{ scale: 1.05 }}>
                 <Link
-                  to={user.role === 'admin' ? '/admin/dashboard' : '/employee/dashboard'}
+                  to={user.role === 'admin' ? '/admin/dashboard' : '/employee'}
                   className="block w-full bg-white dark:bg-[#E5E7EB] text-[#1E3A8A] dark:text-[#1E40AF] px-4 py-2 rounded-full font-medium shadow-md hover:bg-[#E5E7EB] dark:hover:bg-[#D1D5DB] transition-colors focus:outline-none focus:ring-2 focus:ring-[#F97316]"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >

@@ -19,8 +19,8 @@ function EmployeeDashboard() {
               {...cardAnimation}              
              className="bg-card-bg dark:bg-card-dark-bg p-6 rounded-lg shadow-lg text-center content-box w-full max-w-md mx-auto"
             >
-              <h3 className="text-lg font-semibold text-primary-blue">Open Survey</h3>
-              <p className="text-gray-600 dark:text-gray-300">Start or continue your survey</p>
+              <h3 className="text-lg font-semibold text-primary-blue">Let's begin Your Learning Journey with SSMED</h3>
+              <p className="text-gray-600 dark:text-gray-300">Start or continue your Journey</p>
             </motion.div>
           </Link>
           {/* <Link to="/employee/open-survey">

@@ -23,6 +23,96 @@ function AppRoutes() {
       <Route path="/signup" element={<Signup />} />
 
       {/* Admin Routes */}
+      {/* <Route
+        path="/admin/dashboard"
+        element={
+          <ProtectedRoute allowedRole="admin">
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      /> */}
+      {/* <Route
+        path="/admin/create-question"
+        element={
+          <ProtectedRoute allowedRole="admin">
+            <CreateQuestion />
+          </ProtectedRoute>
+        }
+      /> */}
+      {/* <Route
+        path="/admin/view-questions"
+        element={
+          <ProtectedRoute allowedRole="admin">
+            <ViewQuestions />
+          </ProtectedRoute>
+        }
+      /> */}
+      <Route
+        path="/admin/show-report"
+        element={
+          <ProtectedRoute allowedRole="admin">
+            <ShowReport />
+          </ProtectedRoute>
+        }
+      />
+      {/* <Route
+        path="/admin/send-report"
+        element={
+          <ProtectedRoute allowedRole="admin">
+            <SendReport />
+          </ProtectedRoute>
+        }
+      /> */}
+
+      {/* Employee Routes */}
+      <Route
+        path="/employee/dashboard"
+        element={
+          <ProtectedRoute allowedRole="employee">
+            <EmployeeDashboard />
+          </ProtectedRoute>
+        }
+      />
+      {/* <Route
+        path="/employee/open-survey"
+        element={
+          <ProtectedRoute allowedRole="employee">
+            <OpenSurvey />
+          </ProtectedRoute>
+        }
+      /> */}
+      {/* <Route
+        path="/employee/ready"
+        element={
+          <ProtectedRoute allowedRole="employee">
+            <ReadyPage />
+          </ProtectedRoute>
+        }
+      /> */}
+      <Route
+        path="/employee/survey"
+        element={
+          <ProtectedRoute allowedRole="employee">
+            <SurveyForm />
+          </ProtectedRoute>
+        }
+      />
+      {/* <Route
+        path="/employee/thank-you"
+        element={
+          <ProtectedRoute allowedRole="employee">
+            <ThankYou />
+          </ProtectedRoute>
+        }
+      /> */}
+      <Route
+        path="/employee/show-report"
+        element={
+          <ProtectedRoute allowedRole="employee">
+            <ShowReport />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/admin/dashboard"
         element={
@@ -48,7 +138,7 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/admin/show-report"
+        path="/report/:subsectionId"
         element={
           <ProtectedRoute allowedRole="admin">
             <ShowReport />
@@ -66,7 +156,7 @@ function AppRoutes() {
 
       {/* Employee Routes */}
       <Route
-        path="/employee/dashboard"
+        path="/employee"
         element={
           <ProtectedRoute allowedRole="employee">
             <EmployeeDashboard />
@@ -90,7 +180,7 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/employee/survey"
+        path="/survey/:subsectionId"
         element={
           <ProtectedRoute allowedRole="employee">
             <SurveyForm />
@@ -98,18 +188,10 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/employee/thank-you"
+        path="/thank-you/:subsectionId"
         element={
           <ProtectedRoute allowedRole="employee">
             <ThankYou />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/employee/show-report"
-        element={
-          <ProtectedRoute allowedRole="employee">
-            <ShowReport />
           </ProtectedRoute>
         }
       />
@@ -117,7 +199,10 @@ function AppRoutes() {
       {/* Fallback Route */}
       <Route path="*" element={<div>404 - Page Not Found</div>} />
     </Routes>
+
+    
   );
 }
+
 
 export default AppRoutes;

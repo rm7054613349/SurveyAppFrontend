@@ -1,30 +1,43 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
-import { getUsers, sendReportByUser } from '../services/api';
-import { pageTransition, buttonHover, fadeIn } from '../animations/framerAnimations';
+import { getUsers, getSections, getSubsections, sendReportByUser } from '../services/api';
+import { pageTransition, fadeIn, buttonHover } from '../animations/framerAnimations';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ProtectedRoute from '../components/ProtectedRoute';
 
 function SendReport() {
   const [users, setUsers] = useState([]);
+  const [sections, setSections] = useState([]);
+  const [subsections, setSubsections] = useState([]);
   const [selectedUser, setSelectedUser] = useState('');
+  const [selectedSection, setSelectedSection] = useState('');
+  const [selectedSubsection, setSelectedSubsection] = useState('');
   const [loading, setLoading] = useState(true);
-  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userData = await getUsers();
+        const [userData, sectionData, subsectionData] = await Promise.all([
+          getUsers(),
+          getSections(),
+          getSubsections(),
+        ]);
         setUsers(userData);
+        setSections(sectionData);
+        setSubsections(subsectionData);
         setLoading(false);
       } catch (err) {
-        toast.error(err.message || 'Failed to fetch users');
+        toast.error(err.message || 'Failed to fetch data');
         setLoading(false);
       }
     };
     fetchData();
   }, []);
+
+  const filteredSubsections = subsections.filter(
+    (sub) => !selectedSection || sub.sectionId._id === selectedSection
+  );
 
   const handleSendReport = async (e) => {
     e.preventDefault();
@@ -33,28 +46,16 @@ function SendReport() {
       return;
     }
     try {
-      setSending(true);
-      await sendReportByUser(selectedUser);
+      setLoading(true);
+      await sendReportByUser(selectedUser, selectedSection || undefined, selectedSubsection || undefined);
       toast.success('Report sent successfully!');
       setSelectedUser('');
+      setSelectedSection('');
+      setSelectedSubsection('');
+      setLoading(false);
     } catch (err) {
-      console.error('Send report failed:', {
-        message: err.message,
-        code: err.code || 'N/A',
-        response: err.response || 'No response data',
-        responseCode: err.responseCode || 'N/A',
-        command: err.command || 'N/A',
-      });
-      const errorMessage = err.message.includes('Invalid email credentials')
-        ? 'Failed to send email: Invalid email credentials. Please contact the administrator to verify email settings.'
-        : err.message.includes('User not found')
-        ? 'Selected user not found. Please refresh and try again.'
-        : err.message.includes('No responses found')
-        ? 'No responses found for this user.'
-        : err.message || 'Failed to send report. Please try again later.';
-      toast.error(errorMessage);
-    } finally {
-      setSending(false);
+      toast.error(err.message || 'Failed to send report');
+      setLoading(false);
     }
   };
 
@@ -68,54 +69,75 @@ function SendReport() {
 
   return (
     <ProtectedRoute allowedRole="admin">
-      <motion.div {...pageTransition} className="container mx-auto p-4 sm:p-6 max-w-lg content-box">
+      <motion.div {...pageTransition} className="container mx-auto p-4 sm:p-6 max-w-lg">
         <motion.h2 {...fadeIn} className="text-2xl sm:text-3xl font-bold mb-6 text-primary-blue text-center">
           Send Report
         </motion.h2>
-        <form onSubmit={handleSendReport} className="space-y-6 bg-card-bg dark:bg-card-dark-bg p-6 sm:p-8 rounded-lg shadow-lg content-box">
-          <motion.div {...fadeIn} transition={{ delay: 0.1 }}>
+        <motion.form
+          {...fadeIn}
+          transition={{ delay: 0.1 }}
+          onSubmit={handleSendReport}
+          className="bg-card-bg dark:bg-card-dark-bg p-6 sm:p-8 rounded-lg shadow-lg space-y-6"
+        >
+          <div>
             <label className="block mb-2 text-gray-700 dark:text-gray-300 text-sm sm:text-base font-medium">
               Select User
             </label>
             <select
               value={selectedUser}
               onChange={(e) => setSelectedUser(e.target.value)}
-              className={`w-full p-3 border rounded dark:bg-gray-800 dark:text-white text-sm sm:text-base ${
-                sending ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-              disabled={sending}
+              className="w-full p-2 sm:p-3 border rounded dark:bg-gray-800 dark:text-white text-sm sm:text-base focus:ring-2 focus:ring-secondary-green"
             >
               <option value="">Select a user</option>
               {users.map((user) => (
                 <option key={user._id} value={user._id}>
-                  {user.email} ({user.role.charAt(0).toUpperCase() + user.role.slice(1)})
+                  {user.email} ({user.role})
                 </option>
               ))}
             </select>
-          </motion.div>
+          </div>
+          <div>
+            <label className="block mb-2 text-gray-700 dark:text-gray-300 text-sm sm:text-base font-medium">
+              Select Section (Optional)
+            </label>
+            <select
+              value={selectedSection}
+              onChange={(e) => {
+                setSelectedSection(e.target.value);
+                setSelectedSubsection('');
+              }}
+              className="w-full p-2 sm:p-3 border rounded dark:bg-gray-800 dark:text-white text-sm sm:text-base focus:ring-2 focus:ring-secondary-green"
+            >
+              <option value="">All Sections</option>
+              {sections.map((sec) => (
+                <option key={sec._id} value={sec._id}>{sec.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block mb-2 text-gray-700 dark:text-gray-300 text-sm sm:text-base font-medium">
+              Select Subsection (Optional)
+            </label>
+            <select
+              value={selectedSubsection}
+              onChange={(e) => setSelectedSubsection(e.target.value)}
+              className="w-full p-2 sm:p-3 border rounded dark:bg-gray-800 dark:text-white text-sm sm:text-base focus:ring-2 focus:ring-secondary-green"
+              disabled={!selectedSection}
+            >
+              <option value="">All Subsections</option>
+              {filteredSubsections.map((sub) => (
+                <option key={sub._id} value={sub._id}>{sub.name}</option>
+              ))}
+            </select>
+          </div>
           <motion.button
-            whileHover={!sending ? buttonHover : {}}
+            whileHover={buttonHover}
             type="submit"
-            className={`w-full p-3 rounded-lg text-sm sm:text-base text-white flex items-center justify-center transition-all duration-300 ${
-              sending ? 'bg-secondary-green/70 cursor-not-allowed' : 'bg-secondary-green hover:bg-secondary-green/90'
-            }`}
-            disabled={sending}
+            className="w-full bg-primary-blue text-white p-3 rounded-lg text-sm sm:text-base hover:bg-primary-blue/90 focus:ring-2 focus:ring-primary-blue"
           >
-            {sending ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.2 }}
-                className="flex items-center"
-              >
-                <LoadingSpinner size="small" className="text-white" />
-                <span className="ml-2 font-medium">Sending...</span>
-              </motion.div>
-            ) : (
-              'Send Report'
-            )}
+            Send Report
           </motion.button>
-        </form>
+        </motion.form>
       </motion.div>
     </ProtectedRoute>
   );

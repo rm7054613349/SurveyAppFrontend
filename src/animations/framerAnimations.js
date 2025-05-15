@@ -1,9 +1,3 @@
-export const pageTransition = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 },
-  transition: { duration: 0.5, ease: 'easeInOut' }
-};
 
 export const questionSlide = {
   initial: { x: '100%', opacity: 0 },
@@ -12,17 +6,9 @@ export const questionSlide = {
   transition: { duration: 0.6, ease: 'easeInOut' }
 };
 
-export const buttonHover = {
-  scale: 1.05,
-  boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.2)',
-  transition: { duration: 0.3, ease: 'easeOut' }
-};
 
-export const fadeIn = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.5, ease: 'easeOut' }
-};
+
+
 
 export const logoAnimation = {
   initial: { scale: 0, rotate: -180 },
@@ -40,4 +26,35 @@ export const boxAnimation = {
   initial: { opacity: 0, y: 30 },
   animate: { opacity: 1, y: 0 },
   transition: { duration: 0.6, ease: 'easeOut' }
+};
+
+export const pageTransition = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -20 },
+  transition: { duration: 0.5 },
+};
+
+export const fadeIn = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  transition: { duration: 0.3 },
+};
+
+export const buttonHover = {
+  scale: 1.05,
+  transition: { duration: 0.2 },
+};
+
+export const slideIn = {
+  initial: { x: -50, opacity: 0 },
+  animate: { x: 0, opacity: 1 },
+  transition: { duration: 0.4, ease: 'easeOut' },
+};
+
+export const popupAnimation = {
+  initial: { scale: 0, opacity: 0 },
+  animate: { scale: 1, opacity: 1 },
+  exit: { scale: 0, opacity: 0 },
+  transition: { duration: 0.3, ease: 'easeInOut' },
 };

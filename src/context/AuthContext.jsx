@@ -60,9 +60,19 @@ export const AuthProvider = ({ children }) => {
 
 
       // Logic for Permitted Employee to login this app 
+      // Logic for Permitted Employee to login this app 
+       const allowedEmployee = [import.meta.env.VITE_EMPLOYEE_ACCESS_EMAIL];
+       if (role === 'employee' && !allowedEmployee.includes(email)) {
+        toast.error('Not authorized to sign up as employee');
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        setUser(null);
+        // navigate('/login');
+        return;
+      }
 
-
-
+       
+      
       toast.success('Signed up successfully!');
       // navigate(role === 'admin' ? '/admin/dashboard' : '/employee/dashboard');
       navigate('/login');

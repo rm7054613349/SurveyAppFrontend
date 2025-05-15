@@ -1,40 +1,24 @@
-import { useContext } from 'react';
-import { Navigate, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { AuthContext } from '../context/AuthContext';
-import { fadeIn, buttonHover } from '../animations/framerAnimations';
+
+import { Navigate } from 'react-router-dom';
+import axios from 'axios';
 
 function ProtectedRoute({ children, allowedRole }) {
-  const { user } = useContext(AuthContext);
+  console.log('ProtectedRoute checked', { allowedRole });
+  const role = localStorage.getItem('role');
+  const isAuthenticated = !!role;
+  const isAuthorized = isAuthenticated && (Array.isArray(allowedRole) ? allowedRole.includes(role) : role === allowedRole);
 
-  if (!user) {
-    return (
-      <motion.div
-        {...fadeIn}
-        className="container mx-auto p-6 text-center content-box"
-      >
-        <h2 className="text-2xl font-bold mb-4 text-primary-blue">
-          Access Denied
-        </h2>
-        <p className="text-gray-700 dark:text-gray-300 mb-4">
-          Please log in or sign up to access this page.
-        </p>
-        <motion.div
-          whileHover={buttonHover}
-          className="inline-block"
-        >
-          <Link to="/signup" className="bg-primary-blue text-white p-2 rounded">
-            Go to Signup
-          </Link>
-        </motion.div>
-      </motion.div>
-    );
+  if (!isAuthenticated) {
+    console.log('Redirecting to login: no role found');
+    return <Navigate to="/login" replace />;
   }
 
-  if (allowedRole && user.role !== allowedRole) {
-    return <Navigate to="/" />;
+  if (!isAuthorized) {
+    console.log('Redirecting to login: unauthorized role', { role, allowedRole });
+    return <Navigate to="/login" replace />;
   }
 
+  console.log('ProtectedRoute passed', { role });
   return children;
 }
 

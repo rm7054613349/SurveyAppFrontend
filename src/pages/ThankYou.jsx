@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { getResponses, getCategories } from '../services/api';
+import { getResponsesBySubsection, getCategories } from '../services/api';
 import { pageTransition, fadeIn, cardAnimation, buttonHover } from '../animations/framerAnimations';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -14,33 +14,36 @@ const fieldAnimation = {
 };
 
 function ThankYou() {
+  const { subsectionId } = useParams();
   const [responses, setResponses] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [gainedMarks, setGainedMarks] = useState(0);
   const [totalMarks, setTotalMarks] = useState(0);
   const [percentage, setPercentage] = useState(0);
+  const [badge, setBadge] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         const [responseData, categoryData] = await Promise.all([
-          getResponses(),
+          getResponsesBySubsection(subsectionId),
           getCategories(),
         ]);
-        setResponses(responseData);
-        setCategories(categoryData);
 
-        // Filter valid responses (those with surveyId and question)
+        // Filter valid responses
         const validResponses = responseData.filter(
           (response) => response?.surveyId && response.surveyId?.question
         );
 
+        setResponses(validResponses);
+        setCategories(Array.isArray(categoryData) ? categoryData : []);
+
         // Calculate gained and total marks
         const gained = validResponses.reduce((sum, response) => {
-          // If answer is null, undefined, or empty, score is 0
-          const isUnselected = !response.answer || response.answer.trim() === '';
-          return sum + (isUnselected ? 0 : response.score || 0);
+          const isCorrect = response.answer && response.answer === response.surveyId?.correctOption;
+          return sum + (isCorrect ? 1 : 0);
         }, 0);
         const total = validResponses.length;
         const percent = total > 0 ? (gained / total) * 100 : 0;
@@ -49,12 +52,16 @@ function ThankYou() {
         setTotalMarks(total);
         setPercentage(percent.toFixed(2));
 
+        // Check for badge (assumed to be included in responseData or derived)
+        const awardedBadge = responseData.some(res => res.badge) ? 'Bronze' : null;
+        setBadge(awardedBadge);
+
         // Log warnings for invalid responses
         const invalidResponses = responseData.filter(
           (response) => !response?.surveyId || !response.surveyId?.question
         );
         if (invalidResponses.length > 0) {
-          console.warn('Found invalid responses (missing surveyId or question):', invalidResponses);
+          console.warn('Found invalid responses:', invalidResponses);
         }
 
         setLoading(false);
@@ -64,7 +71,7 @@ function ThankYou() {
       }
     };
     fetchData();
-  }, []);
+  }, [subsectionId]);
 
   if (loading) {
     return (
@@ -73,11 +80,6 @@ function ThankYou() {
       </motion.div>
     );
   }
-
-  // Filter responses to only show those with valid surveyId and question
-  const validResponses = responses.filter(
-    (response) => response?.surveyId && response.surveyId?.question
-  );
 
   return (
     <motion.div
@@ -90,6 +92,21 @@ function ThankYou() {
       >
         Thank You for Your Submission!
       </motion.h2>
+
+      {/* Badge Display */}
+      {badge && (
+        <motion.div
+          {...fadeIn}
+          transition={{ delay: 0.2 }}
+          className="mb-8 text-center"
+        >
+          <div className="inline-block bg-yellow-100 dark:bg-yellow-900/30 p-4 rounded-lg">
+            <span className="text-xl md:text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+              🎉 Congratulations! You've earned a {badge} Badge!
+            </span>
+          </div>
+        </motion.div>
+      )}
 
       {/* Summary Card */}
       <motion.div
@@ -117,20 +134,21 @@ function ThankYou() {
       </motion.div>
 
       {/* Detailed Responses */}
-      {validResponses.length === 0 ? (
+      {responses.length === 0 ? (
         <motion.p
           {...fadeIn}
           className="text-gray-600 dark:text-gray-400 text-center text-lg md:text-xl"
         >
-          No valid responses found.
+          No responses found for this subsection.
         </motion.p>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {validResponses.map((response, index) => {
+          {responses.map((response, index) => {
             const category = categories.find(
               (cat) => cat._id === response.surveyId?.categoryId?._id
             );
             const isUnselected = !response.answer || response.answer.trim() === '';
+            const isCorrect = response.answer && response.answer === response.surveyId?.correctOption;
             return (
               <motion.div
                 key={response._id}
@@ -163,7 +181,7 @@ function ThankYou() {
                     className={`${
                       isUnselected
                         ? 'text-red-500'
-                        : response.answer === response.surveyId?.correctOption
+                        : isCorrect
                         ? 'text-green-600 dark:text-green-400 font-semibold'
                         : 'text-red-500 dark:text-red-400'
                     }`}
@@ -171,7 +189,7 @@ function ThankYou() {
                     {response.answer || 'Unselected'}
                     {response.answer && response.surveyId?.correctOption && (
                       <span className="ml-2">
-                        {response.answer === response.surveyId.correctOption ? (
+                        {isCorrect ? (
                           <span className="text-green-500">✔</span>
                         ) : (
                           <span className="text-red-500">✘</span>
@@ -188,7 +206,7 @@ function ThankYou() {
                   <strong>Correct Answer:</strong>{' '}
                   <span
                     className={`${
-                      response.answer && response.answer === response.surveyId?.correctOption
+                      isCorrect
                         ? 'text-green-600 dark:text-green-400 font-semibold'
                         : 'text-gray-600 dark:text-gray-400'
                     }`}
@@ -200,35 +218,19 @@ function ThankYou() {
                   {...fieldAnimation}
                   transition={{ delay: index * 0.1 + 0.6 }}
                   className={`text-sm md:text-base ${
-                    isUnselected || response.score === 0
+                    isUnselected || !isCorrect
                       ? 'text-red-500 dark:text-red-400'
                       : 'text-green-600 dark:text-green-400'
                   }`}
                 >
                   <strong>Score:</strong>{' '}
-                  {isUnselected ? 0 : response.score ?? 0}
+                  {isUnselected || !isCorrect ? 0 : 1}
                 </motion.p>
               </motion.div>
             );
           })}
         </div>
       )}
-
-      {/* View Detailed Report Button */}
-      {/* <motion.div
-        {...fadeIn}
-        transition={{ delay: 0.4 }}
-        className="mt-12 text-center"
-      >
-        <Link to="/employee/show-report">
-          <motion.button
-            whileHover={buttonHover}
-            className="bg-gradient-to-r from-blue-600 to-green-500 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:from-blue-700 hover:to-green-600 dark:hover:from-blue-500 dark:hover:to-green-400 transition-all duration-300 shadow-md hover:shadow-lg"
-          >
-            View Detailed Report
-          </motion.button>
-        </Link>
-      </motion.div> */}
     </motion.div>
   );
 }

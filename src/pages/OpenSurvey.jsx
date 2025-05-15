@@ -16,10 +16,10 @@ function OpenSurvey() {
     <ProtectedRoute allowedRole="employee">
       <motion.div {...pageTransition} className="container mx-auto p-6 text-center content-box">
         <motion.h2 {...fadeIn} className="text-3xl font-bold mb-6 text-primary-blue">
-          Open Survey
+          Learning Journey Started.......
         </motion.h2>
         <motion.p {...fadeIn} transition={{ delay: 0.1 }} className="text-lg text-gray-700 dark:text-gray-300 mb-8">
-          Ready to {isReattempt ? 'reattempt' : 'start'} your survey? Let's get started!
+          Ready to {isReattempt ? 'reattempt' : 'start'} your Learning Journey? Let's get started!
         </motion.p>
         {/* <motion.div {...fadeIn} transition={{ delay: 0.2 }} className="mb-6">
           <label className="flex items-center justify-center space-x-2 text-gray-700 dark:text-gray-300">
@@ -39,7 +39,7 @@ function OpenSurvey() {
           onClick={handleStart}
           className="bg-primary-blue text-white px-6 py-3 rounded-lg"
         >
-          Start Survey
+          Start Learning Journey 
         </motion.button>
       </motion.div>
     </ProtectedRoute>
