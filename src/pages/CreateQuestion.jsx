@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
@@ -53,6 +54,7 @@ function CreateQuestion() {
         console.error('Error fetching data:', {
           message: err.message,
           stack: err.stack,
+          error: err,
         });
         toast.error(err.message || 'Failed to fetch sections, subsections, or categories');
       }
@@ -60,92 +62,35 @@ function CreateQuestion() {
     fetchData();
   }, []);
 
-  // Filter subsections based on selected section
   const filteredSubsections = subsections.filter(
     (sub) => sub.sectionId?._id === section
   );
 
-  // Filter categories based on selected subsection
   const filteredCategories = categories.filter(
     (cat) => cat.subsectionId?._id === subsection
   );
 
-  // Handle file selection with validation
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
-      // Validate file size (max 20MB)
       if (selectedFile.size > 20 * 1024 * 1024) {
         toast.error('File size must be less than 20MB');
         return;
       }
-      // Validate file type
-      // const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf', 'text/plain'];
       const allowedTypes = [
-  // Images
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-  'image/svg+xml',
-  'image/bmp',
-  'image/tiff',
-  'image/heic',
-  'image/heif',
-
-  // Videos
-  'video/mp4',
-  'video/mpeg',
-  'video/webm',
-  'video/ogg',
-  'video/quicktime',
-  'video/x-msvideo',
-  'video/x-matroska',
-
-  // Audio
-  'audio/mpeg',
-  'audio/wav',
-  'audio/ogg',
-  'audio/mp4',
-  'audio/webm',
-  'audio/aac',
-  'audio/x-wav',
-
-  // Documents
-  'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
-  'application/vnd.ms-excel',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',       // .xlsx
-  'application/vnd.ms-powerpoint',
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx
-  'text/plain',
-  'text/csv',
-  'text/html',
-  'application/json',
-  'application/rtf',
-  'application/xml',
-
-  // Archives
-  'application/zip',
-  'application/x-rar-compressed',
-  'application/x-7z-compressed',
-  'application/x-tar',
-  'application/gzip',
-
-  // Code files
-  'application/javascript',
-  'application/x-python-code',
-  'application/x-java',
-  'text/css',
-  'text/markdown',
-  'text/x-c',
-  'text/x-c++',
-  'text/x-java-source'
-];
-
+        'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/bmp', 'image/tiff', 'image/heic', 'image/heif',
+        'video/mp4', 'video/mpeg', 'video/webm', 'video/ogg', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska',
+        'audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp4', 'audio/webm', 'audio/aac', 'audio/x-wav',
+        'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'text/plain', 'text/csv', 'text/html', 'application/json', 'application/rtf', 'application/xml',
+        'application/zip', 'application/x-rar-compressed', 'application/x-7z-compressed', 'application/x-tar', 'application/gzip',
+        'application/javascript', 'application/x-python-code', 'application/x-java', 'text/css', 'text/markdown',
+        'text/x-c', 'text/x-c++', 'text/x-java-source',
+      ];
       if (!allowedTypes.includes(selectedFile.type)) {
-        toast.error('Only JPEG, PNG, PDF, or TXT files are allowed');
+        toast.error('Unsupported file type');
         return;
       }
       console.log('Selected file:', { name: selectedFile.name, size: selectedFile.size, type: selectedFile.type });
@@ -160,7 +105,6 @@ function CreateQuestion() {
   const handleCreateSurvey = async (e) => {
     e.preventDefault();
 
-    // Validation
     if (!newQuestion.trim()) {
       toast.error('Question cannot be empty');
       return;
@@ -178,7 +122,11 @@ function CreateQuestion() {
       return;
     }
     if (questionType === 'multiple-choice') {
-      if (options.some((opt) => !opt.trim())) {
+      if (!options || options.length !== 4) {
+        toast.error('Multiple-choice questions must have exactly 4 options');
+        return;
+      }
+      if (options.some((opt) => !opt || !opt.trim())) {
         toast.error('All options must be filled for multiple-choice questions');
         return;
       }
@@ -216,8 +164,9 @@ function CreateQuestion() {
       if (newSection.trim()) {
         try {
           const newSectionData = await createSection({ name: newSection.trim() });
-          if (!newSectionData?._id) {
-            throw new Error('Failed to create section: No ID returned');
+          if (!newSectionData || !newSectionData._id) {
+            console.error('Section creation response:', newSectionData);
+            throw new Error('Failed to create section: Invalid response from server');
           }
           sectionId = newSectionData._id;
           setSections([...sections, newSectionData]);
@@ -226,37 +175,60 @@ function CreateQuestion() {
         } catch (err) {
           console.error('Section creation error:', {
             message: err.message,
-            response: err.response || 'No response data',
+            stack: err.stack,
+            response: err.response ? {
+              status: err.response.status,
+              data: err.response.data,
+              headers: err.response.headers,
+            } : 'No response data',
+            error: err,
           });
-          throw new Error(`Failed to create section: ${err.message}`);
+          toast.error(`Failed to create section: ${err.message || 'Unknown error'}`);
+          setLoading(false);
+          return;
         }
       }
 
       let subsectionId = subsection;
       if (newSubsection.trim()) {
-        if (!sectionId) {
-          toast.error('Cannot create subsection without a valid section');
+        if (!sectionId || typeof sectionId !== 'string' || sectionId.length !== 24) {
+          console.error('Invalid sectionId:', sectionId);
+          toast.error('Invalid section ID. Please select or create a valid section.');
+          setLoading(false);
+          return;
+        }
+        if (newSubsection.trim().length < 3) {
+          toast.error('Subsection name must be at least 3 characters long');
           setLoading(false);
           return;
         }
         try {
-          const newSubsectionData = await createSubsection({
-            name: newSubsection.trim(),
-            sectionId,
-          });
-          if (!newSubsectionData?._id) {
-            throw new Error('Failed to create subsection: No ID returned');
+          const subsectionData = { name: newSubsection.trim(), sectionId };
+          console.log('Creating subsection with data:', subsectionData);
+          const newSubsectionData = await createSubsection(subsectionData);
+          if (!newSubsectionData || !newSubsectionData._id) {
+            console.error('Subsection creation response:', newSubsectionData);
+            throw new Error('Failed to create subsection: Invalid response from server');
           }
           subsectionId = newSubsectionData._id;
           setSubsections([...subsections, newSubsectionData]);
           toast.success(`Subsection "${newSubsectionData.name}" created successfully`);
           console.log('New subsection created:', newSubsectionData);
         } catch (err) {
+          const errorMessage = err.response?.data?.message || err.message || 'Unknown error';
           console.error('Subsection creation error:', {
-            message: err.message,
-            response: err.response || 'No response data',
+            message: errorMessage,
+            stack: err.stack,
+            response: err.response ? {
+              status: err.response.status,
+              data: err.response.data,
+              headers: err.response.headers,
+            } : 'No response data',
+            error: err,
           });
-          throw new Error(`Failed to create subsection: ${err.message}`);
+          toast.error(`Failed to create subsection: ${errorMessage}`);
+          setLoading(false);
+          return;
         }
       }
 
@@ -272,8 +244,9 @@ function CreateQuestion() {
             name: newCategory.trim(),
             subsectionId,
           });
-          if (!newCategoryData?._id) {
-            throw new Error('Failed to create category: No ID returned');
+          if (!newCategoryData || !newCategoryData._id) {
+            console.error('Category creation response:', newCategoryData);
+            throw new Error('Failed to create category: Invalid response from server');
           }
           categoryId = newCategoryData._id;
           setCategories([...categories, newCategoryData]);
@@ -282,13 +255,20 @@ function CreateQuestion() {
         } catch (err) {
           console.error('Category creation error:', {
             message: err.message,
-            response: err.response || 'No response data',
+            stack: err.stack,
+            response: err.response ? {
+              status: err.response.status,
+              data: err.response.data,
+              headers: err.response.headers,
+            } : 'No response data',
+            error: err,
           });
-          throw new Error(`Failed to create category: ${err.message}`);
+          toast.error(`Failed to create category: ${err.message || 'Unknown error'}`);
+          setLoading(false);
+          return;
         }
       }
 
-      // Validate IDs before constructing FormData
       if (!sectionId || !subsectionId || !categoryId) {
         console.error('Invalid IDs:', { sectionId, subsectionId, categoryId });
         toast.error('Invalid section, subsection, or category ID');
@@ -296,7 +276,6 @@ function CreateQuestion() {
         return;
       }
 
-      // Prepare FormData
       const formData = new FormData();
       formData.append('question', newQuestion.trim());
       formData.append('categoryId', categoryId);
@@ -306,8 +285,15 @@ function CreateQuestion() {
       formData.append('scoringType', scoringType);
       formData.append('maxScore', maxScore.toString());
       if (questionType === 'multiple-choice') {
-        formData.append('options', JSON.stringify(options.map(opt => opt.trim())));
-        formData.append('correctOption', correctOption);
+        console.log('Options before FormData:', options); // Debug log
+        options.forEach((option, index) => {
+          if (option && option.trim()) {
+            formData.append(`option${index + 1}`, option.trim());
+          }
+        });
+        if (correctOption && correctOption.trim()) {
+          formData.append('correctOption', correctOption.trim());
+        }
       }
       if (file) {
         formData.append('file', file);
@@ -318,7 +304,6 @@ function CreateQuestion() {
       const surveyResponse = await createSurvey(formData);
       console.log('Survey creation response:', surveyResponse);
 
-      // Reset form, keeping selected/created section, subsection, and category
       setNewQuestion('');
       setOptions(['', '', '', '']);
       setNewSection('');
@@ -340,9 +325,14 @@ function CreateQuestion() {
       console.error('Error creating survey:', {
         message: err.message,
         stack: err.stack,
-        response: err.response || 'No response data',
+        response: err.response ? {
+          status: err.response.status,
+          data: err.response.data,
+          headers: err.response.headers,
+        } : 'No response data',
+        error: err,
       });
-      toast.error(err.message || 'Failed to create survey. Please check your input and try again.');
+      toast.error(`Failed to create survey: ${err.message || 'Unknown error'}`);
     }
   };
 
@@ -364,7 +354,6 @@ function CreateQuestion() {
           Create New Survey Question
         </motion.h2>
         <form onSubmit={handleCreateSurvey} className="space-y-6 bg-card-bg dark:bg-card-dark-bg p-8 rounded-lg shadow-lg content-box">
-          {/* Section Selection/Creation */}
           <motion.div {...fadeIn} transition={{ delay: 0.1 }}>
             <label className="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Select Section</label>
             <select
@@ -396,7 +385,6 @@ function CreateQuestion() {
             />
           </motion.div>
 
-          {/* Subsection Selection/Creation */}
           <motion.div {...fadeIn} transition={{ delay: 0.2 }}>
             <label className="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Select Subsection</label>
             <select
@@ -427,7 +415,6 @@ function CreateQuestion() {
             />
           </motion.div>
 
-          {/* Category Selection/Creation */}
           <motion.div {...fadeIn} transition={{ delay: 0.3 }}>
             <label className="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Select Category</label>
             <select
@@ -454,7 +441,6 @@ function CreateQuestion() {
             />
           </motion.div>
 
-          {/* Question Type */}
           <motion.div {...fadeIn} transition={{ delay: 0.4 }}>
             <label className="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Question Type</label>
             <select
@@ -474,7 +460,6 @@ function CreateQuestion() {
             </select>
           </motion.div>
 
-          {/* Question */}
           <motion.div {...fadeIn} transition={{ delay: 0.45 }}>
             <label className="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Question</label>
             <input
@@ -486,7 +471,6 @@ function CreateQuestion() {
             />
           </motion.div>
 
-          {/* Options for Multiple Choice */}
           {questionType === 'multiple-choice' && (
             <>
               {options.map((option, index) => (
@@ -507,6 +491,7 @@ function CreateQuestion() {
                     }}
                     className="w-full p-3 border rounded dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-secondary-green"
                     placeholder={`Enter option ${index + 1} (e.g., 4)`}
+                    required // Add required attribute
                   />
                 </motion.div>
               ))}
@@ -518,6 +503,7 @@ function CreateQuestion() {
                   value={correctOption}
                   onChange={(e) => setCorrectOption(e.target.value)}
                   className="w-full p-3 border rounded dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-secondary-green"
+                  required // Add required attribute
                 >
                   <option value="">Select Correct Option</option>
                   {options.map((option, index) => (
@@ -532,7 +518,6 @@ function CreateQuestion() {
             </>
           )}
 
-          {/* File Upload for File-Upload Questions */}
           {questionType === 'file-upload' && (
             <motion.div {...fadeIn} transition={{ delay: 0.5 }}>
               <label className="block mb-2 text-gray-700 dark:text-gray-300 font-medium">
@@ -561,7 +546,6 @@ function CreateQuestion() {
             </motion.div>
           )}
 
-          {/* Scoring Type */}
           <motion.div {...fadeIn} transition={{ delay: 1.0 }}>
             <label className="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Scoring Type</label>
             <select
@@ -574,7 +558,6 @@ function CreateQuestion() {
             </select>
           </motion.div>
 
-          {/* Max Score */}
           <motion.div {...fadeIn} transition={{ delay: 1.1 }}>
             <label className="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Max Score</label>
             <input
@@ -584,7 +567,7 @@ function CreateQuestion() {
               className="w-full p-3 border rounded dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-secondary-green"
               placeholder="Enter max score (e.g., 10)"
               min="1"
-              step="1"
+              required
             />
           </motion.div>
 

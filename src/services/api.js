@@ -340,22 +340,12 @@ export const getResponsesBySubsection = async (subsectionId) => {
     throw new Error('Subsection ID not provided');
   }
   console.log(`Fetching responses for subsection: ${subsectionId}`);
-  return fetchWithAuth(`${API_URL}/response/subsection/${subsectionId}`);
+  const data = await fetchWithAuth(`${API_URL}/response/subsection/${subsectionId}`);
+  console.log(`getResponsesBySubsection response for ${subsectionId}:`, data);
+  return Array.isArray(data) ? data : data.responseDetails && Array.isArray(data.responseDetails) ? data.responseDetails : [];
 };
 
-export const submitResponse = async (response) => {
-  const { userId, surveyId, answer, fileUrl } = response;
-  if (!userId || !surveyId) {
-    console.error('Missing required fields:', { userId, surveyId });
-    toast.error('All fields are required');
-    throw new Error('All fields are required');
-  }
-  console.log('Submitting response:', response);
-  return fetchWithAuth(`${API_URL}/response`, {
-    method: 'POST',
-    body: JSON.stringify(response),
-  });
-};
+
 
 export const submitResponses = async (subsectionId, data) => {
   if (!subsectionId) {
@@ -370,21 +360,17 @@ export const submitResponses = async (subsectionId, data) => {
   }
   console.log(`Submitting responses for subsection: ${subsectionId}`, data);
 
-  const formData = new FormData();
-  formData.append('subsectionId', subsectionId);
+  const payload = {
+    responses: data.responses.map(response => ({
+      survey: response.surveyId, // Changed from surveyId to survey
+      answer: response.answer || '',
+      fileUrl: response.fileUrl || '',
+    })),
+  };
 
-  data.responses.forEach((response, index) => {
-    formData.append(`responses[${index}][surveyId]`, response.surveyId);
-    formData.append(`responses[${index}][answer]`, response.answer || '');
-    if (response.file) {
-      formData.append(`files`, response.file);
-    }
-    formData.append(`responses[${index}][fileUrl]`, response.fileUrl || '');
-  });
-
-  return fetchWithAuth(`${API_URL}/response/bulk`, {
+  return fetchWithAuth(`${API_URL}/response/submit/${subsectionId}`, {
     method: 'POST',
-    body: formData,
+    body: JSON.stringify(payload),
   });
 };
 
