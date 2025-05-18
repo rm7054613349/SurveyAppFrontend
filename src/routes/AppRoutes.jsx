@@ -195,6 +195,9 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route path="/employee/survey" element={<SurveyForm />} />
+        <Route path="/subsections/:sectionId" element={<SurveyForm />} />
+        <Route path="/thank-you/:subsectionId" element={<ThankYou />} />
 
       {/* Fallback Route */}
       <Route path="*" element={<div>404 - Page Not Found</div>} />

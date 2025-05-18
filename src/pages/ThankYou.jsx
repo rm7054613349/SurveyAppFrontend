@@ -4,25 +4,32 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Confetti from 'react-confetti';
 import { getResponsesBySubsection, getCategories, getSubsections } from '../services/api';
-import { pageTransition, fadeIn, cardAnimation } from '../animations/framerAnimations';
+import { pageTransition, fadeIn } from '../animations/framerAnimations';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 // Animation for response card fields
 const fieldAnimation = {
   initial: { opacity: 0, y: 10 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.4, ease: 'easeOut' }
+  transition: { duration: 0.3, ease: 'easeOut' }
 };
 
-// Badge animation with "boom" effect
+// Card animation with stagger
+const cardAnimation = {
+  initial: { opacity: 0, scale: 0.95, y: 20 },
+  animate: { opacity: 1, scale: 1, y: 0 },
+  transition: { duration: 0.3, type: 'spring', stiffness: 180 }
+};
+
+// Badge animation with bounce effect
 const badgeAnimation = {
   initial: { scale: 0, rotate: 0, opacity: 0 },
   animate: {
-    scale: [0, 1.5, 1],
-    rotate: [0, 10, -10, 0],
+    scale: [0, 1.4, 1],
+    rotate: [0, 15, -15, 0],
     opacity: 1,
     transition: {
-      duration: 1,
+      duration: 0.8,
       ease: 'easeOut',
       times: [0, 0.5, 0.75, 1],
     }
@@ -35,17 +42,17 @@ const particleAnimation = {
   animate: (i) => ({
     scale: [0, 1, 0],
     opacity: [1, 1, 0],
-    x: Math.cos((i * Math.PI) / 4) * 40,
-    y: Math.sin((i * Math.PI) / 4) * 40,
+    x: Math.cos((i * Math.PI) / 4) * 50,
+    y: Math.sin((i * Math.PI) / 4) * 50,
     transition: {
-      duration: 0.8,
+      duration: 0.7,
       ease: 'easeOut',
-      delay: i * 0.05
+      delay: i * 0.04
     }
   })
 };
 
-// Popup animation (not used but kept for consistency)
+// Popup animation (unused but retained)
 const popupAnimation = {
   initial: { opacity: 0, scale: 0.8 },
   animate: { opacity: 1, scale: 1 },
@@ -178,7 +185,7 @@ function ThankYou() {
     return (
       <motion.div
         {...fadeIn}
-        className="flex justify-center items-center h-screen bg-gray-100 dark:bg-gray-900"
+        className="flex justify-center items-center h-screen bg-blue-50/80 dark:bg-gray-900"
         aria-label="Loading"
       >
         <LoadingSpinner />
@@ -189,22 +196,32 @@ function ThankYou() {
   return (
     <motion.div
       {...pageTransition}
-      className="min-h-screen bg-gray-100 dark:bg-gray-900 relative"
+      className="min-h-screen bg-blue-50/80 dark:bg-gray-900 relative overflow-hidden font-sans"
     >
+      {/* Animated Gradient Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-300 to-pink-300 dark:from-blue-800 dark:to-purple-800 opacity-20 animate-gradient-bg" />
+
       {showConfetti && (
         <Confetti
           width={window.innerWidth}
           height={window.innerHeight}
           recycle={false}
-          numberOfPieces={window.innerWidth < 640 ? 80 : 150}
+          numberOfPieces={window.innerWidth < 640 ? 60 : 120}
+          colors={
+            badge === 'Gold'
+              ? ['#FFD700', '#FFA500', '#FFFF00']
+              : badge === 'Silver'
+              ? ['#C0C0C0', '#A9A9A9', '#D3D3D3']
+              : ['#CD7F32', '#8B5A2B', '#A0522D']
+          }
         />
       )}
 
-      <div className="container mx-auto px-2 sm:px-4 py-4 max-w-screen-xl">
+      <div className="container mx-auto px-4 sm:px-6 py-8 max-w-7xl relative z-10">
         {shouldShowBadge && (
           <motion.div
             {...fadeIn}
-            className="flex justify-center mt-4 sm:mt-6"
+            className="flex justify-center mt-6 sm:mt-8"
           >
             <motion.div className="relative inline-block">
               {[...Array(12)].map((_, i) => (
@@ -214,7 +231,7 @@ function ThankYou() {
                   variants={particleAnimation}
                   initial="initial"
                   animate="animate"
-                  className="absolute w-2 sm:w-3 h-2 sm:h-3 rounded-full"
+                  className="absolute w-3 h-3 rounded-full"
                   style={{
                     backgroundColor: badge === 'Gold' ? '#FFD700' : badge === 'Silver' ? '#C0C0C0' : '#CD7F32',
                     top: '50%',
@@ -223,41 +240,63 @@ function ThankYou() {
                   }}
                 />
               ))}
-              <motion.div {...badgeAnimation} className="relative">
+              <motion.div
+                {...badgeAnimation}
+                className="relative group"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+              >
                 {badge === 'Bronze' && (
                   <svg
-                    width="40"
-                    height="40"
+                    width="80"
+                    height="80"
                     viewBox="0 0 100 100"
-                    className="sm:w-[80px] sm:h-[80px] md:w-[90px] md:h-[90px]"
+                    className="sm:w-24 sm:h-24 md:w-28 md:h-28 drop-shadow-lg"
                     aria-label="Bronze Badge"
                   >
-                    <circle cx="50" cy="50" r="48" fill="#CD7F32" opacity="0.8" />
-                    <text x="50" y="50" textAnchor="middle" dominantBaseline="middle" fontSize="50" fill="#FFFFFF" fontWeight="bold">🥉</text>
+                    <defs>
+                      <linearGradient id="bronzeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style={{ stopColor: '#CD7F32', stopOpacity: 1 }} />
+                        <stop offset="100%" style={{ stopColor: '#8B5A2B', stopOpacity: 1 }} />
+                      </linearGradient>
+                    </defs>
+                    <circle cx="50" cy="50" r="48" fill="url(#bronzeGradient)" stroke="#A0522D" strokeWidth="2" />
+                    <text x="50" y="55" textAnchor="middle" dominantBaseline="middle" fontSize="40" fill="#FFFFFF" fontWeight="bold">🥉</text>
                   </svg>
                 )}
                 {badge === 'Silver' && (
                   <svg
-                    width="40"
-                    height="40"
+                    width="80"
+                    height="80"
                     viewBox="0 0 100 100"
-                    className="sm:w-[80px] sm:h-[80px] md:w-[90px] md:h-[90px]"
+                    className="sm:w-24 sm:h-24 md:w-28 md:h-28 drop-shadow-lg"
                     aria-label="Silver Badge"
                   >
-                    <circle cx="50" cy="50" r="48" fill="#C0C0C0" opacity="0.8" />
-                    <text x="50" y="50" textAnchor="middle" dominantBaseline="middle" fontSize="50" fill="#FFFFFF" fontWeight="bold">🥈</text>
+                    <defs>
+                      <linearGradient id="silverGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style={{ stopColor: '#C0C0C0', stopOpacity: 1 }} />
+                        <stop offset="100%" style={{ stopColor: '#A9A9A9', stopOpacity: 1 }} />
+                      </linearGradient>
+                    </defs>
+                    <circle cx="50" cy="50" r="48" fill="url(#silverGradient)" stroke="#D3D3D3" strokeWidth="2" />
+                    <text x="50" y="55" textAnchor="middle" dominantBaseline="middle" fontSize="40" fill="#FFFFFF" fontWeight="bold">🥈</text>
                   </svg>
                 )}
                 {badge === 'Gold' && (
                   <svg
-                    width="40"
-                    height="40"
+                    width="80"
+                    height="80"
                     viewBox="0 0 100 100"
-                    className="sm:w-[80px] sm:h-[80px] md:w-[90px] md:h-[90px]"
+                    className="sm:w-24 sm:h-24 md:w-28 md:h-28 drop-shadow-lg"
                     aria-label="Gold Badge"
                   >
-                    <circle cx="50" cy="50" r="48" fill="#FFD700" opacity="0.8" />
-                    <text x="50" y="50" textAnchor="middle" dominantBaseline="middle" fontSize="50" fill="#FFFFFF" fontWeight="bold">🥇</text>
+                    <defs>
+                      <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style={{ stopColor: '#FFD700', stopOpacity: 1 }} />
+                        <stop offset="100%" style={{ stopColor: '#FFA500', stopOpacity: 1 }} />
+                      </linearGradient>
+                    </defs>
+                    <circle cx="50" cy="50" r="48" fill="url(#goldGradient)" stroke="#FFFF00" strokeWidth="2" />
+                    <text x="50" y="55" textAnchor="middle" dominantBaseline="middle" fontSize="40" fill="#FFFFFF" fontWeight="bold">🥇</text>
                   </svg>
                 )}
               </motion.div>
@@ -265,10 +304,10 @@ function ThankYou() {
           </motion.div>
         )}
 
-        <div className="text-center mt-2 sm:mt-4">
+        <div className="text-center mt-6 sm:mt-8">
           <motion.h2
             {...fadeIn}
-            className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-amber-500 dark:from-rose-400 dark:to-amber-400"
+            className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-pink-500 dark:from-blue-300 dark:to-pink-400 drop-shadow-md"
           >
             Thank You for Your Submission!
           </motion.h2>
@@ -276,10 +315,10 @@ function ThankYou() {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
-              className="mt-1 sm:mt-2"
+              transition={{ delay: 0.5, duration: 0.4 }}
+              className="mt-3 sm:mt-4"
             >
-              <span className="text-md sm:text-lg md:text-xl lg:text-xl font-bold text-rose-600 dark:text-rose-400">
+              <span className="text-lg sm:text-xl md:text-2xl font-bold text-blue-400 dark:text-blue-300 drop-shadow">
                 🎉 Congratulations! You Have Cleared This Level!
               </span>
             </motion.div>
@@ -288,14 +327,15 @@ function ThankYou() {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.9, duration: 0.5 }}
-              className="mt-3 sm:mt-4"
+              transition={{ delay: 0.8, duration: 0.4 }}
+              className="mt-4 sm:mt-6"
             >
               <button
                 onClick={handleBackToSectionClick}
-                className="px-4 sm:px-6 py-2 sm:py-3 bg-rose-600 text-white font-semibold rounded-lg shadow-md hover:bg-rose-700 dark:bg-rose-500 dark:hover:bg-rose-600 transition-all duration-300"
+                className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-400 to-pink-500 dark:from-blue-500 dark:to-pink-600 text-white font-semibold rounded-xl shadow-lg hover:scale-105 hover:shadow-xl transition-all duration-300 ring-2 ring-blue-200 dark:ring-blue-700 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-600 ring-offset-2 pointer-events-auto"
+                aria-label="Proceed to Next Level"
               >
-                Are You Ready for the Next Level?
+                Ready for the Next Level?
               </button>
             </motion.div>
           )}
@@ -303,21 +343,22 @@ function ThankYou() {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
+              transition={{ delay: 0.5, duration: 0.4 }}
               className="mt-3 sm:mt-4"
             >
-              <span className="text-md sm:text-lg md:text-xl lg:text-xl font-bold text-gray-600 dark:text-gray-400">
+              <span className="text-lg sm:text-xl md:text-2xl font-bold text-gray-600 dark:text-gray-300 drop-shadow">
                 Your descriptive answers have been submitted for review.
               </span>
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.9, duration: 0.5 }}
-                className="mt-3 sm:mt-4"
+                transition={{ delay: 0.8, duration: 0.4 }}
+                className="mt-4 sm:mt-6"
               >
                 <button
                   onClick={handleBackToSectionClick}
-                  className="px-4 sm:px-6 py-2 sm:py-3 bg-emerald-600 text-white font-semibold rounded-lg shadow-md hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 transition-all duration-300"
+                  className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-emerald-400 to-cyan-500 dark:from-emerald-500 dark:to-cyan-600 text-white font-semibold rounded-xl shadow-lg hover:scale-105 hover:shadow-xl transition-all duration-300 ring-2 ring-emerald-200 dark:ring-emerald-700 focus:ring-4 focus:ring-emerald-300 dark:focus:ring-emerald-600 ring-offset-2 pointer-events-auto"
+                  aria-label="Back to Sections"
                 >
                   Back to Sections
                 </button>
@@ -329,22 +370,23 @@ function ThankYou() {
         {!allDescriptive && percentage < 70 && totalMarks > 0 && (
           <motion.div
             {...fadeIn}
-            className="flex flex-col items-center mb-2 sm:mb-4 mt-2 sm:mt-4"
+            className="flex flex-col items-center mb-6 sm:mb-8 mt-6 sm:mt-8"
           >
-            <div className="inline-block bg-rose-100 dark:bg-rose-900/30 p-2 sm:p-3 rounded-lg">
-              <span className="text-sm sm:text-md md:text-lg lg:text-lg font-bold text-rose-600 dark:text-rose-400">
-                😔 Don't worry! Keep practicing, and you'll shine next time!
+            <div className="inline-block bg-rose-100/80 dark:bg-rose-900/30 p-3 sm:p-4 rounded-xl shadow-md backdrop-blur-md">
+              <span className="text-md sm:text-lg md:text-xl font-bold text-rose-600 dark:text-rose-400 drop-shadow">
+                😔 Keep Practicing! You'll Ace It Next Time!
               </span>
             </div>
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
-              className="mt-3 sm:mt-4"
+              transition={{ delay: 0.5, duration: 0.4 }}
+              className="mt-4 sm:mt-6"
             >
               <button
                 onClick={handleBackToSectionClick}
-                className="px-4 sm:px-6 py-2 sm:py-3 bg-emerald-600 text-white font-semibold rounded-lg shadow-md hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 transition-all duration-300"
+                className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-emerald-400 to-cyan-500 dark:from-emerald-500 dark:to-cyan-600 text-white font-semibold rounded-xl shadow-lg hover:scale-105 hover:shadow-xl transition-all duration-300 ring-2 ring-emerald-200 dark:ring-emerald-700 focus:ring-4 focus:ring-emerald-300 dark:focus:ring-emerald-600 ring-offset-2 pointer-events-auto"
+                aria-label="Back to Sections"
               >
                 Back to Sections
               </button>
@@ -352,28 +394,38 @@ function ThankYou() {
           </motion.div>
         )}
 
-        <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mt-2 sm:mt-6">
+        <div className="flex flex-wrap justify-center gap-4 sm:gap-6 mt-6 sm:mt-8">
           {!allDescriptive && (
             <motion.div
-              {...fadeIn}
-              className="bg-white dark:bg-gray-900 p-3 sm:p-4 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 w-full max-w-[280px] sm:max-w-xs"
+              {...cardAnimation}
+              className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl p-4 sm:p-6 rounded-2xl shadow-xl border-2 border-blue-200 dark:border-gray-700 w-full max-w-xs hover:scale-105 hover:shadow-2xl transition-all duration-300"
+              style={{ borderImage: 'linear-gradient(to right, #60a5fa, #f472b6) 1' }}
             >
-              <h3 className="text-lg sm:text-xl md:text-2xl lg:text-2xl font-bold mb-1 sm:mb-2 text-center text-rose-600 dark:text-rose-400">
+              <h3 className="text-xl sm:text-2xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-pink-500 dark:from-blue-300 dark:to-pink-400 mb-3 sm:mb-4 drop-shadow">
                 Your Performance
               </h3>
-              <div className="space-y-1 sm:space-y-2">
-                <div className="flex justify-between items-center bg-amber-100 dark:bg-amber-800/30 p-1 sm:p-2 rounded-lg">
-                  <span className="text-sm sm:text-md md:text-lg lg:text-lg text-gray-700 dark:text-gray-300">Gained Marks:</span>
-                  <span className="text-sm sm:text-md md:text-lg lg:text-lg font-bold text-amber-600 dark:text-amber-400">{gainedMarks}</span>
-                </div>
-                <div className="flex justify-between items-center bg-rose-100 dark:bg-rose-800/30 p-1 sm:p-2 rounded-lg">
-                  <span className="text-sm sm:text-md md:text-lg lg:text-lg text-gray-700 dark:text-gray-300">Total Marks:</span>
-                  <span className="text-sm sm:text-md md:text-lg lg:text-lg font-bold text-rose-600 dark:text-rose-400">{totalMarks}</span>
-                </div>
-                <div className="flex justify-between items-center bg-emerald-100 dark:bg-emerald-800/30 p-1 sm:p-2 rounded-lg">
-                  <span className="text-sm sm:text-md md:text-lg lg:text-lg text-gray-700 dark:text-gray-300">Percentage:</span>
-                  <span className="text-sm sm:text-md md:text-lg lg:text-lg font-bold text-emerald-600 dark:text-emerald-400">{percentage}%</span>
-                </div>
+              <div className="space-y-2 sm:space-y-3">
+                <motion.div
+                  {...fieldAnimation}
+                  className="flex justify-between items-center bg-blue-100/50 dark:bg-blue-900/30 p-2 sm:p-3 rounded-lg"
+                >
+                  <span className="text-sm sm:text-md text-gray-700 dark:text-gray-300">Gained Marks:</span>
+                  <span className="text-sm sm:text-md font-bold text-blue-600 dark:text-blue-400">{gainedMarks}</span>
+                </motion.div>
+                <motion.div
+                  {...fieldAnimation}
+                  className="flex justify-between items-center bg-pink-100/50 dark:bg-pink-900/30 p-2 sm:p-3 rounded-lg"
+                >
+                  <span className="text-sm sm:text-md text-gray-700 dark:text-gray-300">Total Marks:</span>
+                  <span className="text-sm sm:text-md font-bold text-pink-600 dark:text-pink-400">{totalMarks}</span>
+                </motion.div>
+                <motion.div
+                  {...fieldAnimation}
+                  className="flex justify-between items-center bg-emerald-100/50 dark:bg-emerald-900/30 p-2 sm:p-3 rounded-lg"
+                >
+                  <span className="text-sm sm:text-md text-gray-700 dark:text-gray-300">Percentage:</span>
+                  <span className="text-sm sm:text-md font-bold text-emerald-600 dark:text-emerald-400">{percentage}%</span>
+                </motion.div>
               </div>
             </motion.div>
           )}
@@ -381,7 +433,7 @@ function ThankYou() {
           {responses.length === 0 ? (
             <motion.p
               {...fadeIn}
-              className="text-gray-600 dark:text-gray-400 text-center text-sm sm:text-md md:text-lg lg:text-lg w-full"
+              className="text-gray-600 dark:text-gray-300 text-center text-md sm:text-lg w-full drop-shadow"
             >
               No valid responses found for this subsection.
             </motion.p>
@@ -399,19 +451,20 @@ function ThankYou() {
                   key={response._id || index}
                   {...cardAnimation}
                   transition={{ delay: index * 0.1 }}
-                  className="bg-white dark:bg-gray-900 p-3 sm:p-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-800 w-full max-w-[280px] sm:max-w-xs"
+                  className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl p-4 sm:p-6 rounded-2xl shadow-xl border-2 border-blue-200 dark:border-gray-700 w-full max-w-xs hover:scale-105 hover:shadow-2xl transition-all duration-300"
+                  style={{ borderImage: 'linear-gradient(to right, #60a5fa, #f472b6) 1' }}
                 >
                   <motion.h3
                     {...fieldAnimation}
                     transition={{ delay: index * 0.1 + 0.2 }}
-                    className="text-md sm:text-lg md:text-xl lg:text-xl font-semibold mb-0.5 sm:mb-1 text-rose-600 dark:text-rose-400 line-clamp-2"
+                    className="text-md sm:text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-pink-500 dark:from-blue-300 dark:to-pink-400 mb-2 sm:mb-3 line-clamp-2 drop-shadow"
                   >
                     {response.survey?.question || 'Question not available'}
                   </motion.h3>
                   <motion.p
                     {...fieldAnimation}
                     transition={{ delay: index * 0.1 + 0.3 }}
-                    className="text-gray-600 dark:text-gray-400 mb-0.5 text-sm sm:text-md md:text-lg lg:text-lg"
+                    className="text-gray-600 dark:text-gray-300 mb-1 sm:mb-2 text-sm sm:text-md"
                   >
                     <strong>Category:</strong>{' '}
                     {category?.name || 'Category not available'}
@@ -419,13 +472,13 @@ function ThankYou() {
                   <motion.p
                     {...fieldAnimation}
                     transition={{ delay: index * 0.1 + 0.4 }}
-                    className="text-gray-600 dark:text-gray-400 mb-0.5 text-sm sm:text-md md:text-lg lg:text-lg"
+                    className="text-gray-600 dark:text-gray-300 mb-1 sm:mb-2 text-sm sm:text-md"
                   >
                     <strong>Your Answer:</strong>{' '}
                     <span
                       className={`${
                         isDescriptive
-                          ? 'text-gray-600 dark:text-gray-400'
+                          ? 'text-gray-600 dark:text-gray-300'
                           : isUnselected
                           ? 'text-rose-500 dark:text-rose-400'
                           : isCorrect
@@ -450,14 +503,14 @@ function ThankYou() {
                       <motion.p
                         {...fieldAnimation}
                         transition={{ delay: index * 0.1 + 0.5 }}
-                        className="text-gray-600 dark:text-gray-400 mb-0.5 text-sm sm:text-md md:text-lg lg:text-lg"
+                        className="text-gray-600 dark:text-gray-300 mb-1 sm:mb-2 text-sm sm:text-md"
                       >
                         <strong>Correct Answer:</strong>{' '}
                         <span
                           className={`${
                             isCorrect
                               ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
-                              : 'text-gray-600 dark:text-gray-400'
+                              : 'text-gray-600 dark:text-gray-300'
                           }`}
                         >
                           {response.survey?.correctOption || 'N/A'}
@@ -466,7 +519,7 @@ function ThankYou() {
                       <motion.p
                         {...fieldAnimation}
                         transition={{ delay: index * 0.1 + 0.6 }}
-                        className={`text-sm sm:text-md md:text-lg lg:text-lg ${
+                        className={`text-sm sm:text-md ${
                           isUnselected || !isCorrect
                             ? 'text-rose-500 dark:text-rose-400'
                             : 'text-emerald-600 dark:text-emerald-400'

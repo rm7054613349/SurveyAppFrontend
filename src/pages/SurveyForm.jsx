@@ -1,40 +1,46 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { flushSync } from 'react-dom';
 import { toast } from 'react-toastify';
 import { getSurveys, getSurveysBySubsection, getSections, getSubsections, submitResponses, getFileContent, getResponsesBySubsection } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { LockClosedIcon, LockOpenIcon, CheckCircleIcon } from '@heroicons/react/24/solid';
+import { LockClosedIcon, LockOpenIcon, CheckCircleIcon, DocumentIcon, ArrowLeftIcon } from '@heroicons/react/24/solid';
 
-// Animation definitions (unchanged)
+// Animation definitions
 const pageTransition = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: -20 },
-  transition: { duration: 0.5 },
+  transition: { duration: 0.3, ease: 'easeOut' }, // Reduced duration
 };
 
 const fadeIn = {
   initial: { opacity: 0 },
   animate: { opacity: 1 },
-  transition: { duration: 0.5 },
+  transition: { duration: 0.3 }, // Reduced duration
 };
 
 const popupAnimation = {
-  initial: { opacity: 0, scale: 0.7, rotateX: 20 },
+  initial: { opacity: 0, scale: 0.8, rotateX: 20 },
   animate: { opacity: 1, scale: 1, rotateX: 0 },
-  exit: { opacity: 0, scale: 0.7, rotateX: 20 },
-  transition: { duration: 0.3, type: 'spring', stiffness: 100 },
+  exit: { opacity: 0, scale: 0.8, rotateX: 20 },
+  transition: { duration: 0.3, type: 'spring', stiffness: 200 }, // Reduced duration
 };
 
 const sectionVariants = {
-  hidden: { opacity: 0, scale: 0.8 },
+  hidden: { opacity: 0, scale: 0.9, y: 30 },
   visible: {
     opacity: 1,
     scale: 1,
-    transition: { duration: 0.4, type: 'spring', stiffness: 120 },
+    y: 0,
+    transition: { duration: 0.3, type: 'spring', stiffness: 180 }, // Reduced duration
   },
-  hover: { scale: 1.05, boxShadow: '0 8px 16px rgba(0, 0, 0, 0.2)' },
+  hover: {
+    scale: 1.03,
+    shadow: '0 10px 20px rgba(0, 0, 0, 0.15)',
+    transition: { duration: 0.2 }, // Reduced duration
+  },
 };
 
 const subsectionVariants = {
@@ -42,33 +48,37 @@ const subsectionVariants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.4, type: 'spring', stiffness: 100 },
+    transition: { duration: 0.3, type: 'spring', stiffness: 170 }, // Reduced duration
   },
-  hover: { scale: 1.05, boxShadow: '0 6px 12px rgba(0, 0, 0, 0.15)' },
+  hover: {
+    scale: 1.03,
+    shadow: '0 10px 20px rgba(0, 0, 0, 0.15)',
+    transition: { duration: 0.2 }, // Reduced duration
+  },
 };
 
 const questionVariants = {
-  hidden: { opacity: 0, x: 100, scale: 0.9 },
+  hidden: { opacity: 0, x: 100, scale: 0.95 },
   visible: {
     opacity: 1,
     x: 0,
     scale: 1,
-    transition: { duration: 0.5, ease: 'easeOut', staggerChildren: 0.15 },
+    transition: { duration: 0.3, ease: 'easeOut', staggerChildren: 0.2 }, // Reduced duration
   },
-  exit: { opacity: 0, x: -100, scale: 0.9, transition: { duration: 0.5 } },
+  exit: { opacity: 0, x: -100, scale: 0.95, transition: { duration: 0.3 } }, // Reduced duration
 };
 
 const questionChildVariants = {
   hidden: { opacity: 0, y: 10 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.2 } }, // Reduced duration
 };
 
 const adminFileVariants = {
-  hidden: { opacity: 0, scale: 0.9 },
+  hidden: { opacity: 0, scale: 0.95 },
   visible: {
     opacity: 1,
     scale: 1,
-    transition: { duration: 0.4, type: 'spring', stiffness: 100 },
+    transition: { duration: 0.3, type: 'spring', stiffness: 160 }, // Reduced duration
   },
 };
 
@@ -101,12 +111,11 @@ function SurveyForm() {
     return savedTimeLeft ? parseInt(savedTimeLeft, 10) : 30 * 60;
   });
   const [showWarning, setShowWarning] = useState({});
-  const [showSubsectionPopup, setShowSubsectionPopup] = useState(false);
   const [showFileModal, setShowFileModal] = useState(false);
   const [fileContent, setFileContent] = useState(null);
   const [fileType, setFileType] = useState('');
   const [fileError, setFileError] = useState(null);
-  const [pendingSubsection, setPendingSubsection] = useState(null);
+  const [fileLoading, setFileLoading] = useState(false);
   const [completedSubsections, setCompletedSubsections] = useState(() => {
     const savedCompleted = localStorage.getItem('completedSubsections');
     return savedCompleted ? new Set(JSON.parse(savedCompleted)) : new Set();
@@ -116,9 +125,10 @@ function SurveyForm() {
   const [showSubmitConfirmPopup, setShowSubmitConfirmPopup] = useState(false);
   const [showBackConfirmPopup, setShowBackConfirmPopup] = useState(false);
   const [showMandatoryPopup, setShowMandatoryPopup] = useState(false);
-  const [showNavConfirmPopup, setShowNavConfirmPopup] = useState(false);
-  const [pendingNavPath, setPendingNavPath] = useState(null);
-  const [subsectionScores, setSubsectionScores] = useState({});
+  const [subsectionScores, setSubsectionScores] = useState(() => {
+    const savedScores = localStorage.getItem('subsectionScores');
+    return savedScores ? JSON.parse(savedScores) : {};
+  });
   const hasFetched = useRef(false);
   const isMounted = useRef(true);
   const blobUrls = useRef(new Map());
@@ -132,12 +142,14 @@ function SurveyForm() {
     localStorage.setItem('timers', JSON.stringify(timers));
     localStorage.setItem('timeLeft', timeLeft.toString());
     localStorage.setItem('completedSubsections', JSON.stringify([...completedSubsections]));
-  }, [selectedSection, currentSubsection, currentQuestionIndex, responses, timers, timeLeft, completedSubsections]);
+    localStorage.setItem('subsectionScores', JSON.stringify(subsectionScores));
+  }, [selectedSection, currentSubsection, currentQuestionIndex, responses, timers, timeLeft, completedSubsections, subsectionScores]);
 
   // Check if subsection has been attempted and fetch score
   const checkIfAttempted = async (subsectionId) => {
     try {
       const responseData = await getResponsesBySubsection(subsectionId);
+      console.log(`API Response for ${subsectionId}:`, responseData); // Debug
       let validResponses = [];
       if (Array.isArray(responseData)) {
         validResponses = responseData;
@@ -147,21 +159,23 @@ function SurveyForm() {
           : [responseData];
       }
       validResponses = validResponses.filter(res => res && res.survey && res.answer !== undefined && res.answer !== '');
+      console.log(`Valid Responses for ${subsectionId}:`, validResponses); // Debug
       if (validResponses.length > 0) {
         const nonDescriptive = validResponses.filter(res => res.survey?.questionType === 'multiple-choice');
         const gained = nonDescriptive.reduce((sum, res) => sum + (res.answer === res.survey?.correctOption ? 1 : 0), 0);
         const total = nonDescriptive.length;
         const percent = total > 0 ? (gained / total) * 100 : 0;
-        setSubsectionScores(prev => ({ ...prev, [subsectionId]: percent }));
+        console.log(`Score Calc for ${subsectionId}: Gained=${gained}, Total=${total}, Percent=${percent}`); // Debug
         return { attempted: true, score: percent };
       }
       return { attempted: false, score: 0 };
     } catch (err) {
-      console.error('Error checking responses:', err);
+      console.error(`Error checking responses for ${subsectionId}:`, err);
       return { attempted: false, score: 0 };
     }
   };
 
+  // Fetch initial data
   useEffect(() => {
     isMounted.current = true;
     if (hasFetched.current) return;
@@ -196,8 +210,13 @@ function SurveyForm() {
           setSections(Array.isArray(sectionData) ? sectionData : []);
           setSubsections(normalizedSubsections);
 
-          // Fetch scores for all subsections to determine lock status
-          const scorePromises = normalizedSubsections.map(sub => checkIfAttempted(sub._id));
+          const scorePromises = normalizedSubsections.map(async (sub) => {
+            const { score } = await checkIfAttempted(sub._id);
+            setSubsectionScores(prev => ({
+              ...prev,
+              [sub._id]: score
+            }));
+          });
           await Promise.all(scorePromises);
 
           if (!subsectionId && !nextSubsectionId) {
@@ -206,11 +225,6 @@ function SurveyForm() {
             setResponses({});
             setTimers({});
             setShowWarning({});
-            localStorage.removeItem('currentSubsection');
-            localStorage.removeItem('currentQuestionIndex');
-            localStorage.removeItem('responses');
-            localStorage.removeItem('timers');
-            localStorage.removeItem('completedSubsections');
           }
 
           if (subsectionId) {
@@ -224,16 +238,27 @@ function SurveyForm() {
                 setSelectedSection(subsection.sectionId._id);
               }
               setCurrentSubsection(subsectionId);
+              if (isFileUploadSubsection(subsectionId)) {
+                const fileUrl = getAdminFileUrl(subsectionId);
+                if (fileUrl) {
+                  setShowFileModal(false);
+                }
+              }
             }
-          } else if (nextSubsectionId && percentage >= 70) {
+          } else if (nextSubsectionId) {
             const { attempted } = await checkIfAttempted(nextSubsectionId);
             if (attempted && !isFileUploadSubsection(nextSubsectionId)) {
               toast.info('You have already responded to this test.');
-              setPendingSubsection(nextSubsectionId);
+              setCurrentSubsection(nextSubsectionId);
               setShowScorePopup(true);
             } else {
-              setPendingSubsection(nextSubsectionId);
-              setShowSubsectionPopup(true);
+              setCurrentSubsection(nextSubsectionId);
+              setCurrentQuestionIndex(0);
+              setResponses({});
+              if (!isFileUploadSubsection(nextSubsectionId) && !isDescriptiveSubsection(nextSubsectionId)) {
+                setTimers(prev => ({ ...prev, [nextSubsectionId]: 30 * 60 }));
+                setShowWarning(prev => ({ ...prev, [nextSubsectionId]: false }));
+              }
             }
           }
 
@@ -257,7 +282,28 @@ function SurveyForm() {
       blobUrls.current.forEach(url => URL.revokeObjectURL(url));
       blobUrls.current.clear();
     };
-  }, [subsectionId, nextSubsectionId, percentage]);
+  }, [subsectionId, nextSubsectionId]);
+
+  // Refresh scores when selectedSection changes
+  useEffect(() => {
+    const refreshScores = async () => {
+      const filteredSubsections = Array.isArray(subsections)
+        ? subsections.filter(sub => sub.sectionId?._id === selectedSection)
+        : [];
+      const scorePromises = filteredSubsections.map(async (sub) => {
+        const { score } = await checkIfAttempted(sub._id);
+        setSubsectionScores(prev => ({
+          ...prev,
+          [sub._id]: score
+        }));
+      });
+      await Promise.all(scorePromises);
+      console.log('Refreshed Subsection Scores:', subsectionScores); // Debug
+    };
+    if (selectedSection && subsections.length > 0) {
+      refreshScores();
+    }
+  }, [selectedSection, subsections]);
 
   // Clear cached file content on section change
   useEffect(() => {
@@ -279,6 +325,7 @@ function SurveyForm() {
 
       const attemptFetch = async (attempt) => {
         try {
+          setFileLoading(true);
           const response = await getFileContent(fileUrl);
           const contentType = response.headers?.['content-type'] || 'application/octet-stream';
           let content, type;
@@ -287,23 +334,28 @@ function SurveyForm() {
             content = await response.data.text();
             type = 'text';
           } else if (contentType.includes('image')) {
-            content = URL.createObjectURL(await response.data);
+            const blob = await response.data;
+            content = URL.createObjectURL(blob);
             type = 'image';
             blobUrls.current.set(fileUrl, content);
           } else if (contentType.includes('pdf')) {
-            content = URL.createObjectURL(await response.data);
+            const blob = await response.data;
+            content = URL.createObjectURL(blob);
             type = 'pdf';
             blobUrls.current.set(fileUrl, content);
           } else if (contentType.includes('video')) {
-            content = URL.createObjectURL(await response.data);
+            const blob = await response.data;
+            content = URL.createObjectURL(blob);
             type = 'video';
             blobUrls.current.set(fileUrl, content);
           } else if (contentType.includes('audio')) {
-            content = URL.createObjectURL(await response.data);
+            const blob = await response.data;
+            content = URL.createObjectURL(blob);
             type = 'audio';
             blobUrls.current.set(fileUrl, content);
           } else {
-            content = URL.createObjectURL(await response.data);
+            const blob = await response.data;
+            content = URL.createObjectURL(blob);
             type = 'download';
             blobUrls.current.set(fileUrl, content);
           }
@@ -311,6 +363,8 @@ function SurveyForm() {
           if (isMounted.current) {
             setCachedFileContent(prev => ({ ...prev, [fileUrl]: { content, type } }));
             setFileType(type);
+            setFileContent(content);
+            setFileError(null);
           }
         } catch (error) {
           if (attempt <= retries) {
@@ -322,6 +376,11 @@ function SurveyForm() {
               ...prev,
               [fileUrl]: { error: `Failed to pre-fetch file: ${error.message}` },
             }));
+            setFileError(`Failed to pre-fetch file: ${error.message}`);
+          }
+        } finally {
+          if (isMounted.current) {
+            setFileLoading(false);
           }
         }
       };
@@ -330,7 +389,7 @@ function SurveyForm() {
     fetchFileContent();
   }, [currentSubsection]);
 
-  // Timer for non-file-upload subsections
+  // Timer for multiple-choice subsections
   useEffect(() => {
     if (!currentSubsection || isFileUploadSubsection(currentSubsection) || isDescriptiveSubsection(currentSubsection)) return;
 
@@ -363,6 +422,7 @@ function SurveyForm() {
     return () => clearInterval(timerId);
   }, [currentSubsection, subsectionId]);
 
+  // Subsection type checks
   const isFileUploadSubsection = subsectionId => {
     return surveys.some(survey => survey.subsectionId?._id === subsectionId && survey.questionType === 'file-upload');
   };
@@ -377,13 +437,6 @@ function SurveyForm() {
 
   const isOptionalSubsection = subsectionId => {
     return surveys.some(survey => survey.subsectionId?._id === subsectionId && survey.questionType === 'optional');
-  };
-
-  const hasAdminFile = subsectionId => {
-    const surveyWithFile = surveys.find(
-      survey => survey.subsectionId?._id === subsectionId && survey.questionType === 'file-upload' && survey.fileUrl
-    );
-    return surveyWithFile?.fileUrl && typeof surveyWithFile.fileUrl === 'string';
   };
 
   const getAdminFileUrl = subsectionId => {
@@ -410,107 +463,64 @@ function SurveyForm() {
     ? surveys.filter(survey => survey.sectionId?._id === selectedSection && survey.subsectionId?._id === currentSubsection)
     : [];
 
+  // Subsection locking logic
   const isSubsectionLocked = (subsectionId, index) => {
-    // Descriptive, file-upload, and optional subsections are always unlocked
     if (
       isDescriptiveSubsection(subsectionId) ||
       isFileUploadSubsection(subsectionId) ||
       isOptionalSubsection(subsectionId)
     ) {
-      return false;
+      return false; // Always unlocked for descriptive, file-upload, optional
     }
 
-    // First subsection is always unlocked
-    if (index === 0) return false;
-
-    // Check if the first subsection in the section has a score >= 70%
-    const firstSubsectionId = filteredSubsections[0]?._id;
-    const firstSubsectionScore = subsectionScores[firstSubsectionId] || 0;
-    const isFirstSubsectionCompleted = completedSubsections.has(firstSubsectionId);
-
-    if (isFirstSubsectionCompleted && firstSubsectionScore >= 70) {
-      return false;
+    if (index === 0) {
+      console.log(`Level 1 Subsection ${subsectionId}: Always Unlocked`); // Debug
+      return false; // Level 1 always unlocked
     }
 
-    // For multiple-choice subsections, check if previous subsection is completed and has score >= 70
     const prevSubsectionId = filteredSubsections[index - 1]?._id;
-    // Previous subsection is unlocked if it's descriptive, file-upload, or optional
-    if (
-      isDescriptiveSubsection(prevSubsectionId) ||
-      isFileUploadSubsection(prevSubsectionId) ||
-      isOptionalSubsection(prevSubsectionId)
-    ) {
-      return false;
-    }
-
     const prevScore = subsectionScores[prevSubsectionId] || 0;
-    const isPrevCompleted = completedSubsections.has(prevSubsectionId);
-    return !isPrevCompleted || prevScore < 70;
+    console.log(`Checking lock for ${subsectionId}: PrevID=${prevSubsectionId}, Score=${prevScore}`); // Debug
+    return prevScore < 70; // Lock if previous score < 70%
   };
 
-  const handleSectionClick = (sectionId) => {
-    if (currentSubsection && !isFileUploadSubsection(currentSubsection) && !isDescriptiveSubsection(currentSubsection)) {
-      setPendingNavPath(() => () => {
-        setSelectedSection(sectionId);
-        setCurrentSubsection('');
-        setCurrentQuestionIndex(0);
-        setTimers({});
-        setShowWarning({});
-        setShowSubsectionPopup(false);
-        setShowFileModal(false);
-        setFileContent(null);
-        setFileError(null);
-      });
-      setShowNavConfirmPopup(true);
-    } else {
+  // Handle section click with synchronous state update
+  const handleSectionClick = useCallback((sectionId, event) => {
+    event.stopPropagation(); // Prevent event bubbling
+    console.log(`Section Clicked: ID=${sectionId}, Current Selected=${selectedSection}`);
+    
+    // Force synchronous state update
+    flushSync(() => {
       setSelectedSection(sectionId);
       setCurrentSubsection('');
-      setCurrentQuestionIndex(0);
-      setTimers({});
-      setShowWarning({});
-      setShowSubsectionPopup(false);
-      setShowFileModal(false);
-      setFileContent(null);
-      setFileError(null);
-    }
-  };
+      localStorage.setItem('selectedSection', sectionId);
+      localStorage.setItem('currentSubsection', '');
+    });
+    
+    console.log(`Navigating to /subsections/${sectionId}`);
+    navigate(`/subsections/${sectionId}`, { replace: true });
+  }, [navigate, selectedSection]);
 
+  // Handle subsection click
   const handleSubsectionClick = async (subsectionId, index) => {
     if (isSubsectionLocked(subsectionId, index)) {
-      toast.info('Please complete the previous subsection or achieve 70% or higher in the first subsection.');
+      toast.info('Please achieve 70% or higher in the previous subsection to unlock this.');
       return;
     }
     const { attempted } = await checkIfAttempted(subsectionId);
     if (attempted && !isFileUploadSubsection(subsectionId)) {
       toast.info('You have already responded to this test.');
-      setPendingSubsection(subsectionId);
+      setCurrentSubsection(subsectionId);
       setShowScorePopup(true);
     } else {
-      if (currentSubsection && !isFileUploadSubsection(currentSubsection) && !isDescriptiveSubsection(currentSubsection)) {
-        setPendingNavPath(() => () => {
-          setPendingSubsection(subsectionId);
-          setShowSubsectionPopup(true);
-        });
-        setShowNavConfirmPopup(true);
-      } else {
-        setPendingSubsection(subsectionId);
-        setShowSubsectionPopup(true);
-      }
-    }
-  };
-
-  const handleSubsectionConfirm = () => {
-    if (pendingSubsection) {
-      setCurrentSubsection(pendingSubsection);
+      setCurrentSubsection(subsectionId);
       setCurrentQuestionIndex(0);
       setResponses({});
-      if (!isFileUploadSubsection(pendingSubsection) && !isDescriptiveSubsection(pendingSubsection)) {
-        setTimers(prev => ({ ...prev, [pendingSubsection]: 30 * 60 }));
-        setShowWarning(prev => ({ ...prev, [pendingSubsection]: false }));
+      setShowScorePopup(false);
+      if (!isFileUploadSubsection(subsectionId) && !isDescriptiveSubsection(subsectionId)) {
+        setTimers(prev => ({ ...prev, [subsectionId]: 30 * 60 }));
+        setShowWarning(prev => ({ ...prev, [subsectionId]: false }));
       }
-      setCompletedSubsections(prev => new Set(prev).add(pendingSubsection));
-      setShowSubsectionPopup(false);
-      setPendingSubsection(null);
     }
   };
 
@@ -518,8 +528,9 @@ function SurveyForm() {
     setResponses(prev => ({ ...prev, [surveyId]: { answer: value || '' } }));
   };
 
+  // Handle file opening
   const handleOpenFile = async (fileUrl) => {
-    if (typeof fileUrl !== 'string' || !fileUrl) {
+    if (!fileUrl || typeof fileUrl !== 'string') {
       toast.error('Invalid file URL');
       setFileError('Invalid file URL');
       setShowFileModal(true);
@@ -536,6 +547,7 @@ function SurveyForm() {
 
     const normalizedFileUrl = fileUrl.replace(/^Uploads[\\\/]+/, '').replace(/^[\\\/]+/, '').replace(/[\\\/]+$/, '').split(/[\\\/]/).pop();
     try {
+      setFileLoading(true);
       setFileError(null);
       setFileContent(null);
       setFileType('');
@@ -547,40 +559,55 @@ function SurveyForm() {
         content = await response.data.text();
         type = 'text';
       } else if (contentType.includes('image')) {
-        content = URL.createObjectURL(await response.data);
+        const blob = await response.data;
+        content = URL.createObjectURL(blob);
         type = 'image';
         blobUrls.current.set(fileUrl, content);
       } else if (contentType.includes('pdf')) {
-        content = URL.createObjectURL(await response.data);
+        const blob = await response.data;
+        content = URL.createObjectURL(blob);
         type = 'pdf';
         blobUrls.current.set(fileUrl, content);
       } else if (contentType.includes('video')) {
-        content = URL.createObjectURL(await response.data);
+        const blob = await response.data;
+        content = URL.createObjectURL(blob);
         type = 'video';
         blobUrls.current.set(fileUrl, content);
       } else if (contentType.includes('audio')) {
-        content = URL.createObjectURL(await response.data);
+        const blob = await response.data;
+        content = URL.createObjectURL(blob);
         type = 'audio';
         blobUrls.current.set(fileUrl, content);
       } else {
-        content = URL.createObjectURL(await response.data);
+        const blob = await response.data;
+        content = URL.createObjectURL(blob);
         type = 'download';
         blobUrls.current.set(fileUrl, content);
       }
 
-      setFileContent(content);
-      setCachedFileContent(prev => ({ ...prev, [fileUrl]: { content, type } }));
-      setFileType(type);
-      setShowFileModal(true);
+      if (isMounted.current) {
+        setFileContent(content);
+        setCachedFileContent(prev => ({ ...prev, [fileUrl]: { content, type } }));
+        setFileType(type);
+        setFileError(null);
+        setShowFileModal(true);
+      }
     } catch (error) {
       const errorMessage = error.response?.status === 404 ? 'File not found on server' : `Failed to load file: ${error.message}`;
-      setFileError(errorMessage);
-      setCachedFileContent(prev => ({ ...prev, [fileUrl]: { error: errorMessage } }));
-      toast.error(errorMessage);
-      setShowFileModal(true);
+      if (isMounted.current) {
+        setFileError(errorMessage);
+        setCachedFileContent(prev => ({ ...prev, [fileUrl]: { error: errorMessage } }));
+        toast.error(errorMessage);
+        setShowFileModal(true);
+      }
+    } finally {
+      if (isMounted.current) {
+        setFileLoading(false);
+      }
     }
   };
 
+  // Handle submission
   const handleSubmit = async (subsectionId = null) => {
     if (submitting) return;
 
@@ -626,17 +653,28 @@ function SurveyForm() {
 
       await submitResponses(targetSubsectionId, { responses: responseArray });
       toast.success('Subsection submitted successfully!');
-      
-      setCompletedSubsections(prev => new Set(prev).add(targetSubsectionId));
 
-      // Reset states before navigation
+      setCompletedSubsections(prev => {
+        const newSet = new Set(prev);
+        newSet.add(targetSubsectionId);
+        console.log(`Completed Subsections Updated:`, [...newSet]); // Debug
+        localStorage.setItem('completedSubsections', JSON.stringify([...newSet]));
+        return newSet;
+      });
+
+      const { score } = await checkIfAttempted(targetSubsectionId);
+      setSubsectionScores(prev => {
+        const newScores = { ...prev, [targetSubsectionId]: score };
+        console.log(`Post-Submission Subsection Scores:`, newScores); // Debug
+        localStorage.setItem('subsectionScores', JSON.stringify(newScores));
+        return newScores;
+      });
+
       setResponses({});
       setTimers(prev => ({ ...prev, [targetSubsectionId]: 0 }));
       setCurrentQuestionIndex(0);
-      setCurrentSubsection('');
       setSubmitting(false);
-      
-      navigate(`/thank-you/${targetSubsectionId}`, { state: { totalMarks } });
+      setShowScorePopup(true);
     } catch (err) {
       console.error('Submission error:', err);
       toast.error('Failed to submit. Please try again.');
@@ -656,12 +694,14 @@ function SurveyForm() {
     }
   };
 
+  // Handle back to subsections
   const handleBackToSubsections = () => {
-    if (isFileUploadSubsection(currentSubsection) || isDescriptiveSubsection(currentSubsection)) {
+    if (isFileUploadSubsection(currentSubsection) || isOptionalSubsection(currentSubsection)) {
       setCurrentSubsection('');
       setCurrentQuestionIndex(0);
       setResponses({});
       setTimers(prev => ({ ...prev, [currentSubsection]: 30 * 60 }));
+      navigate(`/subsections/${selectedSection}`);
     } else {
       setShowBackConfirmPopup(true);
     }
@@ -673,48 +713,20 @@ function SurveyForm() {
     setCurrentQuestionIndex(0);
     setResponses({});
     setTimers(prev => ({ ...prev, [currentSubsection]: 30 * 60 }));
+    navigate(`/subsections/${selectedSection}`);
   };
 
-  const handleNavClick = (path) => {
-    if (currentSubsection && !isFileUploadSubsection(currentSubsection) && !isDescriptiveSubsection(currentSubsection)) {
-      setPendingNavPath(() => () => navigate(path));
-      setShowNavConfirmPopup(true);
-    } else {
-      navigate(path);
-    }
-  };
-
-  const handleConfirmNav = () => {
-    setShowNavConfirmPopup(false);
-    if (pendingNavPath) {
-      pendingNavPath();
-      setCurrentSubsection('');
-      setCurrentQuestionIndex(0);
-      setResponses({});
-      setTimers(prev => ({ ...prev, [currentSubsection]: 30 * 60 }));
-      setPendingNavPath(null);
-    }
-  };
-
+  // Prevent accidental navigation
   useEffect(() => {
     const handleBeforeUnload = (event) => {
-      if (currentSubsection && !isFileUploadSubsection(currentSubsection) && !isDescriptiveSubsection(currentSubsection)) {
+      if (currentSubsection && (isMultipleChoiceSubsection(currentSubsection) || isDescriptiveSubsection(currentSubsection)) && Object.keys(responses).length > 0) {
         event.preventDefault();
-        event.returnValue = '';
+        event.returnValue = 'Are you sure you want to leave? Your progress will not be saved.';
       }
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [currentSubsection]);
-
-  const wrappedNavigate = (path) => {
-    if (currentSubsection && !isFileUploadSubsection(currentSubsection) && !isDescriptiveSubsection(currentSubsection)) {
-      setPendingNavPath(() => () => navigate(path));
-      setShowNavConfirmPopup(true);
-    } else {
-      navigate(path);
-    }
-  };
+  }, [currentSubsection, responses]);
 
   const formatTime = seconds => {
     const minutes = Math.floor(seconds / 60);
@@ -724,20 +736,29 @@ function SurveyForm() {
 
   if (loading) {
     return (
-      <motion.div {...fadeIn} className="flex justify-center items-center h-screen bg-gray-100 dark:bg-gray-900">
+      <motion.div {...fadeIn} className="flex justify-center items-center h-screen bg-blue-50/80 dark:bg-gray-900">
         <LoadingSpinner />
       </motion.div>
     );
   }
 
   return (
-    <motion.div {...pageTransition} className="container mx-auto p-6 max-w-5xl bg-gray-50 dark:bg-gray-900 min-h-screen">
-      {!subsectionId && !currentSubsection && (
-        <div className="mb-12">
-          <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6 text-center">Select a Section</h2>
+    <motion.div
+      {...pageTransition}
+      className="container mx-auto p-8 max-w-7xl bg-blue-50/80 dark:bg-gray-900 min-h-fit font-sans relative overflow-hidden rounded-[3rem]"
+    >
+      {/* Animated Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-300 to-pink-300 dark:from-blue-800 dark:to-purple-800 opacity-20 animate-gradient-bg" />
+
+      {/* Sections View */}
+      {!subsectionId && !currentSubsection && !selectedSection && (
+        <div className="mb-16 flex flex-col items-center relative z-10">
+          <h2 className="text-5xl font-extrabold text-gray-800 dark:text-gray-100 mb-12 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-pink-500">
+            Select a Section
+          </h2>
           <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-            variants={{ visible: { transition: { staggerChildren: 0.15 } } }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 w-full h-auto py-10"
+            variants={{ visible: { transition: { staggerChildren: 0.2 } } }}
             initial="hidden"
             animate="visible"
           >
@@ -747,15 +768,18 @@ function SurveyForm() {
                   key={section._id}
                   variants={sectionVariants}
                   whileHover="hover"
-                  className={`p-6 rounded-xl shadow-lg cursor-pointer transition-all duration-300 ${
+                  className={`p-8 rounded-[2.5rem] shadow-xl cursor-pointer transition-all duration-300 bg-white dark:bg-gray-800 bg-opacity-60 backdrop-blur-xl border-2 pointer-events-auto ${
                     selectedSection === section._id
-                      ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white'
-                      : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      ? 'border-transparent bg-gradient-to-br from-blue-400 to-pink-500 text-white'
+                      : 'border-blue-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-50/80 dark:hover:bg-gray-700/80 hover:shadow-lg'
                   }`}
-                  onClick={() => handleSectionClick(section._id)}
+                  style={{
+                    borderImage: selectedSection === section._id ? 'none' : 'linear работьgradient(to right, #60a5fa, #f472b6) 1',
+                  }}
+                  onClick={(e) => handleSectionClick(section._id, e)}
                 >
-                  <h3 className="text-xl font-semibold text-center">{section.name}</h3>
-                  <p className="text-sm text-center mt-2 opacity-80">Click to explore subsections</p>
+                  <h3 className="text-2xl font-extrabold text-center">{section.name || 'Untitled Section'}</h3>
+                  <p className="text-sm text-center mt-4 opacity-80">Explore available subsections</p>
                 </motion.div>
               ))
             ) : (
@@ -767,16 +791,34 @@ function SurveyForm() {
         </div>
       )}
 
+      {/* Subsections View */}
       {!subsectionId && selectedSection && !currentSubsection && (
         <AnimatePresence>
-          <div className="mb-12">
-            <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6 text-center">Subsections</h2>
+          <div className="mb-16 flex flex-col items-center relative z-10">
+            <button
+              onClick={() => {
+                console.log(`Back Button Clicked: Clearing selectedSection=${selectedSection}`);
+                setSelectedSection('');
+                setCurrentSubsection('');
+                localStorage.setItem('selectedSection', '');
+                localStorage.setItem('currentSubsection', '');
+                console.log('Navigating to /employee/survey');
+                navigate('/employee/survey', { replace: true });
+              }}
+              className="absolute top-4 left-4 p-3 bg-blue-400 dark:bg-blue-500 text-white rounded-full hover:bg-blue-500 dark:hover:bg-blue-600 hover:scale-110 hover:shadow-lg transition-all ring-2 ring-blue-200 dark:ring-blue-700 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-600 ring-offset-2 pointer-events-auto"
+              aria-label="Back to Sections"
+            >
+              <ArrowLeftIcon className="h-6 w-6" />
+            </button>
+            <h2 className="text-5xl font-extrabold text-gray-800 dark:text-gray-100 mt-16 mb-12 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-pink-500">
+              Subsections
+            </h2>
             <motion.div
               initial="hidden"
               animate="visible"
               exit="hidden"
-              variants={{ visible: { transition: { staggerChildren: 0.15 } } }}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+              variants={{ visible: { transition: { staggerChildren: 0.2 } } }}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 w-full h-auto py-10"
             >
               {filteredSubsections.length ? (
                 filteredSubsections.map((subsection, index) => {
@@ -794,13 +836,16 @@ function SurveyForm() {
                       key={subsection._id}
                       variants={subsectionVariants}
                       whileHover={isLocked ? {} : 'hover'}
-                      className={`p-6 rounded-xl shadow-md flex flex-col items-center justify-between relative transition-all duration-300 ${
+                      className={`p-6 rounded-[2.5rem] shadow-xl flex flex-col items-center justify-between relative transition-all duration-300 bg-white dark:bg-gray-800 bg-opacity-60 backdrop-blur-xl border-2 pointer-events-auto ${
                         isLocked
-                          ? 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                          ? 'border-rose-200 dark:border-rose-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
                           : isCompleted
-                          ? 'bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300'
-                          : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer'
+                          ? 'border-emerald-300 dark:border-emerald-600 bg-emerald-50/80 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300'
+                          : 'border-blue-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-50/80 dark:hover:bg-gray-700/80 hover:shadow-lg'
                       }`}
+                      style={{
+                        borderImage: isLocked || isCompleted ? 'none' : 'linear-gradient(to right, #60a5fa, #f472b6) 1',
+                      }}
                       onClick={() => !isLocked && handleSubsectionClick(subsection._id, index)}
                     >
                       <div className="flex items-center justify-center mb-4">
@@ -813,7 +858,7 @@ function SurveyForm() {
                         )}
                       </div>
                       <div className="flex items-center gap-2">
-                        <h4 className="text-lg font-medium text-center">{subsection.name}</h4>
+                        <h4 className="text-lg font-extrabold text-center">{subsection.name || 'Untitled Subsection'}</h4>
                         {isMultipleChoice && isCompleted && (
                           <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
                             ({score.toFixed(2)}%)
@@ -821,26 +866,13 @@ function SurveyForm() {
                         )}
                       </div>
                       {(isFileUpload || isDescriptive || isOptional) && (
-                        <span className="text-sm text-amber-600 dark:text-amber-400 mt-2">
+                        <span className="text-sm text-blue-400 dark:text-blue-300 mt-2 font-medium">
                           {isFileUpload ? 'File Upload' : isDescriptive ? 'Descriptive' : 'Optional'}
                         </span>
                       )}
                       {isFileUpload && fileUrl && (
                         <span className="text-sm text-emerald-600 dark:text-emerald-400 flex items-center gap-2 mt-2">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                            />
-                          </svg>
+                          <DocumentIcon className="h-5 w-5" />
                           File Available
                         </span>
                       )}
@@ -857,8 +889,13 @@ function SurveyForm() {
         </AnimatePresence>
       )}
 
+      {/* Subsection Questions View */}
       {currentSubsection && (
-        <motion.div {...fadeIn} className="space-y-8 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+        <motion.div
+          {...fadeIn}
+          className="space-y-8 bg-white dark:bg-gray-800 bg-opacity-60 backdrop-blur-xl p-10 rounded-[3rem] shadow-xl border-2 border-blue-200 dark:border-gray-700 relative z-10"
+          style={{ borderImage: 'linear-gradient(to right, #60a5fa, #f472b6) 1' }}
+        >
           {isFileUploadSubsection(currentSubsection) && (() => {
             const fileUrl = getAdminFileUrl(currentSubsection);
             const question = getAdminFileQuestion(currentSubsection);
@@ -867,12 +904,12 @@ function SurveyForm() {
                 variants={adminFileVariants}
                 initial="hidden"
                 animate="visible"
-                className="p-6 rounded-lg bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600"
+                className="p-6 rounded-2xl bg-gray-50/80 dark:bg-gray-700/50 border border-blue-200 dark:border-gray-600"
               >
-                <h4 className="text-xl font-semibold text-rose-600 dark:text-rose-400 mb-4">{question}</h4>
+                <h4 className="text-xl font-extrabold text-blue-400 dark:text-blue-300 mb-4">{question}</h4>
                 <button
                   onClick={() => handleOpenFile(fileUrl)}
-                  className="px-4 py-2 bg-rose-600 dark:bg-rose-500 text-white rounded-lg hover:bg-rose-700 dark:hover:bg-rose-600 transition-colors"
+                  className="px-6 py-2 bg-blue-400 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-500 dark:hover:bg-blue-600 hover:scale-110 hover:shadow-lg transition-all font-medium ring-2 ring-blue-200 dark:ring-blue-700 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-600 ring-offset-2 pointer-events-auto"
                 >
                   View File
                 </button>
@@ -893,7 +930,7 @@ function SurveyForm() {
             <>
               {filteredSurveys.length > 0 && !isDescriptiveSubsection(currentSubsection) && !isOptionalSubsection(currentSubsection) && (
                 <motion.div className="text-center">
-                  <h2 className="text-2xl font-bold text-rose-600 dark:text-rose-400">
+                  <h2 className="text-2xl font-extrabold text-blue-400 dark:text-blue-300">
                     Time Left: {formatTime(subsectionId ? timeLeft : timers[currentSubsection] || 30 * 60)}
                   </h2>
                 </motion.div>
@@ -902,31 +939,31 @@ function SurveyForm() {
               {filteredSurveys.length > 0 ? (
                 <AnimatePresence mode="wait">
                   <motion.div
-                    key={filteredSurveys[currentQuestionIndex]._id}
+                    key={filteredSurveys[currentQuestionIndex]?._id || 'no-question'}
                     variants={questionVariants}
                     initial="hidden"
                     animate="visible"
                     exit="exit"
-                    className="p-6 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700"
+                    className="p-6 rounded-2xl bg-white dark:bg-gray-900 bg-opacity-60 backdrop-blur-xl border border-blue-200 dark:border-gray-700"
                   >
-                    {filteredSurveys[currentQuestionIndex].questionType !== 'file-upload' ? (
+                    {filteredSurveys[currentQuestionIndex]?.questionType !== 'file-upload' ? (
                       <>
                         <motion.h4
                           variants={questionChildVariants}
-                          className="text-xl font-semibold text-rose-600 dark:text-rose-400 mb-4"
+                          className="text-xl font-extrabold text-blue-400 dark:text-blue-300 mb-4"
                         >
-                          {filteredSurveys[currentQuestionIndex].question || 'No question'}
+                          {filteredSurveys[currentQuestionIndex]?.question || 'No question'}
                         </motion.h4>
                         <motion.p
                           variants={questionChildVariants}
                           className="text-gray-600 dark:text-gray-400 mb-4"
                         >
-                          Category: {filteredSurveys[currentQuestionIndex].categoryId?.name || 'Uncategorized'} | Type:{' '}
-                          {(filteredSurveys[currentQuestionIndex].questionType || 'unknown').replace('-', ' ').toUpperCase()} | Max Score: {filteredSurveys[currentQuestionIndex].maxScore || 'N/A'}
+                          Category: {filteredSurveys[currentQuestionIndex]?.categoryId?.name || 'Uncategorized'} | Type:{' '}
+                          {(filteredSurveys[currentQuestionIndex]?.questionType || 'unknown').replace('-', ' ').toUpperCase()} | Max Score: {filteredSurveys[currentQuestionIndex]?.maxScore || 'N/A'}
                         </motion.p>
-                        {filteredSurveys[currentQuestionIndex].questionType === 'multiple-choice' && (
-                          <motion.div variants={questionChildVariants} className="space-y-3">
-                            {(filteredSurveys[currentQuestionIndex].options || []).map((option, optIndex) => (
+                        {filteredSurveys[currentQuestionIndex]?.questionType === 'multiple-choice' && (
+                          <motion.div variants={questionChildVariants} className="space-y-4">
+                            {(filteredSurveys[currentQuestionIndex]?.options || []).map((option, optIndex) => (
                               <label
                                 key={optIndex}
                                 className="flex items-center space-x-3 text-gray-700 dark:text-gray-300"
@@ -937,26 +974,26 @@ function SurveyForm() {
                                   value={option}
                                   checked={responses[filteredSurveys[currentQuestionIndex]._id]?.answer === option}
                                   onChange={() => handleResponseChange(filteredSurveys[currentQuestionIndex]._id, option)}
-                                  className="h-5 w-5 text-emerald-600 focus:ring-emerald-600"
+                                  className="h-5 w-5 text-blue-400 focus:ring-blue-400 ring-2 ring-blue-200 dark:ring-blue-700"
                                 />
                                 <span>{option || 'N/A'}</span>
                               </label>
                             ))}
                           </motion.div>
                         )}
-                        {(filteredSurveys[currentQuestionIndex].questionType === 'descriptive' || filteredSurveys[currentQuestionIndex].questionType === 'optional') && (
+                        {(filteredSurveys[currentQuestionIndex]?.questionType === 'descriptive' || filteredSurveys[currentQuestionIndex]?.questionType === 'optional') && (
                           <motion.div variants={questionChildVariants} className="relative">
                             <textarea
                               value={responses[filteredSurveys[currentQuestionIndex]._id]?.answer || ''}
                               onChange={e => handleResponseChange(filteredSurveys[currentQuestionIndex]._id, e.target.value)}
-                              className="w-full p-3 border rounded-lg dark:bg-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-emerald-600 border-gray-300 dark:border-gray-600"
-                              rows="5"
+                              className="w-full p-4 border rounded-lg dark:bg-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-blue-400 border-blue-200 dark:border-gray-600 ring-2 ring-blue-200 dark:ring-blue-700"
+                              rows="6"
                               placeholder="Enter your answer"
                             />
                             {responses[filteredSurveys[currentQuestionIndex]._id]?.answer && (
                               <button
                                 onClick={() => handleResponseChange(filteredSurveys[currentQuestionIndex]._id, '')}
-                                className="absolute top-3 right-3 text-gray-500 dark:text-gray-400 hover:text-rose-600 dark:hover:text-rose-400"
+                                className="absolute top-3 right-3 text-gray-500 dark:text-gray-400 hover:text-rose-500 dark:hover:text-rose-400"
                                 title="Clear content"
                               >
                                 <svg
@@ -1000,14 +1037,14 @@ function SurveyForm() {
               )}
 
               {filteredSurveys.length > 0 && (
-                <motion.div variants={questionChildVariants} className="flex justify-between">
+                <motion.div variants={questionChildVariants} className="flex justify-between gap-6">
                   <button
                     onClick={handlePreviousQuestion}
                     disabled={currentQuestionIndex === 0}
-                    className={`px-4 py-2 rounded-lg ${
+                    className={`px-6 py-2 rounded-lg font-medium transition-all pointer-events-auto ${
                       currentQuestionIndex === 0
                         ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                        : 'bg-rose-600 dark:bg-rose-500 text-white hover:bg-rose-700 dark:hover:bg-rose-600'
+                        : 'bg-blue-400 dark:bg-blue-500 text-white hover:bg-blue-500 dark:hover:bg-blue-600 hover:scale-110 hover:shadow-lg ring-2 ring-blue-200 dark:ring-blue-700 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-600 ring-offset-2'
                     }`}
                   >
                     Previous
@@ -1015,10 +1052,10 @@ function SurveyForm() {
                   <button
                     onClick={handleNextQuestion}
                     disabled={currentQuestionIndex === filteredSurveys.length - 1}
-                    className={`px-4 py-2 rounded-lg ${
+                    className={`px-6 py-2 rounded-lg font-medium transition-all pointer-events-auto ${
                       currentQuestionIndex === filteredSurveys.length - 1
                         ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                        : 'bg-rose-600 dark:bg-rose-500 text-white hover:bg-rose-700 dark:hover:bg-rose-600'
+                        : 'bg-blue-400 dark:bg-blue-500 text-white hover:bg-blue-500 dark:hover:bg-blue-600 hover:scale-110 hover:shadow-lg ring-2 ring-blue-200 dark:ring-blue-700 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-600 ring-offset-2'
                     }`}
                   >
                     Next
@@ -1027,21 +1064,22 @@ function SurveyForm() {
               )}
             </>
           )}
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-6">
             <button
               onClick={handleBackToSubsections}
-              className="px-4 py-2 bg-gray-500 dark:bg-gray-600 text-white rounded-lg hover:bg-gray-600 dark:hover:bg-gray-700"
+              className="p-3 bg-blue-400 dark:bg-blue-500 text-white rounded-full hover:bg-blue-500 dark:hover:bg-blue-600 hover:scale-110 hover:shadow-lg transition-all ring-2 ring-blue-200 dark:ring-blue-700 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-600 ring-offset-2 pointer-events-auto"
+              aria-label="Back to Subsections"
             >
-              Back to Subsections
+              <ArrowLeftIcon className="h-6 w-6" />
             </button>
             {!isFileUploadSubsection(currentSubsection) && filteredSurveys.some(survey => survey.questionType !== 'file-upload') && (
               <button
                 onClick={() => handleSubmit(currentSubsection)}
                 disabled={submitting}
-                className={`px-4 py-2 rounded-lg ${
+                className={`px-6 py-2 rounded-lg font-medium transition-all pointer-events-auto ${
                   submitting
                     ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                    : 'bg-rose-600 dark:bg-rose-500 text-white hover:bg-rose-700 dark:hover:bg-rose-600'
+                    : 'bg-blue-400 dark:bg-blue-500 text-white hover:bg-blue-500 dark:hover:bg-blue-600 hover:scale-110 hover:shadow-lg ring-2 ring-blue-200 dark:ring-blue-700 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-600 ring-offset-2'
                 }`}
               >
                 {submitting ? 'Submitting...' : 'Submit Responses'}
@@ -1051,66 +1089,39 @@ function SurveyForm() {
         </motion.div>
       )}
 
-      <AnimatePresence>
-        {showSubsectionPopup && (
-          <motion.div
-            {...popupAnimation}
-            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
-          >
-            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg text-center max-w-sm w-full border border-gray-200 dark:border-gray-700">
-              <h3 className="text-xl font-bold text-rose-600 dark:text-rose-400">Open this subsection?</h3>
-              <p className="text-gray-600 dark:text-gray-400 mt-2">
-                {isFileUploadSubsection(pendingSubsection) ? 'View admin-uploaded files.' : 'Answer test questions.'}
-              </p>
-              <div className="mt-4 flex justify-center gap-4">
-                <button
-                  onClick={handleSubsectionConfirm}
-                  className="px-4 py-2 bg-emerald-600 dark:bg-emerald-500 text-white rounded hover:bg-emerald-700 dark:hover:bg-emerald-600"
-                >
-                  Yes
-                </button>
-                <button
-                  onClick={() => {
-                    setShowSubsectionPopup(false);
-                    setPendingSubsection(null);
-                  }}
-                  className="px-4 py-2 bg-gray-500 dark:bg-gray-600 text-white rounded hover:bg-gray-600 dark:hover:bg-gray-700"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
+      {/* Score Popup */}
       <AnimatePresence>
         {showScorePopup && (
           <motion.div
             {...popupAnimation}
-            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-2xl z-50"
+            role="alertdialog"
+            aria-label="Score Confirmation Popup"
           >
-            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg text-center max-w-sm w-full border border-gray-200 dark:border-gray-700">
-              <h3 className="text-xl font-bold text-rose-600 dark:text-rose-400">Do you want to view your score?</h3>
-              <div className="mt-4 flex justify-center gap-4">
+            <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-2xl p-12 rounded-2xl shadow-2xl text-center max-w-md w-full border-2 border-blue-300 dark:border-gray-600">
+              <h3 className="text-2xl font-extrabold text-blue-500 dark:text-blue-300 mb-4">Do you want to view your score?</h3>
+              <div className="mt-6 flex justify-center gap-6">
                 <button
                   onClick={() => {
                     setShowScorePopup(false);
-                    wrappedNavigate(`/thank-you/${pendingSubsection || subsectionId}`);
+                    setCurrentSubsection('');
+                    setCurrentQuestionIndex(0);
+                    setResponses({});
+                    navigate(`/thank-you/${currentSubsection || subsectionId}`);
                   }}
-                  className="px-4 py-2 bg-emerald-600 dark:bg-emerald-500 text-white rounded hover:bg-emerald-700 dark:hover:bg-emerald-600"
+                  className="px-6 py-2 bg-emerald-500 dark:bg-emerald-400 text-white rounded-lg hover:bg-emerald-600 dark:hover:bg-emerald-500 hover:scale-110 hover:shadow-lg transition-all font-medium ring-2 ring-emerald-300 dark:ring-emerald-600 focus:ring-4 focus:ring-emerald-400 dark:focus:ring-emerald-500 ring-offset-2 pointer-events-auto"
                 >
                   Yes
                 </button>
                 <button
                   onClick={() => {
                     setShowScorePopup(false);
-                    setPendingSubsection(null);
-                    if (subsectionId) {
-                      wrappedNavigate('/employee/survey');
-                    }
+                    setCurrentSubsection('');
+                    setCurrentQuestionIndex(0);
+                    setResponses({});
+                    navigate(`/subsections/${selectedSection}`);
                   }}
-                  className="px-4 py-2 bg-gray-500 dark:bg-gray-600 text-white rounded hover:bg-gray-600 dark:hover:bg-gray-700"
+                  className="px-6 py-2 bg-gray-600 dark:bg-gray-500 text-white rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 hover:scale-110 hover:shadow-lg transition-all font-medium ring-2 ring-gray-300 dark:ring-gray-600 focus:ring-4 focus:ring-gray-400 dark:focus:ring-gray-500 ring-offset-2 pointer-events-auto"
                 >
                   No
                 </button>
@@ -1120,24 +1131,28 @@ function SurveyForm() {
         )}
       </AnimatePresence>
 
+      {/* Submit Confirmation Popup */}
       <AnimatePresence>
         {showSubmitConfirmPopup && (
           <motion.div
             {...popupAnimation}
-            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-2xl z-50"
+            role="alertdialog"
+            aria-label="Submit Confirmation Popup"
           >
-            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg text-center max-w-sm w-full border border-gray-200 dark:border-gray-700">
-              <h3 className="text-xl font-bold text-rose-600 dark:text-rose-400">Are you sure you want to submit the test?</h3>
-              <div className="mt-4 flex justify-center gap-4">
+            <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-2xl p-12 rounded-2xl shadow-2xl text-center max-w-md w-full border-2 border-blue-300 dark:border-gray-600">
+              <h3 className="text-2xl font-extrabold text-blue-500 dark:text-blue-300 mb-4">Are you sure you want to submit the test?</h3>
+              <p className="text-base text-gray-700 dark:text-gray-300 mb-4">Your responses will be saved.</p>
+              <div className="mt-6 flex justify-center gap-6">
                 <button
                   onClick={handleConfirmSubmit}
-                  className="px-4 py-2 bg-emerald-600 dark:bg-emerald-500 text-white rounded hover:bg-emerald-700 dark:hover:bg-emerald-600"
+                  className="px-6 py-2 bg-emerald-500 dark:bg-emerald-400 text-white rounded-lg hover:bg-emerald-600 dark:hover:bg-emerald-500 hover:scale-110 hover:shadow-lg transition-all font-medium ring-2 ring-emerald-300 dark:ring-emerald-600 focus:ring-4 focus:ring-emerald-400 dark:focus:ring-emerald-500 ring-offset-2 pointer-events-auto"
                 >
                   Yes
                 </button>
                 <button
                   onClick={() => setShowSubmitConfirmPopup(false)}
-                  className="px-4 py-2 bg-gray-500 dark:bg-gray-600 text-white rounded hover:bg-gray-600 dark:hover:bg-gray-700"
+                  className="px-6 py-2 bg-gray-600 dark:bg-gray-500 text-white rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 hover:scale-110 hover:shadow-lg transition-all font-medium ring-2 ring-gray-300 dark:ring-gray-600 focus:ring-4 focus:ring-gray-400 dark:focus:ring-gray-500 ring-offset-2 pointer-events-auto"
                 >
                   No
                 </button>
@@ -1147,19 +1162,22 @@ function SurveyForm() {
         )}
       </AnimatePresence>
 
+      {/* Mandatory Questions Popup */}
       <AnimatePresence>
         {showMandatoryPopup && (
           <motion.div
             {...popupAnimation}
-            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-2xl z-50"
+            role="alertdialog"
+            aria-label="Mandatory Questions Popup"
           >
-            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg text-center max-w-sm w-full border border-gray-200 dark:border-gray-700">
-              <h3 className="text-xl font-bold text-rose-600 dark:text-rose-400">All questions are mandatory</h3>
-              <p className="text-gray-600 dark:text-gray-400 mt-2">Please answer all questions before submitting.</p>
-              <div className="mt-4 flex justify-center">
+            <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-2xl p-12 rounded-2xl shadow-2xl text-center max-w-md w-full border-2 border-blue-300 dark:border-gray-600">
+              <h3 className="text-2xl font-extrabold text-blue-500 dark:text-blue-300 mb-4">All questions are mandatory</h3>
+              <p className="text-base text-gray-700 dark:text-gray-300 mb-4">Please answer all questions before submitting.</p>
+              <div className="mt-6 flex justify-center">
                 <button
                   onClick={() => setShowMandatoryPopup(false)}
-                  className="px-4 py-2 bg-rose-600 dark:bg-rose-500 text-white rounded hover:bg-rose-700 dark:hover:bg-rose-600"
+                  className="px-6 py-2 bg-blue-400 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-500 dark:hover:bg-blue-600 hover:scale-110 hover:shadow-lg transition-all font-medium ring-2 ring-blue-300 dark:ring-blue-600 focus:ring-4 focus:ring-blue-400 dark:focus:ring-blue-500 ring-offset-2 pointer-events-auto"
                 >
                   OK
                 </button>
@@ -1169,25 +1187,28 @@ function SurveyForm() {
         )}
       </AnimatePresence>
 
+      {/* Back Confirmation Popup */}
       <AnimatePresence>
         {showBackConfirmPopup && (
           <motion.div
             {...popupAnimation}
-            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-2xl z-50"
+            role="alertdialog"
+            aria-label="Back Confirmation Popup"
           >
-            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg text-center max-w-sm w-full border border-gray-200 dark:border-gray-700">
-              <h3 className="text-xl font-bold text-rose-600 dark:text-rose-400">Are you sure you want to cancel the test?</h3>
-              <p className="text-gray-600 dark:text-gray-400 mt-2">Your progress will not be saved.</p>
-              <div className="mt-4 flex justify-center gap-4">
+            <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-2xl p-12 rounded-2xl shadow-2xl text-center max-w-md w-full border-2 border-blue-300 dark:border-gray-600">
+              <h3 className="text-2xl font-extrabold text-blue-500 dark:text-blue-300 mb-4">Are you sure you want to leave this page?</h3>
+              <p className="text-base text-gray-700 dark:text-gray-300 mb-4">Your progress will not be saved.</p>
+              <div className="mt-6 flex justify-center gap-6">
                 <button
                   onClick={handleConfirmBack}
-                  className="px-4 py-2 bg-emerald-600 dark:bg-emerald-500 text-white rounded hover:bg-emerald-700 dark:hover:bg-emerald-600"
+                  className="px-6 py-2 bg-emerald-500 dark:bg-emerald-400 text-white rounded-lg hover:bg-emerald-600 dark:hover:bg-emerald-500 hover:scale-110 hover:shadow-lg transition-all font-medium ring-2 ring-emerald-300 dark:ring-emerald-600 focus:ring-4 focus:ring-emerald-400 dark:focus:ring-emerald-500 ring-offset-2 pointer-events-auto"
                 >
                   Yes
                 </button>
                 <button
                   onClick={() => setShowBackConfirmPopup(false)}
-                  className="px-4 py-2 bg-gray-500 dark:bg-gray-600 text-white rounded hover:bg-gray-600 dark:hover:bg-gray-700"
+                  className="px-6 py-2 bg-gray-600 dark:bg-gray-500 text-white rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 hover:scale-110 hover:shadow-lg transition-all font-medium ring-2 ring-gray-300 dark:ring-gray-600 focus:ring-4 focus:ring-gray-400 dark:focus:ring-gray-500 ring-offset-2 pointer-events-auto"
                 >
                   No
                 </button>
@@ -1197,54 +1218,25 @@ function SurveyForm() {
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {showNavConfirmPopup && (
-          <motion.div
-            {...popupAnimation}
-            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
-          >
-            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg text-center max-w-sm w-full border border-gray-200 dark:border-gray-700">
-              <h3 className="text-xl font-bold text-rose-600 dark:text-rose-400">Are you sure you want to leave the test?</h3>
-              <p className="text-gray-600 dark:text-gray-400 mt-2">Your progress will not be saved.</p>
-              <div className="mt-4 flex justify-center gap-4">
-                <button
-                  onClick={handleConfirmNav}
-                  className="px-4 py-2 bg-emerald-600 dark:bg-emerald-500 text-white rounded hover:bg-emerald-700 dark:hover:bg-emerald-600"
-                >
-                  Yes
-                </button>
-                <button
-                  onClick={() => {
-                    setShowNavConfirmPopup(false);
-                    setPendingNavPath(null);
-                  }}
-                  className="px-4 py-2 bg-gray-500 dark:bg-gray-600 text-white rounded hover:bg-gray-600 dark:hover:bg-gray-700"
-                >
-                  No
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
+      {/* File Modal */}
       <AnimatePresence>
         {showFileModal && (
           <motion.div
             {...popupAnimation}
-            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-2xl z-50"
             role="dialog"
             aria-label="File Viewer Modal"
           >
-            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg max-w-lg sm:max-w-2xl w-full max-h-[80vh] overflow-auto border border-gray-200 dark:border-gray-700 relative">
+            <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-2xl p-12 rounded-2xl shadow-2xl max-w-md sm:max-w-4xl w-full max-h-[80vh] overflow-auto border-2 border-blue-300 dark:border-gray-600 relative">
               <button
                 onClick={() => {
                   setShowFileModal(false);
                   setFileContent(null);
                   setFileType('');
                   setFileError(null);
+                  setFileLoading(false);
                 }}
-                className="absolute top-4 right-4 text-gray-500 dark:text-gray-400 hover:text-rose-600 dark:hover:text-rose-400"
+                className="absolute top-4 right-4 text-gray-500 dark:text-gray-400 hover:text-rose-500 dark:hover:text-rose-400 pointer-events-auto"
                 aria-label="Close modal"
               >
                 <svg
@@ -1264,13 +1256,18 @@ function SurveyForm() {
               </button>
               {fileError ? (
                 <div className="text-center">
-                  <h3 className="text-lg font-bold text-rose-600 dark:text-rose-400 mb-4">Error Loading File</h3>
-                  <p className="text-gray-600 dark:text-gray-400">{fileError}</p>
+                  <h3 className="text-2xl font-extrabold text-rose-500 dark:text-rose-400 mb-4">Error Loading File</h3>
+                  <p className="text-base text-gray-700 dark:text-gray-300">{fileError}</p>
+                </div>
+              ) : fileLoading ? (
+                <div className="text-center">
+                  <LoadingSpinner />
+                  <p className="text-base text-gray-700 dark:text-gray-300 mt-4">Loading file...</p>
                 </div>
               ) : fileContent && fileType ? (
                 <div className="mt-4">
                   {fileType === 'text' && (
-                    <pre className="text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-auto max-h-[60vh]">
+                    <pre className="text-gray-700 dark:text-gray-300 bg-gray-100/80 dark:bg-gray-800/80 p-4 rounded-lg overflow-auto max-h-[60vh]">
                       {fileContent}
                     </pre>
                   )}
@@ -1308,11 +1305,11 @@ function SurveyForm() {
                   )}
                   {fileType === 'download' && (
                     <div className="text-center">
-                      <p className="text-gray-600 dark:text-gray-400 mb-4">File type not supported for preview.</p>
+                      <p className="text-base text-gray-700 dark:text-gray-300 mb-4">File type not supported for preview.</p>
                       <a
                         href={fileContent}
                         download
-                        className="px-4 py-2 bg-emerald-600 dark:bg-emerald-500 text-white rounded-lg hover:bg-emerald-700 dark:hover:bg-emerald-600"
+                        className="px-6 py-2 bg-emerald-500 dark:bg-emerald-400 text-white rounded-lg hover:bg-emerald-600 dark:hover:bg-emerald-500 hover:scale-110 hover:shadow-lg transition-all font-medium ring-2 ring-emerald-300 dark:ring-emerald-600 focus:ring-4 focus:ring-emerald-400 dark:focus:ring-emerald-500 ring-offset-2 pointer-events-auto"
                       >
                         Download File
                       </a>
@@ -1321,7 +1318,7 @@ function SurveyForm() {
                 </div>
               ) : (
                 <div className="text-center">
-                  <p className="text-gray-600 dark:text-gray-400">Loading file...</p>
+                  <p className="text-base text-gray-700 dark:text-gray-300">No file content available.</p>
                 </div>
               )}
             </div>
