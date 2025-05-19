@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom'; // Added useNavigate
 import { toast } from 'react-toastify';
 import { getResponsesBySubsection } from '../services/api';
 import { pageTransition, fadeIn, cardAnimation } from '../animations/framerAnimations';
@@ -22,24 +22,44 @@ const cellAnimation = {
 
 function ShowReport() {
   const { subsectionId } = useParams();
+  const navigate = useNavigate(); // For redirecting on error
   const [responses, setResponses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalScore, setTotalScore] = useState(0);
   const [totalPossible, setTotalPossible] = useState(0);
   const [percentage, setPercentage] = useState(0);
+  const [error, setError] = useState(null); // Track errors
 
   useEffect(() => {
     const fetchData = async () => {
+      // Validate subsectionId
+      if (!subsectionId) {
+        toast.error('Subsection ID is missing');
+        setError('Subsection ID is missing');
+        setLoading(false);
+        navigate('/'); // Redirect to home or another page
+        return;
+      }
+
       try {
         setLoading(true);
         const role = localStorage.getItem('role');
         if (role !== 'admin') {
           toast.error('Unauthorized access');
+          setError('Unauthorized access');
           setLoading(false);
+          navigate('/'); // Redirect to home
           return;
         }
 
         const responseData = await getResponsesBySubsection(subsectionId);
+        if (!responseData || responseData.length === 0) {
+          toast.info('No responses found for this subsection');
+          setResponses([]);
+          setLoading(false);
+          return;
+        }
+
         const validResponses = responseData.filter(
           (response) => response?.userId?._id && response?.surveyId?.question
         );
@@ -68,12 +88,15 @@ function ShowReport() {
 
         setLoading(false);
       } catch (err) {
-        toast.error(err.message || 'Failed to fetch responses');
+        const errorMessage = err.message || 'Failed to fetch responses';
+        toast.error(errorMessage);
+        setError(errorMessage);
         setLoading(false);
+        navigate('/'); // Redirect on error
       }
     };
     fetchData();
-  }, [subsectionId]);
+  }, [subsectionId, navigate]);
 
   // Group responses by user
   const groupedResponses = responses.reduce((acc, response) => {
@@ -101,6 +124,14 @@ function ShowReport() {
     );
   }
 
+  if (error) {
+    return (
+      <motion.div {...fadeIn} className="container mx-auto p-4 sm:p-6 max-w-5xl text-center">
+        <p className="text-red-600 dark:text-red-400 text-sm sm:text-base">{error}</p>
+      </motion.div>
+    );
+  }
+
   return (
     <ProtectedRoute allowedRole="admin">
       <motion.div {...pageTransition} className="container mx-auto p-4 sm:p-6 max-w-5xl">
@@ -118,7 +149,7 @@ function ShowReport() {
                 <motion.div
                   key={userId}
                   {...cardAnimation}
-                  className="bg-card-bg dark:bg-card-dark-bg p-4 sm:p-6 rounded-lg shadow-lg"
+                  className="bg-card-bg dark:bg-card-dark-bg p-4 sm:p- he6 rounded-lg shadow-lg"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
                     <div>

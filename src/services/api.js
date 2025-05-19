@@ -335,7 +335,7 @@ export const getResponses = async (role) => {
 
 export const getResponsesBySubsection = async (subsectionId) => {
   if (!subsectionId) {
-    console.error('Subsection ID is required');
+    console.error('Subsection ID is required:',subsectionId);
     toast.error('Subsection ID not provided');
     throw new Error('Subsection ID not provided');
   }

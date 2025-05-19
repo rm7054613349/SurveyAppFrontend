@@ -145,6 +145,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      
       <Route
         path="/admin/send-report"
         element={
