@@ -84,6 +84,7 @@ const adminFileVariants = {
 
 function SurveyForm() {
   const { subsectionId } = useParams();
+ 
   const navigate = useNavigate();
   const location = useLocation();
   const { percentage, nextSubsectionId, sectionId: navigatedSectionId } = location.state || {};

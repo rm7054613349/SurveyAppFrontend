@@ -203,10 +203,6 @@ function AppRoutes() {
       {/* Fallback Route */}
       <Route path="*" element={<div>404 - Page Not Found</div>} />
     </Routes>
-
-    
   );
 }
-
-
 export default AppRoutes;

@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { pageTransition, fadeIn, buttonHover, cardAnimation } from '../animations/framerAnimations';
-
 import ProtectedRoute from '../components/ProtectedRoute';
 
 function AdminDashboard() {
@@ -15,8 +14,8 @@ function AdminDashboard() {
           {[
             { to: '/admin/create-question', title: 'Create Question', desc: 'Add new survey questions by category' },
             { to: '/admin/view-questions', title: 'View Questions', desc: 'See all survey questions by category' },
-            { to: '/admin/show-report', title: 'Show Report', desc: 'View user responses with category scores' },
-            { to: '/admin/send-report', title: 'Send Report', desc: 'Email to sen response reports to users' },
+            { to: '/admin/show-report', title: 'Show Report', desc: 'View user responses for all subsections' },
+            { to: '/admin/send-report', title: 'Send Report', desc: 'Email response reports to users' },
           ].map((item, index) => (
             <Link key={index} to={item.to}>
               <motion.div

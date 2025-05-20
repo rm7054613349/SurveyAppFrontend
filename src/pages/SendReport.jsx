@@ -13,32 +13,77 @@ function SendReport() {
   const [selectedUser, setSelectedUser] = useState('');
   const [selectedSection, setSelectedSection] = useState('');
   const [selectedSubsection, setSelectedSubsection] = useState('');
+  const [selectedDate, setSelectedDate] = useState('');
   const [loading, setLoading] = useState(true);
 
+  // Cache configuration
+  const CACHE_KEY = 'sendReportData';
+  const CACHE_TTL = 60 * 60 * 1000; // 1 hour in milliseconds
+
+  // Load data from cache or API
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Check cache
+        const cachedData = JSON.parse(localStorage.getItem(CACHE_KEY));
+        const now = Date.now();
+        if (cachedData && cachedData.timestamp + CACHE_TTL > now) {
+          console.log('Loading from cache');
+          setUsers(cachedData.users || []);
+          setSections(cachedData.sections || []);
+          setSubsections(cachedData.subsections || []);
+          setLoading(false);
+          return;
+        }
+
+        // Fetch from API
+        setLoading(true);
         const [userData, sectionData, subsectionData] = await Promise.all([
           getUsers(),
           getSections(),
           getSubsections(),
         ]);
-        setUsers(userData);
-        setSections(sectionData);
-        setSubsections(subsectionData);
+
+        // Normalize data
+        const normalizedUsers = Array.isArray(userData) ? userData : [];
+        const normalizedSections = Array.isArray(sectionData) ? sectionData : [];
+        const normalizedSubsections = Array.isArray(subsectionData) ? subsectionData : [];
+
+        setUsers(normalizedUsers);
+        setSections(normalizedSections);
+        setSubsections(normalizedSubsections);
+
+        // Save to cache
+        localStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify({
+            users: normalizedUsers,
+            sections: normalizedSections,
+            subsections: normalizedSubsections,
+            timestamp: now,
+          })
+        );
+
         setLoading(false);
       } catch (err) {
-        toast.error(err.message || 'Failed to fetch data');
+        console.error('Failed to fetch data:', err);
+        const status = err.response?.status;
+        let message = err.response?.data?.message || err.message || 'Failed to fetch data';
+        if (status === 401) message = 'Unauthorized: Please log in again';
+        if (status === 403) message = 'Forbidden: Admin access required';
+        toast.error(message);
         setLoading(false);
       }
     };
     fetchData();
   }, []);
 
+  // Filter subsections based on selected section
   const filteredSubsections = subsections.filter(
-    (sub) => !selectedSection || sub.sectionId._id === selectedSection
+    (sub) => !selectedSection || sub.sectionId?._id === selectedSection
   );
 
+  // Handle form submission
   const handleSendReport = async (e) => {
     e.preventDefault();
     if (!selectedUser) {
@@ -47,21 +92,33 @@ function SendReport() {
     }
     try {
       setLoading(true);
-      await sendReportByUser(selectedUser, selectedSection || undefined, selectedSubsection || undefined);
+      const payload = { userId: selectedUser };
+      if (selectedSection) payload.sectionId = selectedSection;
+      if (selectedSubsection) payload.subsectionId = selectedSubsection;
+      // if (selectedDate) payload.date = selectedDate;
+
+      console.log('Sending report with payload:', payload);
+      await sendReportByUser(payload);
       toast.success('Report sent successfully!');
       setSelectedUser('');
       setSelectedSection('');
       setSelectedSubsection('');
-      setLoading(false);
+      setSelectedDate('');
     } catch (err) {
-      toast.error(err.message || 'Failed to send report');
+      console.error('Failed to send report:', err);
+      const status = err.response?.status;
+      let message = err.response?.data?.message || err.message || 'Failed to send report';
+      if (status === 401) message = 'Unauthorized: Please log in again';
+      if (status === 403) message = 'Forbidden: Admin access required';
+      toast.error(message);
+    } finally {
       setLoading(false);
     }
   };
 
   if (loading) {
     return (
-      <motion.div {...fadeIn} className="flex justify-center items-center h-screen bg-gray-50 dark:bg-gray-900">
+      <motion.div {...fadeIn} className="flex justify-center items-center h-screen bg-gray-50 dark:bg-slate-800">
         <LoadingSpinner />
       </motion.div>
     );
@@ -69,24 +126,36 @@ function SendReport() {
 
   return (
     <ProtectedRoute allowedRole="admin">
-      <motion.div {...pageTransition} className="container mx-auto p-4 sm:p-6 max-w-lg">
-        <motion.h2 {...fadeIn} className="text-2xl sm:text-3xl font-bold mb-6 text-primary-blue text-center">
+      <motion.div
+        {...pageTransition}
+        className="container mx-auto p-4 sm:p-6 max-w-lg bg-gray-50 dark:bg-slate-800 min-h-screen"
+      >
+        <motion.h2
+          {...fadeIn}
+          className="text-2xl sm:text-3xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-indigo-700 dark:from-indigo-500 dark:to-indigo-600 text-center"
+        >
           Send Report
         </motion.h2>
         <motion.form
           {...fadeIn}
           transition={{ delay: 0.1 }}
           onSubmit={handleSendReport}
-          className="bg-card-bg dark:bg-card-dark-bg p-6 sm:p-8 rounded-lg shadow-lg space-y-6"
+          className="bg-white dark:bg-gray-700 p-6 sm:p-8 rounded-lg shadow-2xl space-y-6"
         >
           <div>
-            <label className="block mb-2 text-gray-700 dark:text-gray-300 text-sm sm:text-base font-medium">
+            <label
+              htmlFor="userSelect"
+              className="block mb-2 text-sm sm:text-base font-medium text-gray-700 dark:text-gray-200"
+            >
               Select User
             </label>
             <select
+              id="userSelect"
               value={selectedUser}
               onChange={(e) => setSelectedUser(e.target.value)}
-              className="w-full p-2 sm:p-3 border rounded dark:bg-gray-800 dark:text-white text-sm sm:text-base focus:ring-2 focus:ring-secondary-green"
+              className="w-full p-2 sm:p-3 border rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-200 text-sm sm:text-base focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500"
+              aria-label="Select a user"
+              required
             >
               <option value="">Select a user</option>
               {users.map((user) => (
@@ -97,45 +166,77 @@ function SendReport() {
             </select>
           </div>
           <div>
-            <label className="block mb-2 text-gray-700 dark:text-gray-300 text-sm sm:text-base font-medium">
+            <label
+              htmlFor="sectionSelect"
+              className="block mb-2 text-sm sm:text-base font-medium text-gray-700 dark:text-gray-200"
+            >
               Select Section (Optional)
             </label>
             <select
+              id="sectionSelect"
               value={selectedSection}
               onChange={(e) => {
                 setSelectedSection(e.target.value);
                 setSelectedSubsection('');
               }}
-              className="w-full p-2 sm:p-3 border rounded dark:bg-gray-800 dark:text-white text-sm sm:text-base focus:ring-2 focus:ring-secondary-green"
+              className="w-full p-2 sm:p-3 border rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-200 text-sm sm:text-base focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500"
+              aria-label="Select a section"
             >
               <option value="">All Sections</option>
               {sections.map((sec) => (
-                <option key={sec._id} value={sec._id}>{sec.name}</option>
+                <option key={sec._id} value={sec._id}>
+                  {sec.name}
+                </option>
               ))}
             </select>
           </div>
           <div>
-            <label className="block mb-2 text-gray-700 dark:text-gray-300 text-sm sm:text-base font-medium">
+            <label
+              htmlFor="subsectionSelect"
+              className="block mb-2 text-sm sm:text-base font-medium text-gray-700 dark:text-gray-200"
+            >
               Select Subsection (Optional)
             </label>
             <select
+              id="subsectionSelect"
               value={selectedSubsection}
               onChange={(e) => setSelectedSubsection(e.target.value)}
-              className="w-full p-2 sm:p-3 border rounded dark:bg-gray-800 dark:text-white text-sm sm:text-base focus:ring-2 focus:ring-secondary-green"
+              className="w-full p-2 sm:p-3 border rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-200 text-sm sm:text-base focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={!selectedSection}
+              aria-label="Select a subsection"
             >
               <option value="">All Subsections</option>
               {filteredSubsections.map((sub) => (
-                <option key={sub._id} value={sub._id}>{sub.name}</option>
+                <option key={sub._id} value={sub._id}>
+                  {sub.name}
+                </option>
               ))}
             </select>
+          </div>
+          <div>
+            <label
+              htmlFor="dateSelect"
+              className="block mb-2 text-sm sm:text-base font-medium text-gray-700 dark:text-gray-200"
+            >
+              Select Date (Optional)
+            </label>
+            <input
+              id="dateSelect"
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="w-full p-2 sm:p-3 border rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-200 text-sm sm:text-base focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500"
+              aria-label="Select a date"
+            />
           </div>
           <motion.button
             whileHover={buttonHover}
             type="submit"
-            className="w-full bg-primary-blue text-white p-3 rounded-lg text-sm sm:text-base hover:bg-primary-blue/90 focus:ring-2 focus:ring-primary-blue"
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 text-white p-3 rounded-lg text-sm sm:text-base hover:from-indigo-700 hover:to-indigo-800 dark:from-indigo-500 dark:to-indigo-600 dark:hover:from-indigo-600 dark:hover:to-indigo-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+            aria-label="Send report"
           >
-            Send Report
+            {loading ? 'Sending...' : 'Send Report'}
           </motion.button>
         </motion.form>
       </motion.div>

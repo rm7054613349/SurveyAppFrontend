@@ -374,12 +374,18 @@ export const submitResponses = async (subsectionId, data) => {
   });
 };
 
-export const sendReportByUser = async (userId, sectionId, subsectionId) => {
+
+
+export const sendReportByUser = async (payload) => {
   return fetchWithAuth(`${API_URL}/response/report-by-user`, {
     method: 'POST',
-    body: JSON.stringify({ userId, sectionId, subsectionId }),
+    body: JSON.stringify(payload),
   });
 };
+
+
+
+
 
 export const getScores = async (userId) => {
   return fetchWithAuth(`${API_URL}/response/score/${userId}`);

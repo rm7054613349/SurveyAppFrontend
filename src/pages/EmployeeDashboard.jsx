@@ -11,28 +11,32 @@ function EmployeeDashboard() {
         <motion.h2 {...fadeIn} className="text-3xl font-bold mb-6 text-primary-blue">
           Employee Dashboard
         </motion.h2>
-        <motion.div {...fadeIn} transition={{ delay: 0.1 }} className="p-6 rounded-lg shadow-lg text-center w-full max-w-md mx-auto"
+        <motion.div
+          {...fadeIn}
+          transition={{ delay: 0.1 }}
+          className="flex flex-row flex-wrap gap-6 justify-center"
         >
           <Link to="/employee/open-survey">
             <motion.div
-              whileHover={buttonHover}      
-              {...cardAnimation}              
-             className="bg-card-bg dark:bg-card-dark-bg p-6 rounded-lg shadow-lg text-center content-box w-full max-w-md mx-auto"
+              whileHover={buttonHover}
+              {...cardAnimation}
+              className="bg-card-bg dark:bg-card-dark-bg p-6 rounded-lg shadow-lg text-center content-box w-full max-w-md"
             >
-              <h3 className="text-lg font-semibold text-primary-blue">Let's begin Your Learning Journey with SSMED</h3>
+              <h3 className="text-lg font-semibold text-primary-blue">Let's Start Learning Journey with SSMED</h3>
               <p className="text-gray-600 dark:text-gray-300">Start or continue your Journey</p>
             </motion.div>
           </Link>
-          {/* <Link to="/employee/open-survey">
+
+          <Link to="#">
             <motion.div
               whileHover={buttonHover}
               {...cardAnimation}
-              className="bg-card-bg dark:bg-card-dark-bg p-6 rounded-lg shadow-lg text-center content-box"
+              className="bg-card-bg dark:bg-card-dark-bg p-6 rounded-lg shadow-lg text-center content-box w-full max-w-md"
             >
-              <h3 className="text-lg font-semibold text-primary-blue">Reattempt Survey</h3>
-              <p className="text-gray-600 dark:text-gray-300">Retake the survey to improve your score</p>
+              <h3 className="text-lg font-semibold text-primary-blue">Demo Data</h3>
+              <p className="text-gray-600 dark:text-gray-300"> Contrary to popular belief,simply random text.</p>
             </motion.div>
-          </Link> */}
+          </Link>
         </motion.div>
         <motion.div {...fadeIn} transition={{ delay: 0.2 }} className="mt-8 text-center">
           <Link to="/">
