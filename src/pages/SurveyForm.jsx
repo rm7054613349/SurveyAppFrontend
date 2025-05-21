@@ -7,7 +7,7 @@ import { getSurveys, getSurveysBySubsection, getSections, getSubsections, submit
 import LoadingSpinner from '../components/LoadingSpinner';
 import { LockClosedIcon, LockOpenIcon, CheckCircleIcon, DocumentIcon, ArrowLeftIcon } from '@heroicons/react/24/solid';
 
-// Animation definitions
+// Animation definitions (unchanged)
 const pageTransition = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
@@ -84,7 +84,6 @@ const adminFileVariants = {
 
 function SurveyForm() {
   const { subsectionId } = useParams();
- 
   const navigate = useNavigate();
   const location = useLocation();
   const { percentage, nextSubsectionId, sectionId: navigatedSectionId } = location.state || {};
@@ -103,8 +102,6 @@ function SurveyForm() {
   });
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-
-
   const [timers, setTimers] = useState(() => {
     const savedTimers = localStorage.getItem('timers');
     return savedTimers ? JSON.parse(savedTimers) : {};
@@ -113,24 +110,22 @@ function SurveyForm() {
     const savedTimeLeft = localStorage.getItem('timeLeft');
     return savedTimeLeft ? parseInt(savedTimeLeft, 10) : 30 * 60;
   });
-
-  
   const [showWarning, setShowWarning] = useState({});
   const [showFileModal, setShowFileModal] = useState(false);
   const [fileContent, setFileContent] = useState(null);
   const [fileType, setFileType] = useState('');
   const [fileError, setFileError] = useState(null);
   const [fileLoading, setFileLoading] = useState(false);
-  const [isButtonLoading, setIsButtonLoading] = useState(false); // New state for button loader
+  const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [completedSubsections, setCompletedSubsections] = useState(() => {
     const savedCompleted = localStorage.getItem('completedSubsections');
     return savedCompleted ? new Set(JSON.parse(savedCompleted)) : new Set();
   });
   const [cachedFileContent, setCachedFileContent] = useState({});
-  const [showScorePopup, setShowScorePopup] = useState(false);
   const [showSubmitConfirmPopup, setShowSubmitConfirmPopup] = useState(false);
   const [showBackConfirmPopup, setShowBackConfirmPopup] = useState(false);
   const [showMandatoryPopup, setShowMandatoryPopup] = useState(false);
+  const [showScorePopup, setShowScorePopup] = useState(false);
   const [subsectionScores, setSubsectionScores] = useState(() => {
     const savedScores = localStorage.getItem('subsectionScores');
     return savedScores ? JSON.parse(savedScores) : {};
@@ -139,7 +134,7 @@ function SurveyForm() {
   const isMounted = useRef(true);
   const blobUrls = useRef(new Map());
 
-  // Persist states to localStorage
+  // Persist states to localStorage (unchanged)
   useEffect(() => {
     localStorage.setItem('selectedSection', selectedSection);
     localStorage.setItem('currentSubsection', currentSubsection);
@@ -151,7 +146,17 @@ function SurveyForm() {
     localStorage.setItem('subsectionScores', JSON.stringify(subsectionScores));
   }, [selectedSection, currentSubsection, currentQuestionIndex, responses, timers, timeLeft, completedSubsections, subsectionScores]);
 
-  // Check if subsection has been attempted and fetch score
+  // Reset selectedSection and currentSubsection when navigating to /employee/survey (unchanged)
+  useEffect(() => {
+    if (location.pathname === '/employee/survey' && !subsectionId && !nextSubsectionId) {
+      setSelectedSection('');
+      setCurrentSubsection('');
+      localStorage.setItem('selectedSection', '');
+      localStorage.setItem('currentSubsection', '');
+    }
+  }, [location.pathname, subsectionId, nextSubsectionId]);
+
+  // Check if subsection has been attempted and fetch score (unchanged)
   const checkIfAttempted = async (subsectionId) => {
     try {
       const responseData = await getResponsesBySubsection(subsectionId);
@@ -178,7 +183,7 @@ function SurveyForm() {
     }
   };
 
-  // Fetch initial data
+  // Fetch initial data (modified to skip score popup for descriptive subsections)
   useEffect(() => {
     isMounted.current = true;
     if (hasFetched.current) return;
@@ -234,7 +239,12 @@ function SurveyForm() {
             const { attempted } = await checkIfAttempted(subsectionId);
             if (attempted && !isFileUploadSubsection(subsectionId)) {
               toast.info('You have already responded to this test.');
-              setShowScorePopup(true);
+              // Show score popup only for optional subsections, not descriptive
+              if (isOptionalSubsection(subsectionId)) {
+                setShowScorePopup(true);
+              } else {
+                navigate(`/thank-you/${subsectionId}`);
+              }
             } else {
               const subsection = normalizedSubsections.find(sub => sub._id === subsectionId);
               if (subsection && subsection.sectionId?._id) {
@@ -253,7 +263,12 @@ function SurveyForm() {
             if (attempted && !isFileUploadSubsection(nextSubsectionId)) {
               toast.info('You have already responded to this test.');
               setCurrentSubsection(nextSubsectionId);
-              setShowScorePopup(true);
+              // Show score popup only for optional subsections, not descriptive
+              if (isOptionalSubsection(nextSubsectionId)) {
+                setShowScorePopup(true);
+              } else {
+                navigate(`/thank-you/${nextSubsectionId}`);
+              }
             } else {
               setCurrentSubsection(nextSubsectionId);
               setCurrentQuestionIndex(0);
@@ -287,7 +302,7 @@ function SurveyForm() {
     };
   }, [subsectionId, nextSubsectionId]);
 
-  // Refresh scores when selectedSection changes
+  // Refresh scores when selectedSection changes (unchanged)
   useEffect(() => {
     const refreshScores = async () => {
       const filteredSubsections = Array.isArray(subsections)
@@ -307,7 +322,7 @@ function SurveyForm() {
     }
   }, [selectedSection, subsections]);
 
-  // Clear cached file content on section change
+  // Clear cached file content on section change (unchanged)
   useEffect(() => {
     setCachedFileContent({});
     setFileContent(null);
@@ -317,7 +332,7 @@ function SurveyForm() {
     blobUrls.current.clear();
   }, [selectedSection]);
 
-  // Pre-fetch file content with retry for file-upload subsections
+  // Pre-fetch file content with retry for file-upload subsections (unchanged)
   useEffect(() => {
     if (!currentSubsection || !isFileUploadSubsection(currentSubsection)) return;
 
@@ -391,7 +406,7 @@ function SurveyForm() {
     fetchFileContent();
   }, [currentSubsection]);
 
-  // Timer for multiple-choice subsections
+  // Timer for multiple-choice subsections (unchanged)
   useEffect(() => {
     if (!currentSubsection || isFileUploadSubsection(currentSubsection) || isDescriptiveSubsection(currentSubsection)) return;
 
@@ -424,7 +439,7 @@ function SurveyForm() {
     return () => clearInterval(timerId);
   }, [currentSubsection, subsectionId]);
 
-  // Subsection type checks
+  // Subsection type checks (unchanged)
   const isFileUploadSubsection = subsectionId => {
     return surveys.some(survey => survey.subsectionId?._id === subsectionId && survey.questionType === 'file-upload');
   };
@@ -465,7 +480,7 @@ function SurveyForm() {
     ? surveys.filter(survey => survey.sectionId?._id === selectedSection && survey.subsectionId?._id === currentSubsection)
     : [];
 
-  // Subsection locking logic
+  // Subsection locking logic (unchanged)
   const isSubsectionLocked = (subsectionId, index) => {
     if (
       isDescriptiveSubsection(subsectionId) ||
@@ -484,7 +499,7 @@ function SurveyForm() {
     return prevScore < 70;
   };
 
-  // Handle section click with synchronous state update
+  // Handle section click with synchronous state update (unchanged)
   const handleSectionClick = useCallback((sectionId, event) => {
     event.stopPropagation();
     flushSync(() => {
@@ -496,7 +511,7 @@ function SurveyForm() {
     navigate(`/subsections/${sectionId}`, { replace: true });
   }, [navigate, selectedSection]);
 
-  // Handle subsection click
+  // Handle subsection click (modified to skip score popup for descriptive subsections)
   const handleSubsectionClick = async (subsectionId, index) => {
     if (isSubsectionLocked(subsectionId, index)) {
       toast.info('Please achieve 70% or higher in the previous subsection to unlock this.');
@@ -506,12 +521,16 @@ function SurveyForm() {
     if (attempted && !isFileUploadSubsection(subsectionId)) {
       toast.info('You have already responded to this test.');
       setCurrentSubsection(subsectionId);
-      setShowScorePopup(true);
+      // Show score popup only for optional subsections, not descriptive
+      if (isOptionalSubsection(subsectionId)) {
+        setShowScorePopup(true);
+      } else {
+        navigate(`/thank-you/${subsectionId}`);
+      }
     } else {
       setCurrentSubsection(subsectionId);
       setCurrentQuestionIndex(0);
       setResponses({});
-      setShowScorePopup(false);
       if (!isFileUploadSubsection(subsectionId) && !isDescriptiveSubsection(subsectionId)) {
         setTimers(prev => ({ ...prev, [subsectionId]: 30 * 60 }));
         setShowWarning(prev => ({ ...prev, [subsectionId]: false }));
@@ -523,7 +542,7 @@ function SurveyForm() {
     setResponses(prev => ({ ...prev, [surveyId]: { answer: value || '' } }));
   };
 
-  // Handle file opening
+  // Handle file opening (unchanged)
   const handleOpenFile = async (fileUrl) => {
     if (!fileUrl || typeof fileUrl !== 'string') {
       toast.error('Invalid file URL');
@@ -605,7 +624,7 @@ function SurveyForm() {
     }
   };
 
-  // Handle submission
+  // Handle submission (unchanged)
   const handleSubmit = async (subsectionId = null) => {
     if (submitting) return;
 
@@ -624,6 +643,7 @@ function SurveyForm() {
     setShowSubmitConfirmPopup(true);
   };
 
+  // Handle confirm submit (unchanged - no score popup here)
   const handleConfirmSubmit = async () => {
     setShowSubmitConfirmPopup(false);
 
@@ -670,7 +690,12 @@ function SurveyForm() {
       setTimers(prev => ({ ...prev, [targetSubsectionId]: 0 }));
       setCurrentQuestionIndex(0);
       setSubmitting(false);
-      setShowScorePopup(true);
+
+      // Navigate directly to thank-you page without showing score popup
+      setCurrentSubsection('');
+      setCurrentQuestionIndex(0);
+      setResponses({});
+      navigate(`/thank-you/${targetSubsectionId}`);
     } catch (err) {
       console.error('Submission error:', err);
       toast.error('Failed to submit. Please try again.');
@@ -690,7 +715,7 @@ function SurveyForm() {
     }
   };
 
-  // Handle back to subsections
+  // Handle back to subsections (unchanged)
   const handleBackToSubsections = () => {
     if (isFileUploadSubsection(currentSubsection) || isOptionalSubsection(currentSubsection)) {
       setCurrentSubsection('');
@@ -712,7 +737,7 @@ function SurveyForm() {
     navigate(`/subsections/${selectedSection}`);
   };
 
-  // Prevent accidental navigation
+  // Prevent accidental navigation (unchanged)
   useEffect(() => {
     const handleBeforeUnload = (event) => {
       if (currentSubsection && (isMultipleChoiceSubsection(currentSubsection) || isDescriptiveSubsection(currentSubsection)) && Object.keys(responses).length > 0) {
@@ -1096,49 +1121,7 @@ function SurveyForm() {
         </motion.div>
       )}
 
-      {/* Score Popup */}
-      <AnimatePresence>
-        {showScorePopup && (
-          <motion.div
-            {...popupAnimation}
-            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 backdrop-white-2xl z-50"
-            role="alertdialog"
-            aria-label="Score Confirmation Popup"
-          >
-            <div className="bg-white/70 dark:bg-gray-900/70 backdrop-white-2xl p-12 rounded-2xl shadow-2xl text-center max-w-md w-full border-2 border-blue-300 dark:border-gray-600">
-              <h3 className="text-2xl font-extrabold text-blue-500 dark:text-blue-300 mb-4">Do you want to view your score?</h3>
-              <div className="mt-6 flex justify-center gap-6">
-                <button
-                  onClick={() => {
-                    setShowScorePopup(false);
-                    setCurrentSubsection('');
-                    setCurrentQuestionIndex(0);
-                    setResponses({});
-                    navigate(`/thank-you/${currentSubsection || subsectionId}`);
-                  }}
-                  className="px-6 py-2 bg-emerald-500 dark:bg-emerald-400 text-white rounded-lg hover:bg-emerald-600 dark:hover:bg-emerald-500 hover:scale-110 hover:shadow-lg transition-all font-medium ring-2 ring-emerald-300 dark:ring-emerald-600 focus:ring-4 focus:ring-emerald-400 dark:focus:ring-emerald-500 ring-offset-2 pointer-events-auto"
-                >
-                  Yes
-                </button>
-                <button
-                  onClick={() => {
-                    setShowScorePopup(false);
-                    setCurrentSubsection('');
-                    setCurrentQuestionIndex(0);
-                    setResponses({});
-                    navigate(`/subsections/${selectedSection}`);
-                  }}
-                  className="px-6 py-2 bg-gray-600 dark:bg-gray-500 text-white rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 hover:scale-110 hover:shadow-lg transition-all font-medium ring-2 ring-gray-300 dark:ring-gray-600 focus:ring-4 focus:ring-gray-400 dark:focus:ring-gray-500 ring-offset-2 pointer-events-auto"
-                >
-                  No
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Submit Confirmation Popup */}
+      {/* Submit Confirmation Popup (unchanged) */}
       <AnimatePresence>
         {showSubmitConfirmPopup && (
           <motion.div
@@ -1169,7 +1152,7 @@ function SurveyForm() {
         )}
       </AnimatePresence>
 
-      {/* Mandatory Questions Popup */}
+      {/* Mandatory Questions Popup (unchanged) */}
       <AnimatePresence>
         {showMandatoryPopup && (
           <motion.div
@@ -1194,7 +1177,7 @@ function SurveyForm() {
         )}
       </AnimatePresence>
 
-      {/* Back Confirmation Popup */}
+      {/* Back Confirmation Popup (unchanged) */}
       <AnimatePresence>
         {showBackConfirmPopup && (
           <motion.div
@@ -1225,7 +1208,40 @@ function SurveyForm() {
         )}
       </AnimatePresence>
 
-      {/* File Modal */}
+      {/* Score Popup (updated to only show for optional subsections) */}
+      <AnimatePresence>
+        {showScorePopup && (
+          <motion.div
+            {...popupAnimation}
+            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 backdrop-white-2xl z-50"
+            role="alertdialog"
+            aria-label="Score Popup"
+          >
+            <div className="bg-white/70 dark:bg-gray-900/70 backdrop-white-2xl p-12 rounded-2xl shadow-2xl text-center max-w-md w-full border-2 border-blue-300 dark:border-gray-600">
+              <h3 className="text-2xl font-extrabold text-blue-500 dark:text-blue-300 mb-4">Do you want to view your score?</h3>
+              <div className="mt-6 flex justify-center gap-6">
+                <button
+                  onClick={() => {
+                    setShowScorePopup(false);
+                    navigate(`/thank-you/${currentSubsection}`);
+                  }}
+                  className="px-6 py-2 bg-emerald-500 dark:bg-emerald-400 text-white rounded-lg hover:bg-emerald-600 dark:hover:bg-emerald-500 hover:scale-110 hover:shadow-lg transition-all font-medium ring-2 ring-emerald-300 dark:ring-emerald-600 focus:ring-4 focus:ring-emerald-400 dark:focus:ring-emerald-500 ring-offset-2 pointer-events-auto"
+                >
+                  Yes
+                </button>
+                <button
+                  onClick={() => setShowScorePopup(false)}
+                  className="px-6 py-2 bg-gray-600 dark:bg-gray-500 text-white rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 hover:scale-110 hover:shadow-lg transition-all font-medium ring-2 ring-gray-300 dark:ring-gray-600 focus:ring-4 focus:ring-gray-400 dark:focus:ring-gray-500 ring-offset-2 pointer-events-auto"
+                >
+                  No
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* File Modal (unchanged) */}
       <AnimatePresence>
         {showFileModal && (
           <motion.div
@@ -1334,6 +1350,6 @@ function SurveyForm() {
       </AnimatePresence>
     </motion.div>  
   );
-}    
+}
 
 export default SurveyForm;

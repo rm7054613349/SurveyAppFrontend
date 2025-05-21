@@ -5,6 +5,7 @@ import { getUsers, getSections, getSubsections, sendReportByUser } from '../serv
 import { pageTransition, fadeIn, buttonHover } from '../animations/framerAnimations';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ProtectedRoute from '../components/ProtectedRoute';
+import { useNavigate } from 'react-router-dom';
 
 function SendReport() {
   const [users, setUsers] = useState([]);
@@ -13,12 +14,22 @@ function SendReport() {
   const [selectedUser, setSelectedUser] = useState('');
   const [selectedSection, setSelectedSection] = useState('');
   const [selectedSubsection, setSelectedSubsection] = useState('');
-  const [selectedDate, setSelectedDate] = useState('');
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   // Cache configuration
   const CACHE_KEY = 'sendReportData';
   const CACHE_TTL = 60 * 60 * 1000; // 1 hour in milliseconds
+
+  // Check token presence
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    console.log('SendReport - Token:', token ? token.slice(0, 20) + '...' : 'No token'); // Debug log
+    if (!token) {
+      toast.error('No authentication token found. Please log in.');
+      navigate('/login');
+    }
+  }, [navigate]);
 
   // Load data from cache or API
   useEffect(() => {
@@ -28,7 +39,7 @@ function SendReport() {
         const cachedData = JSON.parse(localStorage.getItem(CACHE_KEY));
         const now = Date.now();
         if (cachedData && cachedData.timestamp + CACHE_TTL > now) {
-          console.log('Loading from cache');
+          console.log('SendReport - Loading from cache');
           setUsers(cachedData.users || []);
           setSections(cachedData.sections || []);
           setSubsections(cachedData.subsections || []);
@@ -66,17 +77,24 @@ function SendReport() {
 
         setLoading(false);
       } catch (err) {
-        console.error('Failed to fetch data:', err);
-        const status = err.response?.status;
-        let message = err.response?.data?.message || err.message || 'Failed to fetch data';
-        if (status === 401) message = 'Unauthorized: Please log in again';
-        if (status === 403) message = 'Forbidden: Admin access required';
+        console.error('SendReport - Fetch data error:', err.message, 'Status:', err.response?.status); // Debug log
+        let message = err.message || 'Failed to fetch data';
+        if (err.response?.status === 401 || err.message.includes('Invalid token') || err.message.includes('No token provided')) {
+          message = 'Unauthorized: Please log in again';
+          navigate('/login');
+        } else if (err.response?.status === 403 || err.message.includes('Access denied')) {
+          message = 'Access denied: Admin privileges required';
+        } else if (err.message.includes('HTML response')) {
+          message = 'Server error: Received an HTML response. Please contact support.';
+        } else if (err.response?.status === 404) {
+          message = 'API endpoint not found. Please check server configuration.';
+        }
         toast.error(message);
         setLoading(false);
       }
     };
     fetchData();
-  }, []);
+  }, [navigate]);
 
   // Filter subsections based on selected section
   const filteredSubsections = subsections.filter(
@@ -95,21 +113,26 @@ function SendReport() {
       const payload = { userId: selectedUser };
       if (selectedSection) payload.sectionId = selectedSection;
       if (selectedSubsection) payload.subsectionId = selectedSubsection;
-      // if (selectedDate) payload.date = selectedDate;
 
-      console.log('Sending report with payload:', payload);
+      console.log('SendReport - Sending report with payload:', payload); // Debug log
       await sendReportByUser(payload);
       toast.success('Report sent successfully!');
       setSelectedUser('');
       setSelectedSection('');
       setSelectedSubsection('');
-      setSelectedDate('');
     } catch (err) {
-      console.error('Failed to send report:', err);
-      const status = err.response?.status;
-      let message = err.response?.data?.message || err.message || 'Failed to send report';
-      if (status === 401) message = 'Unauthorized: Please log in again';
-      if (status === 403) message = 'Forbidden: Admin access required';
+      console.error('SendReport - Send report error:', err.message, 'Status:', err.response?.status); // Debug log
+      let message = err.message || 'Failed to send report';
+      if (err.response?.status === 401 || err.message.includes('Invalid token') || err.message.includes('No token provided')) {
+        message = 'Unauthorized: Please log in again';
+        navigate('/login');
+      } else if (err.response?.status === 403 || err.message.includes('Access denied')) {
+        message = 'Access denied: Admin privileges required';
+      } else if (err.message.includes('HTML response')) {
+        message = 'Server error: Received an HTML response. Please contact support.';
+      } else if (err.response?.status === 404) {
+        message = 'API endpoint not found. Please check server configuration.';
+      }
       toast.error(message);
     } finally {
       setLoading(false);
@@ -212,22 +235,6 @@ function SendReport() {
                 </option>
               ))}
             </select>
-          </div>
-          <div>
-            <label
-              htmlFor="dateSelect"
-              className="block mb-2 text-sm sm:text-base font-medium text-gray-700 dark:text-gray-200"
-            >
-              Select Date (Optional)
-            </label>
-            <input
-              id="dateSelect"
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full p-2 sm:p-3 border rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-200 text-sm sm:text-base focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500"
-              aria-label="Select a date"
-            />
           </div>
           <motion.button
             whileHover={buttonHover}

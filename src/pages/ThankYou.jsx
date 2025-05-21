@@ -430,109 +430,112 @@ function ThankYou() {
             </motion.div>
           )}
 
-          {responses.length === 0 ? (
-            <motion.p
-              {...fadeIn}
-              className="text-gray-600 dark:text-gray-300 text-center text-md sm:text-lg w-full drop-shadow"
-            >
-              No valid responses found for this subsection.
-            </motion.p>
-          ) : (
-            responses.map((response, index) => {
-              const category = categories.find(
-                cat => cat._id === (response.survey?.categoryId?._id || response.survey?.categoryId)
-              );
-              const isDescriptive = response.survey?.questionType === 'descriptive';
-              const isUnselected = !response.answer || response.answer.trim() === '';
-              const isCorrect = response.answer && response.survey?.correctOption && response.answer === response.survey.correctOption;
+          {/* Conditionally render response cards only if not all responses are descriptive */}
+          {!allDescriptive && (
+            responses.length === 0 ? (
+              <motion.p
+                {...fadeIn}
+                className="text-gray-600 dark:text-gray-300 text-center text-md sm:text-lg w-full drop-shadow"
+              >
+                No valid responses found for this subsection.
+              </motion.p>
+            ) : (
+              responses.map((response, index) => {
+                const category = categories.find(
+                  cat => cat._id === (response.survey?.categoryId?._id || response.survey?.categoryId)
+                );
+                const isDescriptive = response.survey?.questionType === 'descriptive';
+                const isUnselected = !response.answer || response.answer.trim() === '';
+                const isCorrect = response.answer && response.survey?.correctOption && response.answer === response.survey.correctOption;
 
-              return (
-                <motion.div
-                  key={response._id || index}
-                  {...cardAnimation}
-                  transition={{ delay: index * 0.1 }}
-                  className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl p-4 sm:p-6 rounded-2xl shadow-xl border-2 border-blue-200 dark:border-gray-700 w-full max-w-xs hover:scale-105 hover:shadow-2xl transition-all duration-300"
-                  style={{ borderImage: 'linear-gradient(to right, #60a5fa, #f472b6) 1' }}
-                >
-                  <motion.h3
-                    {...fieldAnimation}
-                    transition={{ delay: index * 0.1 + 0.2 }}
-                    className="text-md sm:text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-pink-500 dark:from-blue-300 dark:to-pink-400 mb-2 sm:mb-3 line-clamp-2 drop-shadow"
+                return (
+                  <motion.div
+                    key={response._id || index}
+                    {...cardAnimation}
+                    transition={{ delay: index * 0.1 }}
+                    className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl p-4 sm:p-6 rounded-2xl shadow-xl border-2 border-blue-200 dark:border-gray-700 w-full max-w-xs hover:scale-105 hover:shadow-2xl transition-all duration-300"
+                    style={{ borderImage: 'linear-gradient(to right, #60a5fa, #f472b6) 1' }}
                   >
-                    {response.survey?.question || 'Question not available'}
-                  </motion.h3>
-                  <motion.p
-                    {...fieldAnimation}
-                    transition={{ delay: index * 0.1 + 0.3 }}
-                    className="text-gray-600 dark:text-gray-300 mb-1 sm:mb-2 text-sm sm:text-md"
-                  >
-                    <strong>Category:</strong>{' '}
-                    {category?.name || 'Category not available'}
-                  </motion.p>
-                  <motion.p
-                    {...fieldAnimation}
-                    transition={{ delay: index * 0.1 + 0.4 }}
-                    className="text-gray-600 dark:text-gray-300 mb-1 sm:mb-2 text-sm sm:text-md"
-                  >
-                    <strong>Your Answer:</strong>{' '}
-                    <span
-                      className={`${
-                        isDescriptive
-                          ? 'text-gray-600 dark:text-gray-300'
-                          : isUnselected
-                          ? 'text-rose-500 dark:text-rose-400'
-                          : isCorrect
-                          ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
-                          : 'text-rose-500 dark:text-rose-400'
-                      }`}
+                    <motion.h3
+                      {...fieldAnimation}
+                      transition={{ delay: index * 0.1 + 0.2 }}
+                      className="text-md sm:text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-pink-500 dark:from-blue-300 dark:to-pink-400 mb-2 sm:mb-3 line-clamp-2 drop-shadow"
                     >
-                      {isUnselected ? 'Unselected' : response.answer || 'No answer provided'}
-                      {!isDescriptive && response.answer && response.survey?.correctOption && (
-                        <span className="ml-1">
-                          {isCorrect ? (
-                            <span className="text-emerald-500">✔</span>
-                          ) : (
-                            <span className="text-rose-500">✘</span>
-                          )}
-                        </span>
-                      )}
-                    </span>
-                  </motion.p>
-                  {!isDescriptive && (
-                    <>
-                      <motion.p
-                        {...fieldAnimation}
-                        transition={{ delay: index * 0.1 + 0.5 }}
-                        className="text-gray-600 dark:text-gray-300 mb-1 sm:mb-2 text-sm sm:text-md"
-                      >
-                        <strong>Correct Answer:</strong>{' '}
-                        <span
-                          className={`${
-                            isCorrect
-                              ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
-                              : 'text-gray-600 dark:text-gray-300'
-                          }`}
-                        >
-                          {response.survey?.correctOption || 'N/A'}
-                        </span>
-                      </motion.p>
-                      <motion.p
-                        {...fieldAnimation}
-                        transition={{ delay: index * 0.1 + 0.6 }}
-                        className={`text-sm sm:text-md ${
-                          isUnselected || !isCorrect
+                      {response.survey?.question || 'Question not available'}
+                    </motion.h3>
+                    <motion.p
+                      {...fieldAnimation}
+                      transition={{ delay: index * 0.1 + 0.3 }}
+                      className="text-gray-600 dark:text-gray-300 mb-1 sm:mb-2 text-sm sm:text-md"
+                    >
+                      <strong>Category:</strong>{' '}
+                      {category?.name || 'Category not available'}
+                    </motion.p>
+                    <motion.p
+                      {...fieldAnimation}
+                      transition={{ delay: index * 0.1 + 0.4 }}
+                      className="text-gray-600 dark:text-gray-300 mb-1 sm:mb-2 text-sm sm:text-md"
+                    >
+                      <strong>Your Answer:</strong>{' '}
+                      <span
+                        className={`${
+                          isDescriptive
+                            ? 'text-gray-600 dark:text-gray-300'
+                            : isUnselected
                             ? 'text-rose-500 dark:text-rose-400'
-                            : 'text-emerald-600 dark:text-emerald-400'
+                            : isCorrect
+                            ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
+                            : 'text-rose-500 dark:text-rose-400'
                         }`}
                       >
-                        <strong>Score:</strong>{' '}
-                        {isUnselected || !isCorrect ? 0 : 1}
-                      </motion.p>
-                    </>
-                  )}
-                </motion.div>
-              );
-            })
+                        {isUnselected ? 'Unselected' : response.answer || 'No answer provided'}
+                        {!isDescriptive && response.answer && response.survey?.correctOption && (
+                          <span className="ml-1">
+                            {isCorrect ? (
+                              <span className="text-emerald-500">✔</span>
+                            ) : (
+                              <span className="text-rose-500">✘</span>
+                            )}
+                          </span>
+                        )}
+                      </span>
+                    </motion.p>
+                    {!isDescriptive && (
+                      <>
+                        <motion.p
+                          {...fieldAnimation}
+                          transition={{ delay: index * 0.1 + 0.5 }}
+                          className="text-gray-600 dark:text-gray-300 mb-1 sm:mb-2 text-sm sm:text-md"
+                        >
+                          <strong>Correct Answer:</strong>{' '}
+                          <span
+                            className={`${
+                              isCorrect
+                                ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
+                                : 'text-gray-600 dark:text-gray-300'
+                            }`}
+                          >
+                            {response.survey?.correctOption || 'N/A'}
+                          </span>
+                        </motion.p>
+                        <motion.p
+                          {...fieldAnimation}
+                          transition={{ delay: index * 0.1 + 0.6 }}
+                          className={`text-sm sm:text-md ${
+                            isUnselected || !isCorrect
+                              ? 'text-rose-500 dark:text-rose-400'
+                              : 'text-emerald-600 dark:text-emerald-400'
+                          }`}
+                        >
+                          <strong>Score:</strong>{' '}
+                          {isUnselected || !isCorrect ? 0 : 1}
+                        </motion.p>
+                      </>
+                    )}
+                  </motion.div>
+                );
+              })
+            )
           )}
         </div>
       </div>

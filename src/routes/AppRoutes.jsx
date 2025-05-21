@@ -13,6 +13,7 @@ import OpenSurvey from '../pages/OpenSurvey';
 import ReadyPage from '../pages/ReadyPage';
 import SurveyForm from '../pages/SurveyForm';
 import ThankYou from '../pages/ThankYou';
+import UserProfile from '../pages/UserProfile'; 
 
 function AppRoutes() {
   return (
@@ -199,6 +200,7 @@ function AppRoutes() {
       <Route path="/employee/survey" element={<SurveyForm />} />
         <Route path="/subsections/:sectionId" element={<SurveyForm />} />
         <Route path="/thank-you/:subsectionId" element={<ThankYou />} />
+        <Route path="/profile" element={<UserProfile />} />
 
       {/* Fallback Route */}
       <Route path="*" element={<div>404 - Page Not Found</div>} />

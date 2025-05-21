@@ -16,7 +16,7 @@ function EmployeeDashboard() {
           transition={{ delay: 0.1 }}
           className="flex flex-row flex-wrap gap-6 justify-center"
         >
-          <Link to="/employee/open-survey">
+          <Link to="/employee/survey">
             <motion.div
               whileHover={buttonHover}
               {...cardAnimation}

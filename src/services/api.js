@@ -4,6 +4,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 import axios from 'axios';
 
 
+
 const fetchWithAuth = async (url, options = {}) => {
   const token = localStorage.getItem('token');
   const headers = {
@@ -58,6 +59,66 @@ const fetchWithAuth = async (url, options = {}) => {
 //   return response.json();
 // };
 
+
+
+
+export const fetchWithA = async (url, options = {}) => {
+  const token = localStorage.getItem('token');
+  console.log('fetchWithAuth - URL:', url, 'Token:', token ? token.slice(0, 20) + '...' : 'No token', 'Options:', options); // Debug log
+  if (!token) {
+    throw new Error('No authentication token found. Please log in.');
+  }
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        ...options.headers,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    console.log(`fetchWithAuth - Response status for ${url}:`, response.status); // Debug log
+    console.log(`fetchWithAuth - Response headers for ${url}:`, Object.fromEntries(response.headers)); // Debug log
+
+    if (!response.ok) {
+      const contentType = response.headers.get('Content-Type') || '';
+      const text = await response.text(); // Get raw response text
+      let errorData = { message: 'No response body' };
+
+      console.log(`fetchWithAuth - Raw response text for ${url}:`, text.slice(0, 200) + (text.length > 200 ? '...' : '')); // Debug log
+
+      if (contentType.includes('text/html') || text.startsWith('<!DOCTYPE')) {
+        throw new Error('Server returned an HTML response. Possible causes: incorrect route, authentication redirect, or server misconfiguration.');
+      }
+
+      try {
+        errorData = text ? JSON.parse(text) : errorData; // Try parsing JSON
+      } catch (parseErr) {
+        console.warn(`fetchWithAuth - Failed to parse response body for ${url}:`, parseErr.message); // Debug log
+      }
+      console.log(`fetchWithAuth - Error response body for ${url}:`, errorData); // Debug log
+
+      if (response.status === 401) {
+        throw new Error(errorData.message || 'Unauthorized: Invalid or expired token. Please log in again.');
+      }
+      if (response.status === 403) {
+        throw new Error(errorData.message || 'Access denied: Admin privileges required.');
+      }
+      if (response.status === 404) {
+        throw new Error(errorData.message || 'Endpoint not found. Please check the API route configuration.');
+      }
+      throw new Error(errorData.message || `Network error: ${response.status}`);
+    }
+    return response.json();
+  } catch (err) {
+    console.error(`fetchWithAuth - Error for ${url}:`, err.message); // Debug log
+    throw err;
+  }
+};
+
+
+
+
 export const login = async (email, password, role) => {
   if (!email || !password) {
     console.error('Email and password are required for login');
@@ -87,6 +148,40 @@ export const login = async (email, password, role) => {
     throw err;
   }
 };
+
+
+
+// export const login = async (email, password, role) => {
+//   if (!email || !password) {
+//     console.error('Email and password are required for login');
+//     toast.error('Email and password are required');
+//     throw new Error('Email and password are required');
+//   }
+//   if (!role) {
+//     console.warn('Role is not provided for login; proceeding with request');
+//     toast.warn('User role not provided; default behavior may apply');
+//   }
+//   try {
+//     const data = await fetchWithAuth(`${API_URL}/auth/login`, {
+//       method: 'POST',
+//       body: JSON.stringify({ email, password, role }),
+//     });
+//     localStorage.setItem('token', data.token);
+//     localStorage.setItem('role', data.role || role || 'unknown');
+//     localStorage.setItem('userId', data.id);
+//     console.log(`Login successful for role: ${data.role || role || 'unknown'}`);
+//     return data;
+//   } catch (err) {
+//     console.error('Login error:', err.message);
+//     if (err.message.includes('Access Denied Role')) {
+//       toast.error('Login failed: Selected role does not match your account. Please choose the correct role.');
+//       throw new Error('Invalid role selected');
+//     }
+//     throw err;
+//   }
+// };
+
+
 
 export const signup = async (email, password, role) => {
   if (!role) {
@@ -377,12 +472,12 @@ export const submitResponses = async (subsectionId, data) => {
 
 
 export const sendReportByUser = async (payload) => {
-  return fetchWithAuth(`${API_URL}/response/report-by-user`, {
+  console.log('sendReportByUser - Payload:', payload); // Debug log
+  return fetchWithA(`${API_URL}/response/report-by-user`, {
     method: 'POST',
     body: JSON.stringify(payload),
   });
 };
-
 
 
 
@@ -419,5 +514,102 @@ export const getFileContent = async (filename) => {
       data: error.response?.data,
     });
     throw error;
+  }
+};
+
+
+
+
+
+// Get user profile
+export const getUserProfile = async () => {
+  try {
+    console.log('Fetching user profile');
+    const data = await fetchWithAuth(`${API_URL}/auth/me`, {
+      method: 'GET',
+    });
+    console.log('User profile fetched successfully:', data);
+    return data;
+  } catch (err) {
+    console.error('Get user profile error:', err.message);
+    toast.error(err.message);
+    throw err;
+  }
+};
+
+// Change password
+// export const changePassword = async (currentPassword, newPassword) => {
+//   if (!currentPassword || !newPassword) {
+//     console.error('Current and new password are required');
+//     toast.error('Current and new password are required');
+//     throw new Error('Current and new password are required');
+//   }
+
+//   try {
+//     console.log('Attempting to change password');
+//     const data = await fetchWithAuth(`${API_URL}/auth/change-password`, {
+//       method: 'POST',
+//       body: JSON.stringify({ currentPassword, newPassword }),
+//     });
+//     console.log('Password change successful:', data);
+//     return data;
+//   } catch (err) {
+//     console.error('Change password error:', err.message);
+//     throw err;
+//   }
+// };
+
+const fetchWithAu = async (url, options = {}) => {
+  const token = localStorage.getItem('token');
+  const headers = {
+    ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
+    ...(token && { Authorization: `Bearer ${token}` }),
+    ...options.headers,
+  };
+  console.log(`Fetching from: ${url}`, { method: options.method, headers });
+  try {
+    const response = await fetch(url, { ...options, headers });
+    if (!response.ok) {
+      let errorMessage = `API request failed: ${response.status} ${response.statusText}`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorMessage;
+      } catch (e) {
+        console.error('Failed to parse error response:', e);
+      }
+      console.error(`API error: ${errorMessage}`, { status: response.status, url });
+      toast.error(errorMessage);
+      throw new Error(errorMessage);
+    }
+    const data = await response.json();
+    console.log(`Response from ${url}:`, data);
+    return data;
+  } catch (err) {
+    console.error('Network or fetch error:', {
+      message: err.message,
+      url,
+      options,
+    });
+    throw err;
+  }
+};
+export const changePassword = async (currentPassword, newPassword) => {
+  if (!currentPassword || !newPassword) {
+    console.error('Current and new password are required');
+    toast.error('Current and new password are required');
+    throw new Error('Current and new password are required');
+  }
+
+  try {
+    console.log('Attempting to change password');
+    const data = await fetchWithAu(`${API_URL}/auth/change-password`, {
+      method: 'POST',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+    console.log('Password change successful:', data);
+    return data;
+  } catch (err) {
+    console.error('Change password error:', err.message);
+    throw err;
   }
 };

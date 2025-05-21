@@ -83,19 +83,20 @@ function Login() {
         >
           Login
         </motion.button>
-        {loginError && (
+        { (
           <motion.div
             {...fadeIn}
             transition={{ delay: 0.5 }}
             className="text-center"
           >
-            <p className="text-red-500 mb-2">Invalid credentials. New user?</p>
+            <p className="text-red-500 mb-4"> Or</p>
+            
             <Link to="/signup">
               <motion.button
                 whileHover={buttonHover}
                 className="bg-accent-orange text-white p-2 rounded-lg"
               >
-                Go to Signup
+              Signup for New User
               </motion.button>
             </Link>
           </motion.div>
