@@ -32,7 +32,8 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('role', data.role); // Ensure role is stored
       setUser({ id: data.id, role: data.role, email: data.email });
       toast.success('Logged in successfully!');
-      navigate(role === 'admin' ? '/admin/dashboard' : '/employee/dashboard');
+      // navigate(role === 'admin' ? '/admin/dashboard' : '/employee/dashboard');
+      navigate('/')
     } catch (err) {
       toast.error(err.message || 'Invalid credentials');
       throw err;
@@ -87,7 +88,8 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('role');
     setUser(null);
     toast.info('Logged out successfully');
-    navigate('/login');
+    // navigate('/login');
+    navigate('/')
   };
 
   return (

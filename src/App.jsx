@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import AppRoutes from './routes/AppRoutes.jsx';
 import Navbar from './components/Navbar.jsx';
+import Footer from './pages/Footer.jsx'
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => {
@@ -33,7 +34,9 @@ function App() {
       <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <AppRoutes />
+        
       </main>
+      <Footer/>
     </div>
   );
 }

@@ -62,7 +62,62 @@ const fetchWithAuth = async (url, options = {}) => {
 
 
 
-export const fetchWithA = async (url, options = {}) => {
+// export const fetchWithA = async (url, options = {}) => {
+//   const token = localStorage.getItem('token');
+//   console.log('fetchWithAuth - URL:', url, 'Token:', token ? token.slice(0, 20) + '...' : 'No token', 'Options:', options); // Debug log
+//   if (!token) {
+//     throw new Error('No authentication token found. Please log in.');
+//   }
+//   try {
+//     const response = await fetch(url, {
+//       ...options,
+//       headers: {
+//         ...options.headers,
+//         'Authorization': `Bearer ${token}`,
+//         'Content-Type': 'application/json',
+//       },
+//     });
+//     console.log(`fetchWithAuth - Response status for ${url}:`, response.status); // Debug log
+//     console.log(`fetchWithAuth - Response headers for ${url}:`, Object.fromEntries(response.headers)); // Debug log
+
+//     if (!response.ok) {
+//       const contentType = response.headers.get('Content-Type') || '';
+//       const text = await response.text(); // Get raw response text
+//       let errorData = { message: 'No response body' };
+
+//       console.log(`fetchWithAuth - Raw response text for ${url}:`, text.slice(0, 200) + (text.length > 200 ? '...' : '')); // Debug log
+
+//       if (contentType.includes('text/html') || text.startsWith('<!DOCTYPE')) {
+//         throw new Error('Server returned an HTML response. Possible causes: incorrect route, authentication redirect, or server misconfiguration.');
+//       }
+
+//       try {
+//         errorData = text ? JSON.parse(text) : errorData; // Try parsing JSON
+//       } catch (parseErr) {
+//         console.warn(`fetchWithAuth - Failed to parse response body for ${url}:`, parseErr.message); // Debug log
+//       }
+//       console.log(`fetchWithAuth - Error response body for ${url}:`, errorData); // Debug log
+
+//       if (response.status === 401) {
+//         throw new Error(errorData.message || 'Unauthorized: Invalid or expired token. Please log in again.');
+//       }
+//       if (response.status === 403) {
+//         throw new Error(errorData.message || 'Access denied: Admin privileges required.');
+//       }
+//       if (response.status === 404) {
+//         throw new Error(errorData.message || 'Endpoint not found. Please check the API route configuration.');
+//       }
+//       throw new Error(errorData.message || `Network error: ${response.status}`);
+//     }
+//     return response.json();
+//   } catch (err) {
+//     console.error(`fetchWithAuth - Error for ${url}:`, err.message); // Debug log
+//     throw err;
+//   }
+// };
+
+
+export const fetchWithA= async (url, options = {}) => {
   const token = localStorage.getItem('token');
   console.log('fetchWithAuth - URL:', url, 'Token:', token ? token.slice(0, 20) + '...' : 'No token', 'Options:', options); // Debug log
   if (!token) {
@@ -77,18 +132,18 @@ export const fetchWithA = async (url, options = {}) => {
         'Content-Type': 'application/json',
       },
     });
-    console.log(`fetchWithAuth - Response status for ${url}:`, response.status); // Debug log
+    console.log(`fetchWithAuth - Response status for ${url}:`, response.status, 'Ok:', response.ok); // Debug log
     console.log(`fetchWithAuth - Response headers for ${url}:`, Object.fromEntries(response.headers)); // Debug log
 
+    const contentType = response.headers.get('Content-Type') || '';
+    const text = await response.text(); // Get raw response text
+    console.log(`fetchWithAuth - Raw response text for ${url}:`, text.slice(0, 500) + (text.length > 500 ? '...' : '')); // Debug log
+
     if (!response.ok) {
-      const contentType = response.headers.get('Content-Type') || '';
-      const text = await response.text(); // Get raw response text
       let errorData = { message: 'No response body' };
 
-      console.log(`fetchWithAuth - Raw response text for ${url}:`, text.slice(0, 200) + (text.length > 200 ? '...' : '')); // Debug log
-
       if (contentType.includes('text/html') || text.startsWith('<!DOCTYPE')) {
-        throw new Error('Server returned an HTML response. Possible causes: incorrect route, authentication redirect, or server misconfiguration.');
+        throw new Error(`Server returned an HTML response (status: ${response.status || 'unknown'}). Possible causes: incorrect route (check /api/response/report-by-user), authentication redirect, or server misconfiguration.`);
       }
 
       try {
@@ -105,17 +160,25 @@ export const fetchWithA = async (url, options = {}) => {
         throw new Error(errorData.message || 'Access denied: Admin privileges required.');
       }
       if (response.status === 404) {
-        throw new Error(errorData.message || 'Endpoint not found. Please check the API route configuration.');
+        throw new Error(errorData.message || 'Endpoint not found. Verify /api/response/report-by-user is registered.');
       }
       throw new Error(errorData.message || `Network error: ${response.status}`);
     }
-    return response.json();
+
+    try {
+      return text ? JSON.parse(text) : {};
+    } catch (parseErr) {
+      console.error(`fetchWithAuth - Failed to parse successful response for ${url}:`, parseErr.message); // Debug log
+      throw new Error('Invalid JSON response from server');
+    }
   } catch (err) {
-    console.error(`fetchWithAuth - Error for ${url}:`, err.message); // Debug log
+    console.error(`fetchWithAuth - Error for ${url}:`, err.message, err.stack); // Debug log
+    if (err.name === 'TypeError' && err.message.includes('Failed to fetch')) {
+      throw new Error('Network error: Failed to connect to server. Check if backend is running at http://localhost:5000 and CORS is configured.');
+    }
     throw err;
   }
 };
-
 
 
 

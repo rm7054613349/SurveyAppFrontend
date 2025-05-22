@@ -27,7 +27,7 @@ function EmployeeDashboard() {
             </motion.div>
           </Link>
 
-          <Link to="#">
+          {/* <Link to="#">
             <motion.div
               whileHover={buttonHover}
               {...cardAnimation}
@@ -36,7 +36,7 @@ function EmployeeDashboard() {
               <h3 className="text-lg font-semibold text-primary-blue">Demo Data</h3>
               <p className="text-gray-600 dark:text-gray-300"> Contrary to popular belief,simply random text.</p>
             </motion.div>
-          </Link>
+          </Link> */}
         </motion.div>
         <motion.div {...fadeIn} transition={{ delay: 0.2 }} className="mt-8 text-center">
           <Link to="/">

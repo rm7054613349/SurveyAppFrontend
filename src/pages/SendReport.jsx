@@ -79,15 +79,17 @@ function SendReport() {
       } catch (err) {
         console.error('SendReport - Fetch data error:', err.message, 'Status:', err.response?.status); // Debug log
         let message = err.message || 'Failed to fetch data';
-        if (err.response?.status === 401 || err.message.includes('Invalid token') || err.message.includes('No token provided')) {
+        if (err.message.includes('HTML response')) {
+          message = `Server error: Received an HTML response (status: ${err.response?.status || 'unknown'}). Check server route or contact support.`;
+        } else if (err.message.includes('Failed to connect')) {
+          message = 'Network error: Cannot connect to server. Ensure backend is running.';
+        } else if (err.response?.status === 401 || err.message.includes('Invalid token') || err.message.includes('No token provided')) {
           message = 'Unauthorized: Please log in again';
           navigate('/login');
         } else if (err.response?.status === 403 || err.message.includes('Access denied')) {
           message = 'Access denied: Admin privileges required';
-        } else if (err.message.includes('HTML response')) {
-          message = 'Server error: Received an HTML response. Please contact support.';
         } else if (err.response?.status === 404) {
-          message = 'API endpoint not found. Please check server configuration.';
+          message = 'API endpoint not found. Verify server route configuration.';
         }
         toast.error(message);
         setLoading(false);
@@ -123,15 +125,17 @@ function SendReport() {
     } catch (err) {
       console.error('SendReport - Send report error:', err.message, 'Status:', err.response?.status); // Debug log
       let message = err.message || 'Failed to send report';
-      if (err.response?.status === 401 || err.message.includes('Invalid token') || err.message.includes('No token provided')) {
+      if (err.message.includes('HTML response')) {
+        message = `Server error: Received an HTML response (status: ${err.response?.status || 'unknown'}). Check server route or contact support.`;
+      } else if (err.message.includes('Failed to connect')) {
+        message = 'Network error: Cannot connect to server. Ensure backend is running.';
+      } else if (err.response?.status === 401 || err.message.includes('Invalid token') || err.message.includes('No token provided')) {
         message = 'Unauthorized: Please log in again';
         navigate('/login');
       } else if (err.response?.status === 403 || err.message.includes('Access denied')) {
         message = 'Access denied: Admin privileges required';
-      } else if (err.message.includes('HTML response')) {
-        message = 'Server error: Received an HTML response. Please contact support.';
       } else if (err.response?.status === 404) {
-        message = 'API endpoint not found. Please check server configuration.';
+        message = 'API endpoint not found. Verify server route configuration.';
       }
       toast.error(message);
     } finally {

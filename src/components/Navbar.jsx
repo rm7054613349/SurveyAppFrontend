@@ -3,14 +3,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AuthContext } from '../context/AuthContext';
 
-// Framer Motion animation variants (unchanged)
+// Import the logo image from the assets folder
+import logoImage from '../assets/Image.png'; // Adjust the path as per your project structure
+
+// Framer Motion animation variants
 const buttonHover = {
   scale: 1.05,
   transition: { duration: 0.2 },
-};
-
-const logoAnimation = {
-  whileHover: { rotate: 360, transition: { duration: 0.5 } },
 };
 
 const menuItemVariants = {
@@ -67,9 +66,8 @@ function Navbar({ darkMode, toggleDarkMode }) {
       : 'U';
   };
 
-  // Function to handle redirect to user profile
   const handleUserProfileClick = () => {
-    setIsMobileMenuOpen(false); // Close mobile menu if open
+    setIsMobileMenuOpen(false);
     navigate('/profile');
   };
 
@@ -78,25 +76,16 @@ function Navbar({ darkMode, toggleDarkMode }) {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5 }}
-      className="bg-[#1E3A8A] dark:bg-[#1E40AF] text-white p-4 sm:p-6 shadow-lg fixed w-full top-0 z-50"
+      className="bg-[#E5E7EB] text-white p-2 sm:p-3 shadow-lg fixed w-full top-0 z-50"
     >
-      <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="text-xl sm:text-2xl font-bold flex items-center space-x-2">
-          <motion.svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-[28px] h-[28px] sm:w-8 sm:h-8"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            {...logoAnimation}
-          >
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 16v-4l3 4v-4l-3 4z" />
-          </motion.svg>
-          <span>Assesment</span>
+      <div className="container mx-auto flex items-center justify-between">
+        <Link to="/" className="text-lg sm:text-xl font-bold flex items-center space-y-2 gap-2">
+          <img
+            src={logoImage}
+            alt="SSMED Logo"
+            className="w-[60px] h-[60px] sm:w-[70px] sm:h-[70px] object-contain"
+          />
+          <span className="text-black font-sans">Intranet World</span>
         </Link>
         <div className="md:hidden">
           <motion.button
@@ -104,11 +93,11 @@ function Navbar({ darkMode, toggleDarkMode }) {
             whileTap={{ scale: 0.95 }}
             animate={{ rotate: isMobileMenuOpen ? 90 : 0 }}
             onClick={toggleMobileMenu}
-            className="p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F97316]"
+            className="p-2 rounded-md focus:outline-none"
             aria-label={isMobileMenuOpen ? 'Close mobile menu' : 'Open mobile menu'}
           >
             <svg
-              className="w-[28px] h-[28px] sm:w-8 sm:h-8"
+              className="w-6 h-6 text-black"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -123,64 +112,96 @@ function Navbar({ darkMode, toggleDarkMode }) {
             </svg>
           </motion.button>
         </div>
+        <div className="hidden md:flex items-center justify-center flex-1">
+          <div className="flex items-center space-x-8 lg:space-x-10">
+            {user?.role === 'employee' ? (
+              <>
+                <motion.div whileHover={{ scale: 1.05 }}>
+                  <Link to="/" className="text-black font-sans text-lg lg:text-xl">
+                    Home
+                  </Link>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }}>
+                  <Link to="/employee" className="text-black font-sans text-lg lg:text-xl">
+                    Assessment
+                  </Link>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }}>
+                  <Link to="/media" className="text-black font-sans text-lg lg:text-xl">
+                    Media
+                  </Link>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }}>
+                  <Link to="/contact" className="text-black font-sans text-lg lg:text-xl">
+                    Contact Us
+                  </Link>
+                </motion.div>
+              </>
+            ) : user?.role === 'admin' ? (
+              <motion.div whileHover={{ scale: 1.05 }}>
+                <Link to="/admin/dashboard" className="text-black font-sans text-lg lg:text-xl">
+                 Dashboard
+                </Link>
+              </motion.div>
+            ) : null}
+          </div>
+        </div>
         <div className="hidden md:flex items-center space-x-3 lg:space-x-4">
-          <motion.button
-            whileHover={buttonHover}
-            whileTap={{ scale: 0.95 }}
-            onClick={toggleDarkMode}
-            className="w-10 h-10 rounded-full bg-white dark:bg-[#E5E7EB] text-[#1E3A8A] dark:text-[#1E40AF] flex items-center justify-center text-xl shadow-md hover:bg-[#E5E7EB] dark:hover:bg-[#D1D5DB] transition-colors focus:outline-none focus:ring-2 focus:ring-[#F97316]"
-            aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-          >
-            {darkMode ? '☀️' : '🌙'}
-          </motion.button>
           {user ? (
             <>
-              <div className="flex items-center space-x-2">
-                <motion.div
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleUserProfileClick}
-                  className="w-10 h-10 bg-white dark:bg-[#E5E7EB] text-[#1E3A8A] dark:text-[#1E40AF] rounded-full flex items-center justify-center font-bold shadow-md cursor-pointer"
-                >
-                  {getUserInitial()}
-                </motion.div>
-                <span className="text-sm font-semibold hidden lg:inline">
-                  {/* {user.email.split('@')[0]} ({user.role}) */}
-                </span>
-              </div>
-              <motion.div whileHover={{ scale: 1.05 }}>
-                <Link
-                  to={user.role === 'admin' ? '/admin/dashboard' : '/employee'}
-                  className="bg-white dark:bg-[#E5E7EB] text-[#1E3A8A] dark:text-[#1E40AF] px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-medium shadow-md hover:bg-[#E5E7EB] dark:hover:bg-[#D1D5DB] transition-colors focus:outline-none focus:ring-2 focus:ring-[#F97316]"
-                >
-                  Dashboard
-                </Link>
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleUserProfileClick}
+                className="w-10 h-10 bg-[#1E3A8A] text-white rounded-full flex items-center justify-center font-bold shadow-md cursor-pointer text-lg"
+              >
+                {getUserInitial()}
               </motion.div>
               <motion.button
                 whileHover={buttonHover}
                 whileTap={{ scale: 0.95 }}
-                onClick={handleLogout}
-                className="bg-[#F97316] text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-medium shadow-md hover:bg-[#EA580C] transition-colors focus:outline-none focus:ring-2 focus:ring-white"
+                onClick={handleDarkModeToggle}
+                className="w-10 h-10 rounded-full bg-[#1E3A8A] text-white flex items-center justify-center text-lg shadow-md hover:bg-[#1E40AF] transition-colors focus:outline-none"
+                aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               >
-                Logout
+                {darkMode ? '☀️' : '🌙'}
+              </motion.button>
+              <motion.button
+                whileHover={buttonHover}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleLogout}
+                className="w-10 h-10 bg-[#F97316] text-white rounded-full flex items-center justify-center shadow-md hover:bg-[#EA580C] transition-colors focus:outline-none"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                  />
+                </svg>
               </motion.button>
             </>
           ) : (
             <>
+              <motion.button
+                whileHover={buttonHover}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleDarkModeToggle}
+                className="w-10 h-10 rounded-full bg-[#1E3A8A] text-white flex items-center justify-center text-lg shadow-md hover:bg-[#1E40AF] transition-colors focus:outline-none"
+                aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              >
+                {darkMode ? '☀️' : '🌙'}
+              </motion.button>
               <motion.div whileHover={{ scale: 1.05 }}>
-                <Link
-                  to="/login"
-                  className="bg-white dark:bg-[#E5E7EB] text-[#1E3A8A] dark:text-[#1E40AF] px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-medium shadow-md hover:bg-[#E5E7EB] dark:hover:bg-[#D1D5DB] transition-colors focus:outline-none focus:ring-2 focus:ring-[#F97316]"
-                >
-                  Login
-                </Link>
-              </motion.div>
-              <motion.div whileHover={{ scale: 1.05 }}>
-                <Link
-                  to="/signup"
-                  className="bg-[#F97316] text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-medium shadow-md hover:bg-[#EA580C] transition-colors focus:outline-none focus:ring-2 focus:ring-white"
-                >
-                  Signup
+                <Link to="/login" className="text-black font-sans text-lg lg:text-xl">
+                  Get Started
                 </Link>
               </motion.div>
             </>
@@ -191,10 +212,10 @@ function Navbar({ darkMode, toggleDarkMode }) {
         variants={sideMenuVariants}
         initial="closed"
         animate={isMobileMenuOpen ? 'open' : 'closed'}
-        className="fixed top-0 right-0 h-full w-[200px] bg-[#1E3A8A] dark:bg-[#1E40AF] bg-opacity-90 text-white md:hidden z-40"
+        className="fixed top-0 right-0 h-full w-[250px] bg-[#E5E7EB] bg-opacity-90 text-white md:hidden z-40"
       >
         <motion.div
-          className="flex flex-col p-4 mt-16 relative space-y-3"
+          className="flex flex-col p-4 mt-12 relative space-y-6"
           variants={containerVariants}
           initial="hidden"
           animate={isMobileMenuOpen ? 'visible' : 'hidden'}
@@ -204,11 +225,11 @@ function Navbar({ darkMode, toggleDarkMode }) {
             whileHover={buttonHover}
             whileTap={{ scale: 0.95 }}
             onClick={toggleMobileMenu}
-            className="absolute top-4 right-4 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F97316]"
+            className="absolute top-4 right-4 p-2 rounded-md focus:outline-none"
             aria-label="Close mobile menu"
           >
             <svg
-              className="w-6 h-6"
+              className="w-6 h-6 text-black"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -222,14 +243,14 @@ function Navbar({ darkMode, toggleDarkMode }) {
               />
             </svg>
           </motion.button>
-          {user ? (
-            <>
-              <motion.div variants={menuItemVariants} className="flex items-center space-x-2">
+          <motion.div variants={menuItemVariants} className="flex items-center space-x-3">
+            {user ? (
+              <>
                 <motion.div
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleUserProfileClick}
-                  className="w-10 h-10 bg-white dark:bg-[#E5E7EB] text-[#1E3A8A] dark:text-[#1E40AF] rounded-full flex items-center justify-center font-bold shadow-md cursor-pointer"
+                  className="w-10 h-10 bg-[#1E3A8A] text-white rounded-full flex items-center justify-center font-bold shadow-md cursor-pointer text-lg"
                 >
                   {getUserInitial()}
                 </motion.div>
@@ -237,64 +258,109 @@ function Navbar({ darkMode, toggleDarkMode }) {
                   whileHover={buttonHover}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleDarkModeToggle}
-                  className="w-8 h-8 rounded-full bg-white dark:bg-[#E5E7EB] text-[#1E3A8A] dark:text-[#1E40AF] flex items-center justify-center text-lg shadow-md hover:bg-[#E5E7EB] dark:hover:bg-[#D1D5DB] transition-colors focus:outline-none focus:ring-2 focus:ring-[#F97316]"
+                  className="w-10 h-10 rounded-full bg-[#1E3A8A] text-white flex items-center justify-center text-lg shadow-md hover:bg-[#1E40AF] transition-colors focus:outline-none"
                   aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
                 >
                   {darkMode ? '☀️' : '🌙'}
                 </motion.button>
-              </motion.div>
-              <motion.div variants={menuItemVariants} whileHover={{ scale: 1.05 }}>
+                <motion.button
+                  variants={menuItemVariants}
+                  whileHover={buttonHover}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleLogout}
+                  className="w-10 h-10 bg-[#F97316] text-white rounded-full flex items-center justify-center shadow-md hover:bg-[#EA580C] transition-colors focus:outline-none"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                    />
+                  </svg>
+                </motion.button>
+              </>
+            ) : (
+              <>
+                <motion.button
+                  whileHover={buttonHover}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleDarkModeToggle}
+                  className="w-10 h-10 rounded-full bg-[#1E3A8A] text-white flex items-center justify-center text-lg shadow-md hover:bg-[#1E40AF] transition-colors focus:outline-none"
+                  aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                >
+                  {darkMode ? '☀️' : '🌙'}
+                </motion.button>
+                <motion.div whileHover={{ scale: 1.05 }} className="w-[150px]">
+                  <Link
+                    to="/login"
+                    className="block text-black font-sans text-lg text-center"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Get Started
+                  </Link>
+                </motion.div>
+              </>
+            )}
+          </motion.div>
+          <motion.div variants={menuItemVariants} className="flex flex-col space-y-6 w-[150px]">
+            {user?.role === 'employee' ? (
+              <>
+                <motion.div whileHover={{ scale: 1.05 }} className="w-full">
+                  <Link
+                    to="/"
+                    className="block text-black font-sans text-lg text-center"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Home
+                  </Link>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }} className="w-full">
+                  <Link
+                    to="/employee"
+                    className="block text-black font-sans text-lg text-center"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Assessment
+                  </Link>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }} className="w-full">
+                  <Link
+                    to="/media"
+                    className="block text-black font-sans text-lg text-center"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Media
+                  </Link>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }} className="w-full">
+                  <Link
+                    to="/contact"
+                    className="block text-black font-sans text-lg text-center"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Contact Us
+                  </Link>
+                </motion.div>
+              </>
+            ) : user?.role === 'admin' ? (
+              <motion.div whileHover={{ scale: 1.05 }} className="w-full">
                 <Link
-                  to={user.role === 'admin' ? '/admin/dashboard' : '/employee'}
-                  className="block w-full bg-white dark:bg-[#E5E7EB] text-[#1E3A8A] dark:text-[#1E40AF] px-4 py-2 rounded-full font-medium shadow-md hover:bg-[#E5E7EB] dark:hover:bg-[#D1D5DB] transition-colors focus:outline-none focus:ring-2 focus:ring-[#F97316]"
+                  to="/admin/dashboard"
+                  className="block text-black font-sans text-lg text-center"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Dashboard
                 </Link>
               </motion.div>
-              <motion.button
-                variants={menuItemVariants}
-                whileHover={buttonHover}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleLogout}
-                className="w-full bg-[#F97316] text-white px-4 py-2 rounded-full font-medium shadow-md hover:bg-[#EA580C] transition-colors focus:outline-none focus:ring-2 focus:ring-white"
-              >
-                Logout
-              </motion.button>
-            </>
-          ) : (
-            <>
-              <motion.div variants={menuItemVariants}>
-                <motion.button
-                  whileHover={buttonHover}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleDarkModeToggle}
-                  className="w-8 h-8 rounded-full bg-white dark:bg-[#E5E7EB] text-[#1E3A8A] dark:text-[#1E40AF] flex items-center justify-center text-lg shadow-md hover:bg-[#E5E7EB] dark:hover:bg-[#D1D5DB] transition-colors focus:outline-none focus:ring-2 focus:ring-[#F97316]"
-                  aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-                >
-                  {darkMode ? '☀️' : '🌙'}
-                </motion.button>
-              </motion.div>
-              <motion.div variants={menuItemVariants} whileHover={{ scale: 1.05 }}>
-                <Link
-                  to="/login"
-                  className="block w-full bg-white dark:bg-[#E5E7EB] text-[#1E3A8A] dark:text-[#1E40AF] px-4 py-2 rounded-full font-medium shadow-md hover:bg-[#E5E7EB] dark:hover:bg-[#D1D5DB] transition-colors focus:outline-none focus:ring-2 focus:ring-[#F97316]"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Login
-                </Link>
-              </motion.div>
-              <motion.div variants={menuItemVariants} whileHover={{ scale: 1.05 }}>
-                <Link
-                  to="/signup"
-                  className="block w-full bg-[#F97316] text-white px-4 py-2 rounded-full font-medium shadow-md hover:bg-[#EA580C] transition-colors focus:outline-none focus:ring-2 focus:ring-white"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Signup
-                </Link>
-              </motion.div>
-            </>
-          )}
+            ) : null}
+          </motion.div>
         </motion.div>
       </motion.div>
     </motion.nav>

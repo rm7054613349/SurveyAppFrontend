@@ -59,7 +59,7 @@ function Home() {
         {...fadeIn}
         className="text-5xl font-bold mb-6 text-primary-blue"
       >
-        Welcome to SurveyApp
+        Welcome to Intranet World 
       </motion.h1>
       <motion.p
         {...fadeIn}
@@ -73,14 +73,14 @@ function Home() {
         transition={{ delay: 0.4 }}
         className="flex justify-center space-x-4"
       >
-        {/* Get Started Button */}
+        {/* Get Started Button
         <motion.button
           whileHover={buttonHover}
           onClick={handleGetStarted}
           className="bg-primary-blue text-white px-6 py-3 rounded-full text-lg"
         >
           Get Started
-        </motion.button>
+        </motion.button> */}
       </motion.div>
     </motion.div>
   );

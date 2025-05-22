@@ -162,18 +162,15 @@ function UserProfile() {
           </motion.div>
           <div className="text-center space-y-2">
             <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
-              {user.email.split('@')[0]}{' '}
               <span className="text-sm text-gray-500 dark:text-gray-400">
-                ({user.role.charAt(0).toUpperCase() + user.role.slice(1)})
+                {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
               </span>
             </h3>
             <p className="text-gray-600 dark:text-gray-300 text-sm">
               <span className="font-medium">Email:</span> {user.email}
             </p>
-            <p className="text-gray-600 dark:text-gray-300 text-sm">
-              <span className="font-medium">User ID:</span> {user.id}
-            </p>
-            {user.badges && user.badges.length > 0 && (
+            <p className="text-gray-600 dark:text-gray-300 text-sm"></p>
+            {user.role === 'employee' && user.badges && user.badges.length > 0 && (
               <div className="mt-3 flex flex-wrap justify-center gap-2">
                 <span className="text-gray-600 dark:text-gray-300 text-sm font-medium">Badges:</span>
                 {user.badges.map((badge, index) => (

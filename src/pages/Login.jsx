@@ -83,24 +83,16 @@ function Login() {
         >
           Login
         </motion.button>
-        { (
+        {/* { (
           <motion.div
-            {...fadeIn}
-            transition={{ delay: 0.5 }}
-            className="text-center"
-          >
-            <p className="text-red-500 mb-4"> Or</p>
-            
-            <Link to="/signup">
-              <motion.button
-                whileHover={buttonHover}
-                className="bg-accent-orange text-white p-2 rounded-lg"
-              >
-              Signup for New User
-              </motion.button>
-            </Link>
-          </motion.div>
-        )}
+          {...fadeIn}
+          transition={{ delay: 0.5 }}
+          className="flex justify-center items-center gap-4 text-center"
+        >
+          <p className="text-sm text-gray-600 dark:text-gray-300">Don't have an account?</p>
+          <Link to="/signup" className="text-sm text-blue-600 dark:text-blue-400 underline">Signup</Link>
+        </motion.div>
+        )} */}
       </form>
     </motion.div>
   );
