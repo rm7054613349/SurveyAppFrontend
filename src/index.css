@@ -48,3 +48,20 @@ body {
 .circular-progress {
   animation: spin-slow 3s linear infinite;
 }
+
+/* Full-width content area between navbar and footer */
+.full-width-content {
+  width: 100%;
+  min-height: calc(100vh - 80px - 80px); /* Adjust for navbar/footer height */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Ensure inner content spans full width with padding */
+.full-width-content > * {
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}

@@ -1,0 +1,21 @@
+/* src/styles/custom-owl.css */
+@media (forced-colors: active) {
+  .owl-carousel .owl-item img {
+    background-color: Canvas;
+    border-color: ButtonBorder;
+  }
+  .owl-nav .owl-prev,
+  .owl-nav .owl-next {
+    background-color: ButtonFace;
+    color: ButtonText;
+    border: 1px solid ButtonBorder;
+  }
+  .owl-dots .owl-dot span {
+    background-color: ButtonFace;
+    border-color: ButtonBorder;
+  }
+  .owl-dots .owl-dot.active span,
+  .owl-dots .owl-dot:hover span {
+    background-color: Highlight;
+  }
+}

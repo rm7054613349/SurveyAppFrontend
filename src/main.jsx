@@ -10,6 +10,7 @@ import { ToastContainer } from './components/ToastContainer.jsx';
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
+    
       <AuthProvider>
         <App />
         <ToastContainer />

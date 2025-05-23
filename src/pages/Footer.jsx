@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { FaLinkedin, FaTwitter, FaFacebook, FaInstagram } from 'react-icons/fa';
+import { FaLinkedin, FaTwitter, FaFacebook, FaInstagram,FaEnvelope } from 'react-icons/fa';
 import logoImage from '../assets/Image.png'; 
 
 const Footer = () => {
@@ -61,7 +61,7 @@ const Footer = () => {
                 8081588889
               </a>
             </p>
-            <p className="text-gray-200 text-sm mt-2">Location: [Your Address]</p>
+            {/* <p className="text-gray-200 text-sm mt-2">Location: [Your Address]</p> */}
           </div>
 
           {/* Social Media */}
@@ -84,7 +84,7 @@ const Footer = () => {
                 className="text-gray-200 hover:text-blue-400 transition-colors duration-200"
                 aria-label="Twitter"
               >
-                <FaTwitter size={30} />
+                <FaEnvelope size={30} />
               </a>
               <a
                 href="https://facebook.com"

@@ -3,14 +3,24 @@ import { Link } from 'react-router-dom';
 
 import { pageTransition, fadeIn, buttonHover, cardAnimation } from '../animations/framerAnimations';
 import ProtectedRoute from '../components/ProtectedRoute';
-
+const containerVariants = {
+  hidden: { opacity: 0, y: 50 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+};
 function EmployeeDashboard() {
   return (
+
     <ProtectedRoute allowedRole="employee">
+      <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="min-h-screen  dark:bg-[#1F2937] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+    >
       <motion.div {...pageTransition} className="container mx-auto p-6 content-box">
-        <motion.h2 {...fadeIn} className="text-3xl font-bold mb-6 text-primary-blue">
+        {/* <motion.h2 {...fadeIn} className="text-3xl font-bold mb-6 text-primary-blue">
           Employee Dashboard
-        </motion.h2>
+        </motion.h2> */}
         <motion.div
           {...fadeIn}
           transition={{ delay: 0.1 }}
@@ -40,14 +50,15 @@ function EmployeeDashboard() {
         </motion.div>
         <motion.div {...fadeIn} transition={{ delay: 0.2 }} className="mt-8 text-center">
           <Link to="/">
-            <motion.button
+            {/* <motion.button
               whileHover={buttonHover}
               className="bg-primary-blue text-white px-6 py-3 rounded-lg"
             >
               Back to Home
-            </motion.button>
+            </motion.button> */}
           </Link>
         </motion.div>
+      </motion.div>
       </motion.div>
     </ProtectedRoute>
   );

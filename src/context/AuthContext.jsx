@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { login as loginService, signup as signupService } from '../services/api';
 
+
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -33,7 +34,7 @@ export const AuthProvider = ({ children }) => {
       setUser({ id: data.id, role: data.role, email: data.email });
       toast.success('Logged in successfully!');
       // navigate(role === 'admin' ? '/admin/dashboard' : '/employee/dashboard');
-      navigate('/')
+      navigate('/Intranet/Home')
     } catch (err) {
       toast.error(err.message || 'Invalid credentials');
       throw err;

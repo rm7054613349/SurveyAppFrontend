@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route,Navigate } from 'react-router-dom';
 import ProtectedRoute from '../components/ProtectedRoute';
 import Home from '../pages/Home';
 import Login from '../pages/Login';
@@ -14,9 +14,15 @@ import ReadyPage from '../pages/ReadyPage';
 import SurveyForm from '../pages/SurveyForm';
 import ThankYou from '../pages/ThankYou';
 import UserProfile from '../pages/UserProfile'; 
+import ContactUs from '../pages/ContactUs';
+import Media from '../pages/Media'
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import IntranetHome from '../Intranet/Home'
+
 
 function AppRoutes() {
   return (
+     <GoogleOAuthProvider clientId="your-google-client-id">
     <Routes>
       {/* Public Routes */}
       <Route path="/" element={<Home />} />
@@ -197,6 +203,20 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      
+       <Route path="/contact" element={<ContactUs />} />
+        {/* Protected Routes */}
+         <Route 
+         path="/Intranet/Home" 
+         element={
+         <ProtectedRoute allowedRole={["employee","admin"]}>
+            <IntranetHome />
+          </ProtectedRoute>
+         } />
+
+
+         
+       <Route path="/media" element={<Media />} />
       <Route path="/employee/survey" element={<SurveyForm />} />
         <Route path="/subsections/:sectionId" element={<SurveyForm />} />
         <Route path="/thank-you/:subsectionId" element={<ThankYou />} />
@@ -205,6 +225,7 @@ function AppRoutes() {
       {/* Fallback Route */}
       <Route path="*" element={<div>404 - Page Not Found</div>} />
     </Routes>
+    </GoogleOAuthProvider>
   );
 }
 export default AppRoutes;
