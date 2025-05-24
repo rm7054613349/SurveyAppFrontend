@@ -8,7 +8,7 @@ import 'owl.carousel/dist/assets/owl.theme.default.css';
 import { pageTransition, fadeIn, buttonHover } from '../animations/framerAnimations';
 
 // Import images from assets folder
-import image1 from '../assets/';
+import image1 from '../assets/Image.png';
 import image2 from '../assets/Image.png';
 import image3 from '../assets/Image.png';
 import image4 from '../assets/Image.png';
