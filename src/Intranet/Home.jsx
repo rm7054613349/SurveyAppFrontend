@@ -9,7 +9,7 @@ import { UsersIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 
 // Import images (replace with your actual image file names)
 import carouselImage1 from '../assets/i1.jpg';
-import carouselImage2 from '../assets/image.png';
+import carouselImage2 from '../assets/i1.png';
 import carouselImage3 from '../assets/i1.jpg';
 import intranetImage from '../assets/i1.jpg';
 import assessmentImage from '../assets/i1.jpg';
