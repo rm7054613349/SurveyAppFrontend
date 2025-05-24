@@ -22,7 +22,7 @@ import IntranetHome from '../Intranet/Home'
 
 function AppRoutes() {
   return (
-     <GoogleOAuthProvider clientId="your-google-client-id">
+    
     <Routes>
       {/* Public Routes */}
       <Route path="/" element={<Home />} />
@@ -225,7 +225,7 @@ function AppRoutes() {
       {/* Fallback Route */}
       <Route path="*" element={<div>404 - Page Not Found</div>} />
     </Routes>
-    </GoogleOAuthProvider>
+   
   );
 }
 export default AppRoutes;

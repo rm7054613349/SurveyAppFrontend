@@ -8,13 +8,16 @@ import 'owl.carousel/dist/assets/owl.theme.default.css';
 import { pageTransition, fadeIn, buttonHover } from '../animations/framerAnimations';
 
 // Import images from assets folder
-import image1 from '../assets/Image.png';
-import image2 from '../assets/Image.png';
-import image3 from '../assets/Image.png';
-import image4 from '../assets/Image.png';
+import carouselImage1 from '../assets/BL1.png';
+import carouselImage2 from '../assets/BL2.png';
+import carouselImage3 from '../assets/BL3.png';
 
 // Array of images for the carousel
-const carouselImages = [image1, image2, image3, image4];
+const carouselImages = [
+  { src: carouselImage1, alt: 'Team collaboration in workplace' },
+  { src: carouselImage2, alt: 'Modern office environment' },
+  { src: carouselImage3, alt: 'Corporate team meeting' },
+];
 
 // Framer Motion animation variants
 const containerVariants = {
@@ -69,13 +72,18 @@ function Home() {
     nav: true,
     items: 1, // Show only one image at a time
     autoplay: !isPaused,
-    autoplayTimeout: 3000,
+    autoplayTimeout: 4000, // Slightly longer for better UX
     autoplayHoverPause: false, // Disable default hover pause to use custom handler
-    smartSpeed: 800, // Smooth transition speed (in milliseconds)
+    smartSpeed: 1800, // Smoother transition speed
     navText: [
-      '<span class="owl-nav-prev">❮</span>',
-      '<span class="owl-nav-next">❯</span>',
+      '<span class="owl-nav-prev text-3xl text-white bg-primary-blue rounded-full px-4 py-2">❮</span>',
+      '<span class="owl-nav-next text-3xl text-white bg-primary-blue rounded-full px-4 py-2">❯</span>',
     ],
+    responsive: {
+      0: { items: 1 },
+      600: { items: 1 },
+      1000: { items: 1 },
+    },
   };
 
   // Render carousel for non-logged-in users
@@ -84,35 +92,23 @@ function Home() {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="full-width-content  dark:bg-[#1F2937] py-12"
+      className="dark:bg-[#1F2937] py-12"
     >
       {!user && (
         <>
-          <motion.h1
-            {...fadeIn}
-            className="text-5xl font-bold mb-6 text-primary-blue text-center"
-          >
-            Welcome to Intranet World
-          </motion.h1>
-          <motion.p
-            {...fadeIn}
-            transition={{ delay: 0.2 }}
-            className="text-xl text-gray-700 dark:text-gray-300 mb-8 text-center"
-          >
-            Engage, Analyze, and Improve with our cutting-edge survey platform.
-          </motion.p>
           <motion.div
             {...fadeIn}
             transition={{ delay: 0.4 }}
-            className="w-full mb-8"
+            className="mb-8 max-w-4xl mx-auto" // Added max-width and centered the carousel
           >
             <OwlCarousel className="owl-theme" {...owlOptions}>
               {carouselImages.map((image, index) => (
-                <div key={index} className="item">
+                <div key={index} className="item relative">
                   <img
-                    src={image}
-                    alt={`Carousel Image ${index + 1}`}
-                    className="w-full h-96 object-contain rounded-lg cursor-pointer"
+                    src={image.src}
+                    alt={image.alt}
+                    className="w-full max-w-[600px] max-h-[400px] mx-auto rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 object-cover" // Adjusted width and maintained aspect ratio
+                    loading="lazy"
                     onClick={handleImageClick}
                     onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}
@@ -126,6 +122,7 @@ function Home() {
             transition={{ delay: 0.6 }}
             className="flex justify-center space-x-4"
           >
+            {/* Add your "Get Started" button here if needed */}
           </motion.div>
         </>
       )}

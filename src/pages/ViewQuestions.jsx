@@ -198,7 +198,7 @@ function ViewQuestions() {
     <ProtectedRoute allowedRole="admin">
       <motion.div
         {...pageTransition}
-        className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 bg-gradient-to-br from-gray-100 to-gray-300 dark:from-gray-900 dark:to-gray-800 min-h-screen"
+        className="container mx-auto px-4 sm:px-6 lg:px-8 py-10  dark:from-gray-900 min-h-screen"
       >
         {/* Header */}
         <motion.h2

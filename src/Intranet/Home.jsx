@@ -5,24 +5,25 @@ import { AuthContext } from '../context/AuthContext';
 import OwlCarousel from 'react-owl-carousel';
 import 'owl.carousel/dist/assets/owl.carousel.css';
 import 'owl.carousel/dist/assets/owl.theme.default.css';
-import { UsersIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 
-// Import images (replace with your actual image file names)
-import carouselImage1 from '../assets/i1.jpg';
-import carouselImage2 from '../assets/i1.jpg';
-import carouselImage3 from '../assets/i1.jpg';
+// Import images (using your provided image paths)
+import carouselImage1 from '../assets/AL1.jpg';
+import carouselImage2 from '../assets/AL2.jpg';
+import carouselImage3 from '../assets/AL3.jpg';
+import carouselImage4 from '../assets/AL4.jpg';
+import carouselImage5 from '../assets/AL5.jpg';
+import carouselImage6 from '../assets/AL6.jpg';
+import carouselImage8 from '../assets/AL8.jpg';
+import carouselImage9 from '../assets/AL9.jpg';
+
+// Content Images
 import intranetImage from '../assets/i1.jpg';
-import assessmentImage from '../assets/i1.jpg';
+import assessmentImage from '../assets/Assesment.jpg';
 
 // Framer Motion animation variants
 const containerVariants = {
   hidden: { opacity: 0, y: 50 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: 'easeOut' } },
-};
-
-const fadeIn = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.8, ease: 'easeOut' } },
 };
 
 const slideInLeft = {
@@ -35,15 +36,20 @@ const slideInRight = {
   visible: { opacity: 1, x: 0, transition: { duration: 0.8, ease: 'easeOut' } },
 };
 
-// Owl Carousel options
+// Owl Carousel options with enhanced sliding effect
 const carouselOptions = {
-  items: 1,
   loop: true,
-  autoplay: true,
-  autoplayTimeout: 5000,
-  autoplayHoverPause: true,
+  margin: 0,
   nav: true,
-  dots: true,
+  items: 1,
+  autoplay: true,
+  autoplayTimeout: 4000,
+  autoplayHoverPause: true,
+  smartSpeed: 1800,
+  navText: [
+    '<span class="owl-nav-prev text-white bg-teal-500 rounded-full p-3 text-lg">❮</span>',
+    '<span class="owl-nav-next text-white bg-teal-500 rounded-full p-3 text-lg">❯</span>',
+  ],
   animateOut: 'fadeOut',
   animateIn: 'fadeIn',
   responsive: {
@@ -58,6 +64,11 @@ const carouselImages = [
   { src: carouselImage1, alt: 'Team collaboration in workplace' },
   { src: carouselImage2, alt: 'Modern office environment' },
   { src: carouselImage3, alt: 'Corporate team meeting' },
+  { src: carouselImage4, alt: 'Team collaboration in workplace' },
+  { src: carouselImage5, alt: 'Modern office environment' },
+  { src: carouselImage6, alt: 'Corporate team meeting' },
+  { src: carouselImage8, alt: 'Modern office environment' },
+  { src: carouselImage9, alt: 'Corporate team meeting' },
 ];
 
 function Home() {
@@ -80,46 +91,24 @@ function Home() {
     }
   }, [user]);
 
-  // Handle carousel click to toggle pause/resume
-  const handleCarouselClick = (carousel) => {
-    if (carousel.state.autoplay) {
-      carousel.pause();
-    } else {
-      carousel.play();
-    }
-  };
-
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="min-h-screen  font-poppins w-full"
-    >
+    <>
       {/* Main Content */}
-      <div className="w-full p-4 sm:p-6 lg:p-8">
-        <motion.h1
-          variants={fadeIn}
-          className="text-3xl sm:text-4xl lg:text-5xl font-bold text-center mb-8 sm:mb-10 text-indigo-700 underline decoration-teal-500 decoration-4"
-          role="heading"
-          aria-label="Intranet Dashboard"
+      <div className="p-4 sm:p-6 lg:p-8">
+        {/* Carousel Section */}
+        <motion.div
+          variants={slideInLeft}
+          initial="hidden"
+          animate="visible"
+          className="mb-6 sm:mb-8 max-w-3xl mx-auto" // Added max-width and centered
         >
-         
-        </motion.h1>
-
-        {/* Carousel Section (Visible for both roles) */}
-        <motion.div variants={slideInLeft} className="mb-6 sm:mb-8">
-          <OwlCarousel
-            className="owl-theme"
-            {...carouselOptions}
-            onClick={(e, carousel) => handleCarouselClick(carousel)}
-          >
+          <OwlCarousel className="owl-theme" {...carouselOptions}>
             {carouselImages.map((image, index) => (
-              <div key={index} className="item">
+              <div key={index} className="item relative">
                 <img
                   src={image.src}
                   alt={image.alt}
-                  className="w-full h-64 sm:h-80 md:h-96 object-cover rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300"
+                  className="w-full max-w-[600px] max-h-[480px] mx-auto rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 object-cover" // Adjusted width
                   loading="lazy"
                 />
               </div>
@@ -127,10 +116,12 @@ function Home() {
           </OwlCarousel>
         </motion.div>
 
-        {/* Intranet Section (Visible for both roles) */}
+        {/* Intranet Section */}
         <motion.div
           variants={slideInRight}
-          className="flex flex-col sm:flex-row gap-4 sm:gap-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-4 sm:p-6 mb-6 sm:mb-8"
+          initial="hidden"
+          animate="visible"
+          className="flex flex-col sm:flex-row gap-4 sm:gap-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-4 sm:p-6 mb-6 sm:mb-8"
         >
           <div className="sm:w-1/2 flex items-center">
             <img
@@ -141,10 +132,10 @@ function Home() {
             />
           </div>
           <div className="sm:w-1/2 flex flex-col justify-center">
-            <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-4">
               {user?.role === 'admin' ? 'Intranet Data Control' : 'Welcome to Intranet world!'}
             </h2>
-            <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base leading-relaxed">
+            <p className="text-gray-600 dark:text-gray-300 mb-4 sm:mb-6 text-sm sm:text-base leading-relaxed">
               {user?.role === 'admin'
                 ? 'Manage your team, monitor analytics, and access advanced tools to drive success.'
                 : 'Access your personalized intranet tools, assessments, and media content to stay connected and productive.'}
@@ -165,15 +156,16 @@ function Home() {
         {user?.role === 'admin' && (
           <motion.div
             variants={containerVariants}
-            className="flex flex-col sm:flex-row gap-4 sm:gap-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-4 sm:p-6"
+            initial="hidden"
+            animate="visible"
+            className="flex flex-col sm:flex-row gap-4 sm:gap-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-4 sm:p-6"
           >
             <div className="sm:w-1/2 flex flex-col justify-center order-1 sm:order-0">
-              <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 flex items-center">
-                Assement Data Control
+              <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center">
+                Assessment Data Control
               </h2>
-              <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base leading-relaxed">
-                Monitor key performance indicators, track progress, and gain insights with detailed
-                reports and analytics.
+              <p className="text-gray-600 dark:text-gray-300 mb-4 sm:mb-6 text-sm sm:text-base leading-relaxed">
+                Monitor key performance indicators, track progress, and gain insights with detailed reports and analytics.
               </p>
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -196,7 +188,7 @@ function Home() {
           </motion.div>
         )}
       </div>
-    </motion.div>
+    </>
   );
 }
 
