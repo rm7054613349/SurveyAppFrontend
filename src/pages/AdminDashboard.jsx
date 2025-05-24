@@ -2,8 +2,8 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { pageTransition, slideInRight, buttonHover, imageAnimation } from '../animations/framerAnimations';
 import ProtectedRoute from '../components/ProtectedRoute';
-import CreateQuestionImg from '../assets/createQ.jpg';
-import ViewQuestionsImg from '../assets/viewQ.jpg';
+import CreateQuestionImg from '../assets/CreateQ.jpg';
+import ViewQuestionsImg from '../assets/ViewQ.jpg';
 import ShowReportImg from '../assets/report.jpg';
 
 // Container variants with staggered children for professional entrance
