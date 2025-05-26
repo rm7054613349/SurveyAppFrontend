@@ -79,10 +79,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
     } transition-colors duration-200`;
 
   return (
-    <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.5 }}
+    <nav
       className="fixed top-0 left-0 w-full z-50 h-16 sm:h-20 shadow-lg bg-[#00ced1]"
     >
       <div className="container mx-auto px-4 sm:px-6 flex items-center justify-between h-full">
@@ -186,15 +183,6 @@ function Navbar({ darkMode, toggleDarkMode }) {
               >
                 {getUserInitial()}
               </motion.div>
-              {/* <motion.button
-                whileHover={buttonHover}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleDarkModeToggle}
-                className="w-10 h-10 rounded-full bg-blue-800 text-white flex items-center justify-center text-lg shadow-md hover:bg-blue-900 transition-colors focus:outline-none"
-                aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-              >
-                {darkMode ? '☀️' : '🌙'}
-              </motion.button> */}
               <motion.button
                 whileHover={buttonHover}
                 whileTap={{ scale: 0.95 }}
@@ -218,22 +206,11 @@ function Navbar({ darkMode, toggleDarkMode }) {
               </motion.button>
             </>
           ) : (
-            <>
-              {/* <motion.button
-                whileHover={buttonHover}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleDarkModeToggle}
-                className="w-10 h-10 rounded-full bg-blue-800 text-white flex items-center justify-center text-lg shadow-md hover:bg-blue-900 transition-colors focus:outline-none"
-                aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-              >
-                {darkMode ? '☀️' : '🌙'}
-              </motion.button> */}
-              <motion.div whileHover={{ scale: 1.05 }}>
-                <NavLink to="/login" className={navLinkStyle}>
-                  Get Started
-                </NavLink>
-              </motion.div>
-            </>
+            <motion.div whileHover={{ scale: 1.05 }}>
+              <NavLink to="/login" className={navLinkStyle}>
+                Get Started
+              </NavLink>
+            </motion.div>
           )}
         </div>
       </div>
@@ -284,15 +261,6 @@ function Navbar({ darkMode, toggleDarkMode }) {
                   >
                     {getUserInitial()}
                   </motion.div>
-                  {/* <motion.button
-                    whileHover={buttonHover}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleDarkModeToggle}
-                    className="w-10 h-10 rounded-full bg-blue-800 text-white flex items-center justify-center text-lg shadow-md hover:bg-blue-900 transition-colors focus:outline-none"
-                    aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-                  >
-                    {darkMode ? '☀️' : '🌙'}
-                  </motion.button> */}
                   <motion.button
                     whileHover={buttonHover}
                     whileTap={{ scale: 0.95 }}
@@ -317,32 +285,21 @@ function Navbar({ darkMode, toggleDarkMode }) {
                 </div>
               </>
             ) : (
-              <>
-                <div className="flex flex-col items-center space-y-4">
-                  {/* <motion.button
-                    whileHover={buttonHover}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleDarkModeToggle}
-                    className="w-10 h-10 rounded-full bg-blue-800 text-white flex items-center justify-center text-lg shadow-md hover:bg-blue-900 transition-colors focus:outline-none"
-                    aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              <div className="flex flex-col items-center space-y-4">
+                <motion.div whileHover={{ scale: 1.05 }} className="w-full">
+                  <NavLink
+                    to="/login"
+                    className={({ isActive }) =>
+                      `block text-lg text-center font-inter ${
+                        isActive ? 'text-blue-800 font-bold' : 'text-gray-800'
+                      }`
+                    }
+                    onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    {darkMode ? '☀️' : '🌙'}
-                  </motion.button> */}
-                  <motion.div whileHover={{ scale: 1.05 }} className="w-full">
-                    <NavLink
-                      to="/login"
-                      className={({ isActive }) =>
-                        `block text-lg text-center font-inter ${
-                          isActive ? 'text-blue-800 font-bold' : 'text-gray-800'
-                        }`
-                      }
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Get Started
-                    </NavLink>
-                  </motion.div>
-                </div>
-              </>
+                    Get Started
+                  </NavLink>
+                </motion.div>
+              </div>
             )}
           </motion.div>
           <motion.div variants={menuItemVariants} className="flex flex-col space-y-6 w-full">
@@ -447,7 +404,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
           </motion.div>
         </motion.div>
       </motion.div>
-    </motion.nav>
+    </nav>
   );
 }
 

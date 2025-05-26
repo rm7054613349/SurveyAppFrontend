@@ -11,28 +11,25 @@ import AwardAL4 from '../assets/award/AL3.jpg';
 import AwardAL5 from '../assets/award/AL2.jpg';
 import AwardAL6 from '../assets/award/AL3.jpg';
 import AwardAL7 from '../assets/award/AL2.jpg';
-// import FresherAA from '../assets/fresher_welcome/AA.jpg';
-// import FresherAL9 from '../assets/fresher_welcome/AL9.jpg';
-// import BirthdayAL7 from '../assets/birthday/AL7.jpg';
 import BirthdayAL8 from '../assets/birthday/AL8.jpg';
-import CulturalAL8 from '../assets/culture/AL8.jpg'; // Note: folder is 'culture', not 'cultural'
+import CulturalAL8 from '../assets/culture/AL8.jpg';
 
 // Define folders with imported images
 const folders = {
-  award: [AwardAL2, AwardAL3,AwardAL4,AwardAL5,AwardAL6,AwardAL7],
-  fresher_welcome: [AwardAL2, AwardAL3,AwardAL4,AwardAL5,AwardAL6,AwardAL7 ],
-  birthday: [ BirthdayAL8,AwardAL2, AwardAL3,AwardAL4,AwardAL5,AwardAL6,AwardAL7],
-  cultural: [CulturalAL8,AwardAL2, AwardAL3,AwardAL4,AwardAL5,AwardAL6,AwardAL7], 
+  award: [AwardAL2, AwardAL3, AwardAL4, AwardAL5, AwardAL6, AwardAL7],
+  fresher_welcome: [AwardAL2, AwardAL3, AwardAL4, AwardAL5, AwardAL6, AwardAL7],
+  birthday: [BirthdayAL8, AwardAL2, AwardAL3, AwardAL4, AwardAL5, AwardAL6, AwardAL7],
+  cultural: [CulturalAL8, AwardAL2, AwardAL3, AwardAL4, AwardAL5, AwardAL6, AwardAL7],
 };
 
 const Gallery = () => {
-  const [selectedFolder, setSelectedFolder] = useState(null); // Initialize as null to show folder grid
+  const [selectedFolder, setSelectedFolder] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null); // State for enlarged image
 
   useEffect(() => {
-    // Reset selectedFolder to null on mount to show folder grid
     setSelectedFolder(null);
     localStorage.removeItem('selectedFolder');
-  }, []); // Run only on mount
+  }, []);
 
   useEffect(() => {
     if (selectedFolder) {
@@ -45,7 +42,7 @@ const Gallery = () => {
   const sliderSettings = {
     dots: true,
     infinite: true,
-    speed: 600,
+    speed: 1000,
     slidesToShow: 3,
     slidesToScroll: 1,
     centerMode: true,
@@ -69,15 +66,23 @@ const Gallery = () => {
 
   const handleBackClick = () => {
     setSelectedFolder(null);
+    setSelectedImage(null); // Close enlarged image when going back
   };
 
-  // Function to capitalize the first letter of each word
+  const handleImageClick = (image) => {
+    setSelectedImage(image); // Set the clicked image to enlarge
+  };
+
+  const handleCloseModal = () => {
+    setSelectedImage(null); // Close the modal
+  };
+
   const capitalizeFirstLetter = (str) => {
     return str
-      .replace('_', ' ') // Replace underscores with spaces
-      .split(' ') // Split into words
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()) // Capitalize first letter
-      .join(' '); // Join words back
+      .replace('_', ' ')
+      .split(' ')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
   };
 
   return (
@@ -119,12 +124,34 @@ const Gallery = () => {
                   <img
                     src={image}
                     alt={`${selectedFolder}-${index}`}
-                    className="w-full h-80 object-cover rounded-xl shadow-lg"
+                    className="w-full h-80 object-cover rounded-xl shadow-lg cursor-pointer"
+                    onClick={() => handleImageClick(image)}
                     onError={(e) => console.error(`Failed to load image: ${image}`)}
                   />
                 </div>
               ))}
             </Slider>
+          </div>
+        )}
+        {selectedImage && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-md"
+            onClick={handleCloseModal}
+          >
+            <div className="relative max-w-4xl w-full mx-4 my-8">
+              <img
+                src={selectedImage}
+                alt="Enlarged"
+                className="w-full h-auto max-h-[80vh] object-contain rounded-xl"
+                onClick={(e) => e.stopPropagation()} // Prevent closing when clicking on the image
+              />
+              <button
+                className="absolute top-2 right-2 text-white text-3xl bg-black bg-opacity-50 rounded-full p-2"
+                onClick={handleCloseModal}
+              >
+                &times;
+              </button>
+            </div>
           </div>
         )}
       </div>

@@ -131,7 +131,7 @@ function UserProfile() {
       initial="initial"
       animate="animate"
       exit="exit"
-      className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-6"
+      className="min-h-screen bg-[#afeeee] dark:bg-gray-900 flex items-center justify-center p-6"
     >
       <motion.div
         variants={sectionVariants}

@@ -815,7 +815,7 @@ function SurveyForm() {
       {/* Subsections View */}
       {!subsectionId && selectedSection && !currentSubsection && (
         <AnimatePresence>
-          <div className="mb-16 flex flex-col items-center relative z-10">
+          <div className="mb-16 flex flex-col items-center relative z-10 ">
             <button
               onClick={() => {
                 setSelectedSection('');
@@ -829,7 +829,7 @@ function SurveyForm() {
             >
               <ArrowLeftIcon className="h-6 w-6" />
             </button>
-            <h2 className="text-5xl font-extrabold text-gray-800 dark:text-gray-100 mt-16 mb-12 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-pink-500">
+            <h2 className="text-4xl font-extrabold text-black dark:text-gray-100 mt-3 mb-3 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-pink-500">
               Levels
             </h2>
             <motion.div

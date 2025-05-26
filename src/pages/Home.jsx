@@ -79,12 +79,11 @@ function Home() {
     >
       {!user && (
         <>
-          <motion.h1
-            {...fadeIn}
-            className="text-3xl sm:text-4xl md:text-5xl font-bold mt-8 sm:mt-10 md:mt-12 mb-6 sm:mb-8 md:mb-10 text-gray-900 dark:text-white text-center"
+          <h2
+            className="text-4xl  font-bold mt-8 sm:mt-10 md:mt-12 mb-6 sm:mb-8 md:mb-10 text-gray-900 dark:text-white text-center"
           >
             SSMED Central – Your Workplace Dashboard
-          </motion.h1>
+          </h2>
           <motion.div
             {...fadeIn}
             transition={{ delay: 0.4 }}

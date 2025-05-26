@@ -19,14 +19,18 @@ import Media from '../pages/Media'
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import IntranetHome from '../Intranet/Home'
 import IntranetAdmin from '../Intranet/IntranetAdmin';
+import Announcements from '../Intranet/Announcement';
+import AllAnnouncements from '../Intranet/AllAnnouncements';
 
 
 function AppRoutes() {
 
  
-  const Announcements = () => <div>Announcements Page</div>;
-  const Events = () => <div>Events Page</div>;
-  const DataCenter = () => <div>Data Center Page</div>;
+  // const Announcements = () => <div>Announcements Page</div>;
+  // const Events = () => <div>Events Page</div>;
+  // const DataCenter = () => <div>Data Center Page</div>;
+
+
   return (
     
     <Routes>
@@ -231,9 +235,11 @@ function AppRoutes() {
 
         {/* IntranetAdmin */}
           <Route path="/intranet-admin" element={<IntranetAdmin />} />
+          {/* <Route path="/announcements" element={<Announcements />} />
+          {/* <Route path="/events" element={<Events />} /> */}
+          {/* <Route path="/data-center" element={<DataCenter />} /> */} 
           <Route path="/announcements" element={<Announcements />} />
-          <Route path="/events" element={<Events />} />
-          <Route path="/data-center" element={<DataCenter />} />
+          <Route path="/all-announcements" element={<AllAnnouncements />} />
 
 
       {/* Fallback Route */}
