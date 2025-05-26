@@ -198,7 +198,7 @@ function ViewQuestions() {
     <ProtectedRoute allowedRole="admin">
       <motion.div
         {...pageTransition}
-        className="container mx-auto px-4 sm:px-6 lg:px-8 py-10  dark:from-gray-900 min-h-screen"
+        className="w-full flex-1 py-20 flex flex-col items-center justify-start min-h-screen bg-[#afeeee] dark:bg-gray-900 px-4 sm:px-6 md:px-8"
       >
         {/* Header */}
         <motion.h2
@@ -212,14 +212,14 @@ function ViewQuestions() {
         <motion.div
           {...fadeIn}
           transition={{ delay: 0.1 }}
-          className="bg-white dark:bg-gray-950 p-6 sm:p-8 rounded-2xl shadow-2xl mb-10"
+          className="bg-[#afeeee] dark:bg-gray-950 p-6 sm:p-8 rounded-2xl shadow-2xl mb-10"
         >
           <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6">
             Filter Questions
           </h3>
           <div className="flex flex-col sm:flex-row sm:items-end sm:space-x-4 space-y-4 sm:space-y-0">
             <div className="flex-1">
-              <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="block mb-2 bg-[#afeeee] text-sm font-medium text-gray-700 dark:text-gray-300">
                 Section
               </label>
               <select
@@ -229,7 +229,7 @@ function ViewQuestions() {
                   setSelectedSubsection('all');
                   setSelectedCategory('all');
                 }}
-                className="w-full p-3 border rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 text-sm focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500"
+                className="w-full p-3 border rounded-lg bg-[#afeeee] dark:bg-gray-800 text-gray-900 dark:text-gray-200 text-sm focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500"
               >
                 <option value="all">All Sections</option>
                 {sections.map((sec) => (
@@ -247,7 +247,7 @@ function ViewQuestions() {
                   setSelectedSubsection(e.target.value);
                   setSelectedCategory('all');
                 }}
-                className="w-full p-3 border rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 text-sm focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500"
+                className="w-full p-3 border rounded-lg bg-[#afeeee] dark:bg-gray-800 text-gray-900 dark:text-gray-200 text-sm focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500"
                 disabled={selectedSection === 'all'}
               >
                 <option value="all">All Subsections</option>
@@ -257,13 +257,13 @@ function ViewQuestions() {
               </select>
             </div>
             <div className="flex-1">
-              <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="block  mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                 Category
               </label>
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full p-3 border rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 text-sm focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500"
+                className="w-full p-3 border bg-[#afeeee]  rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 text-sm focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500"
                 disabled={selectedSubsection === 'all'}
               >
                 <option value="all">All Categories</option>
@@ -279,7 +279,7 @@ function ViewQuestions() {
         <motion.div
           {...fadeIn}
           transition={{ delay: 0.2 }}
-          className="bg-white dark:bg-gray-950 p-6 sm:p-8 rounded-2xl shadow-2xl"
+          className="bg-[#afeeee] dark:bg-gray-950 p-6 sm:p-8 rounded-2xl shadow-2xl"
         >
           <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6">
             Survey Questions

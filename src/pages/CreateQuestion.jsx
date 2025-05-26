@@ -349,7 +349,7 @@ function CreateQuestion() {
 
   return (
     <ProtectedRoute allowedRole="admin">
-      <motion.div {...pageTransition} className="container mx-auto p-6 max-w-lg content-box w-full" >
+      <motion.div {...pageTransition} className="w-full flex-1 py-20 flex flex-col items-center justify-start min-h-screen bg-[#afeeee] dark:bg-gray-900 px-4 sm:px-6 md:px-8" >
         <motion.h2 {...fadeIn} className="text-3xl font-bold mb-6 text-primary-blue text-center">
           Create New Survey Question
         </motion.h2>

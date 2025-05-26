@@ -766,7 +766,7 @@ function SurveyForm() {
   return (
     <motion.div
       {...pageTransition}
-      className="container mx-auto p-8 max-w-7xl bg-blue-50/80 bg-[#afeeee] dark:bg-gray-900 min-h-fit font-sans relative overflow-hidden rounded-[3rem]"
+      className="w-full flex-1 py-20 flex flex-col items-center justify-start min-h-screen bg-[#afeeee] dark:bg-gray-900 px-4 sm:px-6 md:px-8"
     >
       {/* Animated Background */}
       <div className="absolute inset-0  bg-[#afeeee] opacity-20 animate-gradient-bg" />
