@@ -35,9 +35,9 @@ function Login() {
   }
 
   return (
-    <motion.div {...pageTransition} className="container mx-auto p-6 max-w-md content-box">
+    <motion.div {...pageTransition} className="w-full flex-1 flex flex-col items-center justify-start min-h-screen bg-[#afeeee] dark:bg-gray-900 px-4 sm:px-6 md:px-8">
       <motion.h2 {...fadeIn} className="text-3xl font-bold mb-6 text-primary-blue">Login</motion.h2>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-card-bg dark:bg-card-dark-bg p-8 rounded-lg shadow-lg content-box">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-card-bg  dark:bg-card-dark-bg p-8 rounded-lg shadow-lg content-box">
         <motion.div {...fadeIn} transition={{ delay: 0.1 }}>
           <label className="block mb-2 text-gray-700 dark:text-gray-300">Email</label>
           <input
