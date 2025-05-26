@@ -4,30 +4,35 @@ import { FaFolder, FaArrowLeft } from 'react-icons/fa';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 
-// Sample image imports (replace with actual paths or dynamic imports)
+// Import images from src/assets/
+import AwardAL2 from '../assets/award/AL3.jpg';
+import AwardAL3 from '../assets/award/AL2.jpg';
+import AwardAL4 from '../assets/award/AL3.jpg';
+import AwardAL5 from '../assets/award/AL2.jpg';
+import AwardAL6 from '../assets/award/AL3.jpg';
+import AwardAL7 from '../assets/award/AL2.jpg';
+// import FresherAA from '../assets/fresher_welcome/AA.jpg';
+// import FresherAL9 from '../assets/fresher_welcome/AL9.jpg';
+// import BirthdayAL7 from '../assets/birthday/AL7.jpg';
+import BirthdayAL8 from '../assets/birthday/AL8.jpg';
+import CulturalAL8 from '../assets/culture/AL8.jpg'; // Note: folder is 'culture', not 'cultural'
+
+// Define folders with imported images
 const folders = {
-  award: [
-    '../assets/award/AL2.jpg',
-    '../assets/award/award2.jpg',
-  ],
-  fresher_welcome: [
-    '../assets/fresher_welcome/fresher1.jpg',
-    '../assets/fresher_welcome/fresher2.jpg',
-  ],
-  birthday: [
-    '../assets/birthday/birthday1.jpg',
-    '../assets/birthday/birthday2.jpg',
-  ],
-  cultural: [
-    '../assets/cultural/cultural1.jpg',
-    '../assets/cultural/cultural2.jpg',
-  ],
+  award: [AwardAL2, AwardAL3,AwardAL4,AwardAL5,AwardAL6,AwardAL7],
+  fresher_welcome: [AwardAL2, AwardAL3,AwardAL4,AwardAL5,AwardAL6,AwardAL7 ],
+  birthday: [ BirthdayAL8,AwardAL2, AwardAL3,AwardAL4,AwardAL5,AwardAL6,AwardAL7],
+  cultural: [CulturalAL8,AwardAL2, AwardAL3,AwardAL4,AwardAL5,AwardAL6,AwardAL7], 
 };
 
 const Gallery = () => {
-  const [selectedFolder, setSelectedFolder] = useState(() => {
-    return localStorage.getItem('selectedFolder') || null;
-  });
+  const [selectedFolder, setSelectedFolder] = useState(null); // Initialize as null to show folder grid
+
+  useEffect(() => {
+    // Reset selectedFolder to null on mount to show folder grid
+    setSelectedFolder(null);
+    localStorage.removeItem('selectedFolder');
+  }, []); // Run only on mount
 
   useEffect(() => {
     if (selectedFolder) {
@@ -66,20 +71,29 @@ const Gallery = () => {
     setSelectedFolder(null);
   };
 
+  // Function to capitalize the first letter of each word
+  const capitalizeFirstLetter = (str) => {
+    return str
+      .replace('_', ' ') // Replace underscores with spaces
+      .split(' ') // Split into words
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()) // Capitalize first letter
+      .join(' '); // Join words back
+  };
+
   return (
-    <div className="p-5 bg-[#afeeee] py-10 min-h-screen font-['Playfair_Display']">
+    <div className="p-5 bg-[#afeeee] py-9 min-h-screen font-['Playfair_Display']">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center mb-8 navbar">
           {selectedFolder && (
             <button
-              className="text-black text-3xl mr-4  transition-colors duration-300"
+              className="text-black text-3xl mr-4 transition-colors duration-300"
               onClick={handleBackClick}
             >
               <FaArrowLeft />
             </button>
           )}
           <h1 className="text-4xl font-bold text-black text-center flex-1 drop-shadow-lg">
-            {selectedFolder ? selectedFolder.replace('_', ' ') : 'Media Gallery'}
+            {selectedFolder ? capitalizeFirstLetter(selectedFolder) : 'Media Gallery'}
           </h1>
         </div>
         {!selectedFolder ? (
@@ -91,8 +105,8 @@ const Gallery = () => {
                 onClick={() => handleFolderClick(folder)}
               >
                 <FaFolder className="text-6xl text-yellow-500 mb-4" />
-                <span className="text-xl text-gray-800 capitalize font-semibold">
-                  {folder.replace('_', ' ')}
+                <span className="text-xl text-gray-800 font-semibold">
+                  {capitalizeFirstLetter(folder)}
                 </span>
               </div>
             ))}
@@ -106,6 +120,7 @@ const Gallery = () => {
                     src={image}
                     alt={`${selectedFolder}-${index}`}
                     className="w-full h-80 object-cover rounded-xl shadow-lg"
+                    onError={(e) => console.error(`Failed to load image: ${image}`)}
                   />
                 </div>
               ))}
