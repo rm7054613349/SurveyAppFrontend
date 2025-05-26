@@ -1,31 +1,120 @@
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import Slider from 'react-slick';
+import { FaFolder, FaArrowLeft } from 'react-icons/fa';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 
-// Framer Motion animation variants
-const containerVariants = {
-  hidden: { opacity: 0, y: 50 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+// Sample image imports (replace with actual paths or dynamic imports)
+const folders = {
+  award: [
+    '../assets/award/AL2.jpg',
+    '../assets/award/award2.jpg',
+  ],
+  fresher_welcome: [
+    '/assets/fresher_welcome/fresher1.jpg',
+    '/assets/fresher_welcome/fresher2.jpg',
+  ],
+  birthday: [
+    '/assets/birthday/birthday1.jpg',
+    '/assets/birthday/birthday2.jpg',
+  ],
+  cultural: [
+    '/assets/cultural/cultural1.jpg',
+    '/assets/cultural/cultural2.jpg',
+  ],
 };
 
-function ContactUs() {
-  return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="min-h-screen  bg-[#afeeee] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
-    >
-      <div className="max-w-2xl w-full space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-[#1F2937] font-['Inter',sans-serif]">
-           Media Gallary
-          </h1>
-          <p className="mt-2 text-lg text-[#1F2937] font-['Inter',sans-serif]">
-            Show all Media
-          </p>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
+const Gallery = () => {
+  const [selectedFolder, setSelectedFolder] = useState(() => {
+    return localStorage.getItem('selectedFolder') || null;
+  });
 
-export default ContactUs;
+  useEffect(() => {
+    if (selectedFolder) {
+      localStorage.setItem('selectedFolder', selectedFolder);
+    } else {
+      localStorage.removeItem('selectedFolder');
+    }
+  }, [selectedFolder]);
+
+  const sliderSettings = {
+    dots: true,
+    infinite: true,
+    speed: 600,
+    slidesToShow: 3,
+    slidesToScroll: 1,
+    centerMode: true,
+    centerPadding: '80px',
+    focusOnSelect: true,
+    lazyLoad: 'ondemand',
+    responsive: [
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 1,
+          centerPadding: '40px',
+        },
+      },
+    ],
+  };
+
+  const handleFolderClick = (folder) => {
+    setSelectedFolder(folder);
+  };
+
+  const handleBackClick = () => {
+    setSelectedFolder(null);
+  };
+
+  return (
+    <div className="p-5 bg-[#afeeee] py-10 min-h-screen font-['Playfair_Display']">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-center mb-8 navbar">
+          {selectedFolder && (
+            <button
+              className="text-black text-3xl mr-4  transition-colors duration-300"
+              onClick={handleBackClick}
+            >
+              <FaArrowLeft />
+            </button>
+          )}
+          <h1 className="text-4xl font-bold text-black text-center flex-1 drop-shadow-lg">
+            {selectedFolder ? selectedFolder.replace('_', ' ') : 'Media Gallery'}
+          </h1>
+        </div>
+        {!selectedFolder ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 p-6">
+            {Object.keys(folders).map((folder) => (
+              <div
+                key={folder}
+                className="bg-white rounded-xl p-6 text-center cursor-pointer shadow-2xl hover:shadow-lg hover:-translate-y-1 transition-transform duration-300 flex flex-col items-center justify-center"
+                onClick={() => handleFolderClick(folder)}
+              >
+                <FaFolder className="text-6xl text-yellow-500 mb-4" />
+                <span className="text-xl text-gray-800 capitalize font-semibold">
+                  {folder.replace('_', ' ')}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="p-6 bg-white/10 backdrop-blur-md rounded-xl">
+            <Slider {...sliderSettings}>
+              {folders[selectedFolder].map((image, index) => (
+                <div key={index} className="px-3">
+                  <img
+                    src={image}
+                    alt={`${selectedFolder}-${index}`}
+                    className="w-full h-80 object-cover rounded-xl shadow-lg"
+                  />
+                </div>
+              ))}
+            </Slider>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Gallery;
