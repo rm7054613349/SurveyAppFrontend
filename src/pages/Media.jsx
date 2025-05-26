@@ -11,16 +11,16 @@ const folders = {
     '../assets/award/award2.jpg',
   ],
   fresher_welcome: [
-    '/assets/fresher_welcome/fresher1.jpg',
-    '/assets/fresher_welcome/fresher2.jpg',
+    '../assets/fresher_welcome/fresher1.jpg',
+    '../assets/fresher_welcome/fresher2.jpg',
   ],
   birthday: [
-    '/assets/birthday/birthday1.jpg',
-    '/assets/birthday/birthday2.jpg',
+    '../assets/birthday/birthday1.jpg',
+    '../assets/birthday/birthday2.jpg',
   ],
   cultural: [
-    '/assets/cultural/cultural1.jpg',
-    '/assets/cultural/cultural2.jpg',
+    '../assets/cultural/cultural1.jpg',
+    '../assets/cultural/cultural2.jpg',
   ],
 };
 

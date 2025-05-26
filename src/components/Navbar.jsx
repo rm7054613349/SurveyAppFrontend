@@ -186,7 +186,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
               >
                 {getUserInitial()}
               </motion.div>
-              <motion.button
+              {/* <motion.button
                 whileHover={buttonHover}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleDarkModeToggle}
@@ -194,7 +194,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
                 aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               >
                 {darkMode ? '☀️' : '🌙'}
-              </motion.button>
+              </motion.button> */}
               <motion.button
                 whileHover={buttonHover}
                 whileTap={{ scale: 0.95 }}
@@ -219,7 +219,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
             </>
           ) : (
             <>
-              <motion.button
+              {/* <motion.button
                 whileHover={buttonHover}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleDarkModeToggle}
@@ -227,7 +227,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
                 aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               >
                 {darkMode ? '☀️' : '🌙'}
-              </motion.button>
+              </motion.button> */}
               <motion.div whileHover={{ scale: 1.05 }}>
                 <NavLink to="/login" className={navLinkStyle}>
                   Get Started
@@ -284,7 +284,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
                   >
                     {getUserInitial()}
                   </motion.div>
-                  <motion.button
+                  {/* <motion.button
                     whileHover={buttonHover}
                     whileTap={{ scale: 0.95 }}
                     onClick={handleDarkModeToggle}
@@ -292,7 +292,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
                     aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
                   >
                     {darkMode ? '☀️' : '🌙'}
-                  </motion.button>
+                  </motion.button> */}
                   <motion.button
                     whileHover={buttonHover}
                     whileTap={{ scale: 0.95 }}
@@ -319,7 +319,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
             ) : (
               <>
                 <div className="flex flex-col items-center space-y-4">
-                  <motion.button
+                  {/* <motion.button
                     whileHover={buttonHover}
                     whileTap={{ scale: 0.95 }}
                     onClick={handleDarkModeToggle}
@@ -327,7 +327,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
                     aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
                   >
                     {darkMode ? '☀️' : '🌙'}
-                  </motion.button>
+                  </motion.button> */}
                   <motion.div whileHover={{ scale: 1.05 }} className="w-full">
                     <NavLink
                       to="/login"
