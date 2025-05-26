@@ -766,10 +766,10 @@ function SurveyForm() {
   return (
     <motion.div
       {...pageTransition}
-      className="container mx-auto p-8 max-w-7xl bg-blue-50/80 dark:bg-gray-900 min-h-fit font-sans relative overflow-hidden rounded-[3rem]"
+      className="container mx-auto p-8 max-w-7xl bg-blue-50/80  dark:bg-gray-900 min-h-fit font-sans relative overflow-hidden rounded-[3rem]"
     >
       {/* Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-300 to-pink-300 dark:from-blue-800 dark:to-purple-800 opacity-20 animate-gradient-bg" />
+      <div className="absolute inset-0  bg-[#afeeee] opacity-20 animate-gradient-bg" />
 
       {/* Sections View */}
       {!subsectionId && !currentSubsection && !selectedSection && (

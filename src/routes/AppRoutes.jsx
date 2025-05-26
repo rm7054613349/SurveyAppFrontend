@@ -18,14 +18,20 @@ import ContactUs from '../pages/ContactUs';
 import Media from '../pages/Media'
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import IntranetHome from '../Intranet/Home'
+import IntranetAdmin from '../Intranet/IntranetAdmin';
 
 
 function AppRoutes() {
+
+ 
+  const Announcements = () => <div>Announcements Page</div>;
+  const Events = () => <div>Events Page</div>;
+  const DataCenter = () => <div>Data Center Page</div>;
   return (
     
     <Routes>
       {/* Public Routes */}
-      <Route path="/" element={<Home />} />
+      <Route  path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
 
@@ -221,6 +227,14 @@ function AppRoutes() {
         <Route path="/subsections/:sectionId" element={<SurveyForm />} />
         <Route path="/thank-you/:subsectionId" element={<ThankYou />} />
         <Route path="/profile" element={<UserProfile />} />
+
+
+        {/* IntranetAdmin */}
+          <Route path="/intranet-admin" element={<IntranetAdmin />} />
+          <Route path="/announcements" element={<Announcements />} />
+          <Route path="/events" element={<Events />} />
+          <Route path="/data-center" element={<DataCenter />} />
+
 
       {/* Fallback Route */}
       <Route path="*" element={<div>404 - Page Not Found</div>} />

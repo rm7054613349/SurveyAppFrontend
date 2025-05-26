@@ -6,7 +6,7 @@ import OwlCarousel from 'react-owl-carousel';
 import 'owl.carousel/dist/assets/owl.carousel.css';
 import 'owl.carousel/dist/assets/owl.theme.default.css';
 
-// Import images (using your provided image paths)
+// Import images
 import carouselImage1 from '../assets/AL1.jpg';
 import carouselImage2 from '../assets/AL2.jpg';
 import carouselImage3 from '../assets/AL3.jpg';
@@ -15,8 +15,6 @@ import carouselImage5 from '../assets/AL5.jpg';
 import carouselImage6 from '../assets/AL6.jpg';
 import carouselImage8 from '../assets/AL8.jpg';
 import carouselImage9 from '../assets/AL9.jpg';
-
-// Content Images
 import intranetImage from '../assets/i1.jpg';
 import assessmentImage from '../assets/Assesment.jpg';
 
@@ -36,7 +34,7 @@ const slideInRight = {
   visible: { opacity: 1, x: 0, transition: { duration: 0.8, ease: 'easeOut' } },
 };
 
-// Owl Carousel options with enhanced sliding effect
+// Owl Carousel options
 const carouselOptions = {
   loop: true,
   margin: 0,
@@ -94,13 +92,13 @@ function Home() {
   return (
     <>
       {/* Main Content */}
-      <div className="p-4 sm:p-6 lg:p-8">
+      <div className="p-4 sm:p-6 lg:p-8 bg-[#afeeee] ">
         {/* Carousel Section */}
         <motion.div
           variants={slideInLeft}
           initial="hidden"
           animate="visible"
-          className="mb-6 sm:mb-8 max-w-3xl mx-auto" // Added max-width and centered
+          className="mb-6 sm:mb-8 max-w-3xl mx-auto"
         >
           <OwlCarousel className="owl-theme" {...carouselOptions}>
             {carouselImages.map((image, index) => (
@@ -108,7 +106,7 @@ function Home() {
                 <img
                   src={image.src}
                   alt={image.alt}
-                  className="w-full max-w-[600px] max-h-[480px] mx-auto rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 object-cover" // Adjusted width
+                  className="w-full max-w-[600px] max-h-[480px] mx-auto rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 object-cover"
                   loading="lazy"
                 />
               </div>
@@ -143,7 +141,7 @@ function Home() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate(user?.role === 'admin' ? '/intranet-admin' : '/dashboard')}
               className="px-4 py-2 bg-teal-500 text-white text-sm font-medium rounded-full hover:bg-teal-600 transition-colors shadow-md hover:shadow-lg w-fit"
               aria-label="Navigate to dashboard"
             >

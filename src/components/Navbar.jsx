@@ -1,10 +1,9 @@
 import { useContext, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AuthContext } from '../context/AuthContext';
-import logoImage from '../assets/Image.png'; // Adjust the path as per your project structure
+import logoImage from '../assets/Image.png';
 
-// Framer Motion animation variants
 const buttonHover = {
   scale: 1.05,
   transition: { duration: 0.2 },
@@ -20,6 +19,16 @@ const closeButtonVariants = {
   visible: { scale: 1, opacity: 1, transition: { duration: 0.3, type: 'spring', stiffness: 200 } },
 };
 
+const sideMenuVariants = {
+  open: { x: 0, opacity: 1, transition: { duration: 0.3, ease: 'easeInOut' } },
+  closed: { x: '100%', opacity: 0, transition: { duration: 0.3, ease: 'easeInOut' } },
+};
+
+const containerVariants = {
+  hidden: { transition: { staggerChildren: 0.1 } },
+  visible: { transition: { staggerChildren: 0.1 } },
+};
+
 function Navbar({ darkMode, toggleDarkMode }) {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -33,7 +42,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
   };
 
   const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
+    setIsMobileMenuOpen((prev) => !prev);
   };
 
   const handleDarkModeToggle = () => {
@@ -42,48 +51,20 @@ function Navbar({ darkMode, toggleDarkMode }) {
   };
 
   const handleLogoClick = () => {
-    if (!user) {
-      console.log('Navbar: User not logged in. Redirecting to /...');
-      navigate('/');
-    } else {
-      console.log('Navbar: User logged in. Redirecting to /Intranet/Home...');
-      navigate('/Intranet/Home');
-    }
+    const path = user ? '/Intranet/Home' : '/';
+    console.log(`Navbar: Redirecting to ${path}...`);
+    navigate(path);
   };
 
   const handleHomeClick = () => {
-    if (!user) {
-      console.log('Navbar: User not logged in. Redirecting to /...');
-      navigate('/');
-    } else {
-      console.log('Navbar: User logged in. Redirecting to /Intranet/Home...');
-      navigate('/Intranet/Home');
-    }
+    const path = user ? '/Intranet/Home' : '/';
+    console.log(`Navbar: Redirecting to ${path}...`);
+    navigate(path);
     setIsMobileMenuOpen(false);
   };
 
-  const sideMenuVariants = {
-    open: {
-      x: 0,
-      opacity: 1,
-      transition: { duration: 0.3, ease: 'easeInOut' },
-    },
-    closed: {
-      x: '100%',
-      opacity: 0,
-      transition: { duration: 0.3, ease: 'easeInOut' },
-    },
-  };
-
-  const containerVariants = {
-    hidden: { transition: { staggerChildren: 0.1 } },
-    visible: { transition: { staggerChildren: 0.1 } },
-  };
-
   const getUserInitial = () => {
-    return user && user.email && typeof user.email === 'string' && user.email.length > 0
-      ? user.email[0].toUpperCase()
-      : 'U';
+    return user?.email?.[0]?.toUpperCase() || 'U';
   };
 
   const handleUserProfileClick = () => {
@@ -91,24 +72,27 @@ function Navbar({ darkMode, toggleDarkMode }) {
     navigate('/profile');
   };
 
+  // Define active and inactive link styles
+  const navLinkStyle = ({ isActive }) =>
+    `font-inter text-lg lg:text-xl ${
+      isActive ? 'text-white border-b-2 border-white' : 'text-black hover:text-gray-600'
+    } transition-colors duration-200`;
+
   return (
     <motion.nav
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5 }}
-      className="bg-[#E5E7EB] p-2 sm:p-3 shadow-lg fixed w-full top-0 z-50"
+      className="fixed top-0 left-0 w-full z-50 h-16 sm:h-20 shadow-lg bg-[#00ced1]"
     >
-      <div className="container mx-auto flex items-center justify-between">
-        <div
-          onClick={handleLogoClick}
-          className="text-lg sm:text-xl font-bold flex items-center space-y-2 gap-2 focus:outline-none cursor-pointer"
-        >
+      <div className="container mx-auto px-4 sm:px-6 flex items-center justify-between h-full">
+        <div onClick={handleLogoClick} className="flex items-center gap-2 cursor-pointer">
           <img
             src={logoImage}
             alt="SS Medical Systems Logo"
-            className="w-[60px] h-[60px] sm:w-[70px] sm:h-[70px] object-contain bg-white rounded-full p-1 shadow-md"
+            className="w-12 h-12 sm:w-14 sm:h-14 object-contain bg-white rounded-full p-1 shadow-md"
           />
-          <span className="text-xl sm:text-2xl font-extrabold text-[#1F2937] font-['Inter',sans-serif]">
+          <span className="text-xl sm:text-2xl font-extrabold text-black font-inter">
             Intranet
           </span>
         </div>
@@ -122,7 +106,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
             aria-label={isMobileMenuOpen ? 'Close mobile menu' : 'Open mobile menu'}
           >
             <svg
-              className="w-6 h-6 text-[#1F2937]"
+              className="w-6 h-6 text-black"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -142,48 +126,50 @@ function Navbar({ darkMode, toggleDarkMode }) {
             {user?.role === 'employee' ? (
               <>
                 <motion.div whileHover={{ scale: 1.05 }}>
-                  <div
+                  <NavLink
+                    to={user ? '/Intranet/Home' : '/'}
+                    className={navLinkStyle}
                     onClick={handleHomeClick}
-                    className="text-[#1F2937] font-['Inter',sans-serif] text-lg lg:text-xl cursor-pointer"
                   >
                     Home
-                  </div>
+                  </NavLink>
                 </motion.div>
                 <motion.div whileHover={{ scale: 1.05 }}>
-                  <Link to="/employee" className="text-[#1F2937] font-['Inter',sans-serif] text-lg lg:text-xl">
+                  <NavLink to="/employee" className={navLinkStyle}>
                     Assessment
-                  </Link>
+                  </NavLink>
                 </motion.div>
                 <motion.div whileHover={{ scale: 1.05 }}>
-                  <Link to="/media" className="text-[#1F2937] font-['Inter',sans-serif] text-lg lg:text-xl">
+                  <NavLink to="/media" className={navLinkStyle}>
                     Media
-                  </Link>
+                  </NavLink>
                 </motion.div>
                 <motion.div whileHover={{ scale: 1.05 }}>
-                  <Link to="/contact" className="text-[#1F2937] font-['Inter',sans-serif] text-lg lg:text-xl">
+                  <NavLink to="/contact" className={navLinkStyle}>
                     Contact Us
-                  </Link>
+                  </NavLink>
                 </motion.div>
               </>
             ) : user?.role === 'admin' ? (
               <>
                 <motion.div whileHover={{ scale: 1.05 }}>
-                  <div
+                  <NavLink
+                    to={user ? '/Intranet/Home' : '/'}
+                    className={navLinkStyle}
                     onClick={handleHomeClick}
-                    className="text-[#1F2937] font-['Inter',sans-serif] text-lg lg:text-xl cursor-pointer"
                   >
                     Home
-                  </div>
+                  </NavLink>
                 </motion.div>
                 <motion.div whileHover={{ scale: 1.05 }}>
-                  <Link to="/admin/dashboard" className="text-[#1F2937] font-['Inter',sans-serif] text-lg lg:text-xl">
+                  <NavLink to="/admin/dashboard" className={navLinkStyle}>
                     Dashboard
-                  </Link>
+                  </NavLink>
                 </motion.div>
                 <motion.div whileHover={{ scale: 1.05 }}>
-                  <Link to="/contact" className="text-[#1F2937] font-['Inter',sans-serif] text-lg lg:text-xl">
+                  <NavLink to="/contact" className={navLinkStyle}>
                     Contact Us
-                  </Link>
+                  </NavLink>
                 </motion.div>
               </>
             ) : null}
@@ -196,7 +182,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleUserProfileClick}
-                className="w-10 h-10 bg-[#1E3A8A] text-white rounded-full flex items-center justify-center font-bold shadow-md cursor-pointer text-lg"
+                className="w-10 h-10 bg-blue-800 text-white rounded-full flex items-center justify-center font-bold shadow-md cursor-pointer text-lg"
               >
                 {getUserInitial()}
               </motion.div>
@@ -204,7 +190,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
                 whileHover={buttonHover}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleDarkModeToggle}
-                className="w-10 h-10 rounded-full bg-[#1E3A8A] text-white flex items-center justify-center text-lg shadow-md hover:bg-[#1E40AF] transition-colors focus:outline-none"
+                className="w-10 h-10 rounded-full bg-blue-800 text-white flex items-center justify-center text-lg shadow-md hover:bg-blue-900 transition-colors focus:outline-none"
                 aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               >
                 {darkMode ? '☀️' : '🌙'}
@@ -213,7 +199,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
                 whileHover={buttonHover}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleLogout}
-                className="w-10 h-10 bg-[#F97316] text-white rounded-full flex items-center justify-center shadow-md hover:bg-[#EA580C] transition-colors focus:outline-none"
+                className="w-10 h-10 bg-orange-500 text-white rounded-full flex items-center justify-center shadow-md hover:bg-orange-600 transition-colors focus:outline-none"
               >
                 <svg
                   className="w-5 h-5"
@@ -237,15 +223,15 @@ function Navbar({ darkMode, toggleDarkMode }) {
                 whileHover={buttonHover}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleDarkModeToggle}
-                className="w-10 h-10 rounded-full bg-[#1E3A8A] text-white flex items-center justify-center text-lg shadow-md hover:bg-[#1E40AF] transition-colors focus:outline-none"
+                className="w-10 h-10 rounded-full bg-blue-800 text-white flex items-center justify-center text-lg shadow-md hover:bg-blue-900 transition-colors focus:outline-none"
                 aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               >
                 {darkMode ? '☀️' : '🌙'}
               </motion.button>
               <motion.div whileHover={{ scale: 1.05 }}>
-                <Link to="/login" className="text-[#1F2937] font-['Inter',sans-serif] text-lg lg:text-xl">
+                <NavLink to="/login" className={navLinkStyle}>
                   Get Started
-                </Link>
+                </NavLink>
               </motion.div>
             </>
           )}
@@ -255,10 +241,10 @@ function Navbar({ darkMode, toggleDarkMode }) {
         variants={sideMenuVariants}
         initial="closed"
         animate={isMobileMenuOpen ? 'open' : 'closed'}
-        className="fixed top-0 right-0 h-full w-[250px] bg-[#E5E7EB] bg-opacity-90 md:hidden z-40"
+        className="fixed top-0 right-0 h-full w-64 bg-gray-100 bg-opacity-95 md:hidden z-40"
       >
         <motion.div
-          className="flex flex-col p-4 mt-12 relative space-y-6"
+          className="flex flex-col p-4 mt-16 space-y-6"
           variants={containerVariants}
           initial="hidden"
           animate={isMobileMenuOpen ? 'visible' : 'hidden'}
@@ -272,7 +258,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
             aria-label="Close mobile menu"
           >
             <svg
-              className="w-6 h-6 text-[#1F2937]"
+              className="w-6 h-6 text-gray-800"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -294,7 +280,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={handleUserProfileClick}
-                    className="w-10 h-10 bg-[#1E3A8A] text-white rounded-full flex items-center justify-center font-bold shadow-md cursor-pointer text-lg"
+                    className="w-10 h-10 bg-blue-800 text-white rounded-full flex items-center justify-center font-bold shadow-md cursor-pointer text-lg"
                   >
                     {getUserInitial()}
                   </motion.div>
@@ -302,7 +288,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
                     whileHover={buttonHover}
                     whileTap={{ scale: 0.95 }}
                     onClick={handleDarkModeToggle}
-                    className="w-10 h-10 rounded-full bg-[#1E3A8A] text-white flex items-center justify-center text-lg shadow-md hover:bg-[#1E40AF] transition-colors focus:outline-none"
+                    className="w-10 h-10 rounded-full bg-blue-800 text-white flex items-center justify-center text-lg shadow-md hover:bg-blue-900 transition-colors focus:outline-none"
                     aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
                   >
                     {darkMode ? '☀️' : '🌙'}
@@ -311,7 +297,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
                     whileHover={buttonHover}
                     whileTap={{ scale: 0.95 }}
                     onClick={handleLogout}
-                    className="w-10 h-10 bg-[#F97316] text-white rounded-full flex items-center justify-center shadow-md hover:bg-[#EA580C] transition-colors focus:outline-none"
+                    className="w-10 h-10 bg-orange-500 text-white rounded-full flex items-center justify-center shadow-md hover:bg-orange-600 transition-colors focus:outline-none"
                   >
                     <svg
                       className="w-5 h-5"
@@ -337,19 +323,23 @@ function Navbar({ darkMode, toggleDarkMode }) {
                     whileHover={buttonHover}
                     whileTap={{ scale: 0.95 }}
                     onClick={handleDarkModeToggle}
-                    className="w-10 h-10 rounded-full bg-[#1E3A8A] text-white flex items-center justify-center text-lg shadow-md hover:bg-[#1E40AF] transition-colors focus:outline-none"
+                    className="w-10 h-10 rounded-full bg-blue-800 text-white flex items-center justify-center text-lg shadow-md hover:bg-blue-900 transition-colors focus:outline-none"
                     aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
                   >
                     {darkMode ? '☀️' : '🌙'}
                   </motion.button>
                   <motion.div whileHover={{ scale: 1.05 }} className="w-full">
-                    <Link
+                    <NavLink
                       to="/login"
-                      className="block text-[#1F2937] font-['Inter',sans-serif] text-lg text-center"
+                      className={({ isActive }) =>
+                        `block text-lg text-center font-inter ${
+                          isActive ? 'text-blue-800 font-bold' : 'text-gray-800'
+                        }`
+                      }
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       Get Started
-                    </Link>
+                    </NavLink>
                   </motion.div>
                 </div>
               </>
@@ -359,68 +349,98 @@ function Navbar({ darkMode, toggleDarkMode }) {
             {user?.role === 'employee' ? (
               <>
                 <motion.div whileHover={{ scale: 1.05 }} className="w-full">
-                  <div
+                  <NavLink
+                    to={user ? '/Intranet/Home' : '/'}
+                    className={({ isActive }) =>
+                      `block text-lg text-center font-inter ${
+                        isActive ? 'text-blue-800 font-bold' : 'text-gray-800'
+                      }`
+                    }
                     onClick={handleHomeClick}
-                    className="block text-[#1F2937] font-['Inter',sans-serif] text-lg text-center cursor-pointer"
                   >
                     Home
-                  </div>
+                  </NavLink>
                 </motion.div>
                 <motion.div whileHover={{ scale: 1.05 }} className="w-full">
-                  <Link
+                  <NavLink
                     to="/employee"
-                    className="block text-[#1F2937] font-['Inter',sans-serif] text-lg text-center"
+                    className={({ isActive }) =>
+                      `block text-lg text-center font-inter ${
+                        isActive ? 'text-blue-800 font-bold' : 'text-gray-800'
+                      }`
+                    }
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Assessment
-                  </Link>
+                  </NavLink>
                 </motion.div>
                 <motion.div whileHover={{ scale: 1.05 }} className="w-full">
-                  <Link
+                  <NavLink
                     to="/media"
-                    className="block text-[#1F2937] font-['Inter',sans-serif] text-lg text-center"
+                    className={({ isActive }) =>
+                      `block text-lg text-center font-inter ${
+                        isActive ? 'text-blue-800 font-bold' : 'text-gray-800'
+                      }`
+                    }
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Media
-                  </Link>
+                  </NavLink>
                 </motion.div>
                 <motion.div whileHover={{ scale: 1.05 }} className="w-full">
-                  <Link
+                  <NavLink
                     to="/contact"
-                    className="block text-[#1F2937] font-['Inter',sans-serif] text-lg text-center"
+                    className={({ isActive }) =>
+                      `block text-lg text-center font-inter ${
+                        isActive ? 'text-blue-800 font-bold' : 'text-gray-800'
+                      }`
+                    }
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Contact Us
-                  </Link>
+                  </NavLink>
                 </motion.div>
               </>
             ) : user?.role === 'admin' ? (
               <>
                 <motion.div whileHover={{ scale: 1.05 }} className="w-full">
-                  <div
+                  <NavLink
+                    to={user ? '/Intranet/Home' : '/'}
+                    className={({ isActive }) =>
+                      `block text-lg text-center font-inter ${
+                        isActive ? 'text-blue-800 font-bold' : 'text-gray-800'
+                      }`
+                    }
                     onClick={handleHomeClick}
-                    className="block text-[#1F2937] font-['Inter',sans-serif] text-lg text-center cursor-pointer"
                   >
                     Home
-                  </div>
+                  </NavLink>
                 </motion.div>
                 <motion.div whileHover={{ scale: 1.05 }} className="w-full">
-                  <Link
+                  <NavLink
                     to="/admin/dashboard"
-                    className="block text-[#1F2937] font-['Inter',sans-serif] text-lg text-center"
+                    className={({ isActive }) =>
+                      `block text-lg text-center font-inter ${
+                        isActive ? 'text-blue-800 font-bold' : 'text-gray-800'
+                      }`
+                    }
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Dashboard
-                  </Link>
+                  </NavLink>
                 </motion.div>
                 <motion.div whileHover={{ scale: 1.05 }} className="w-full">
-                  <Link
+                  <NavLink
                     to="/contact"
-                    className="block text-[#1F2937] font-['Inter',sans-serif] text-lg text-center"
+                    className={({ isActive }) =>
+                      `block text-lg text-center font-inter ${
+                        isActive ? 'text-blue-800 font-bold' : 'text-gray-800'
+                      }`
+                    }
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Contact Us
-                  </Link>
+                  </NavLink>
                 </motion.div>
               </>
             ) : null}

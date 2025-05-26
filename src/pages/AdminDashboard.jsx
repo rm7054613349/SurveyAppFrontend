@@ -28,7 +28,7 @@ function AdminDashboard() {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="min-h-screen  dark:bg-[#1F2937] py-12 px-4 sm:px-6 lg:px-8"
+        className="min-h-screen  bg-[#afeeee] dark:bg-[#1F2937] py-12 px-4 sm:px-6 lg:px-8"
       >
         <motion.div {...pageTransition} className="container mx-auto w-full max-w-full p-4 sm:p-6">
           {/* Section 1: Create Question */}

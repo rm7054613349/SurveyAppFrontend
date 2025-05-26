@@ -12,7 +12,7 @@ function ContactUs() {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="min-h-screen  dark:bg-[#1F2937] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+      className="min-h-screen bg-[#afeeee] dark:bg-[#1F2937] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
     >
       <div className="max-w-2xl w-full space-y-8">
         <div className="text-center">

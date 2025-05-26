@@ -15,7 +15,7 @@ function EmployeeDashboard() {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="min-h-screen  dark:bg-[#1F2937] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+      className="min-h-screen bg-[#afeeee] dark:bg-[#1F2937] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
     >
       <motion.div {...pageTransition} className="container mx-auto p-6 content-box">
         {/* <motion.h2 {...fadeIn} className="text-3xl font-bold mb-6 text-primary-blue">
