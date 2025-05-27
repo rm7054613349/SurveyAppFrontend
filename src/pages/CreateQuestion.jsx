@@ -350,7 +350,7 @@ function CreateQuestion() {
   return (
     <ProtectedRoute allowedRole="admin">
       <motion.div {...pageTransition} className="w-full flex-1 py-20 flex flex-col items-center justify-start min-h-screen bg-[#afeeee] dark:bg-gray-900 px-4 sm:px-6 md:px-8" >
-        <motion.h2 {...fadeIn} className="text-3xl font-bold mb-6 text-primary-blue text-center">
+        <motion.h2 {...fadeIn} className="text-3xl font-bold mb-6 text-black text-center">
           Create New Survey Question
         </motion.h2>
         <form onSubmit={handleCreateSurvey} className="space-y-6 bg-card-bg dark:bg-card-dark-bg p-8 rounded-lg shadow-lg content-box">
@@ -577,8 +577,8 @@ function CreateQuestion() {
             disabled={loading}
             className={`w-full p-3 rounded-lg text-white ${
               loading
-                ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
-                : 'bg-primary-blue hover:bg-primary-blue/90 focus:ring-2 focus:ring-primary-blue'
+                ? 'bg-[#00ced1] dark:bg-gray-600 cursor-not-allowed'
+                : 'bg-[#00ced1] hover:bg-primary-blue/90 focus:ring-2 focus:ring-primary-blue'
             }`}
           >
             {loading ? 'Creating...' : 'Create Survey Question'}

@@ -1,39 +1,155 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-
-// Using the same dummy data for consistency
-const allAnnouncements = [
-  { id: 1, title: 'Company Picnic', content: 'Join us for a fun-filled picnic on June 10, 2025 at Central Park!', date: '2025-05-20', type: 'Announcement' },
-  { id: 2, title: 'New HR Policy', content: 'Updated HR policies effective from June 1, 2025.', date: '2025-05-18', type: 'Announcement' },
-  { id: 3, title: 'Team Meeting', content: 'Mandatory team meeting on May 28, 2025 at 10 AM.', date: '2025-05-15', type: 'Announcement' },
-  { id: 4, title: 'Office Renovation', content: 'Office renovation starts on June 15, 2025.', date: '2025-05-10', type: 'Announcement' },
-  { id: 5, title: 'Holiday Schedule', content: '2025 holiday schedule released.', date: '2025-05-05', type: 'Announcement' },
-  { id: 6, title: 'CMD Note', content: 'Great job on Q1 targets, team!', date: '2025-05-22', type: 'CMD Message' },
-  { id: 7, title: 'Strategic Update', content: 'New strategic goals for Q2 announced.', date: '2025-05-19', type: 'CMD Message' },
-  { id: 8, title: 'Leadership Meet', content: 'Leadership meeting outcomes shared.', date: '2025-05-16', type: 'CMD Message' },
-  { id: 9, title: 'Innovation Drive', content: 'Submit your ideas for the innovation drive.', date: '2025-05-12', type: 'CMD Message' },
-  { id: 10, title: 'Welcome New Hires', content: 'Warm welcome to our new team members!', date: '2025-05-08', type: 'CMD Message' },
-];
+import { getMessages } from '../services/api';
+import { toast } from 'react-toastify';
 
 const AllAnnouncements = () => {
+  const [activeTab, setActiveTab] = useState('all');
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  // Format date to DD-MM-YYYY
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()}`;
+  };
+
+  // Fetch messages on component mount
+  useEffect(() => {
+    const fetchMessages = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const data = await getMessages();
+        setMessages(data.sort((a, b) => new Date(b.date) - new Date(a.date)));
+      } catch (err) {
+        const errorMsg = err.message || 'Failed to fetch messages';
+        setError(errorMsg);
+        toast.error(errorMsg);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMessages();
+  }, []);
+
+  // Filter messages based on active tab
+  const filteredMessages = activeTab === 'all'
+    ? messages
+    : messages.filter((msg) => msg.type === (activeTab === 'announcements' ? 'announcement' : 'cmd'));
+
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">All Announcements</h1>
-        <div className="space-y-4">
-          {allAnnouncements.map((announcement) => (
-            <div key={announcement.id} className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-800">{announcement.title}</h3>
-              <p className="text-gray-600">{announcement.content}</p>
-              <p className="text-sm text-gray-400">{announcement.date} - {announcement.type}</p>
+    <div className="min-h-screen bg-[#afeeee] py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-4 sm:p-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">
+          All Announcements
+        </h1>
+
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center py-6">
+            <div className="flex items-center space-x-2">
+              <svg
+                className="animate-spin h-5 w-5 sm:h-6 sm:w-6 text-blue-500"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              <span className="text-gray-600 text-sm sm:text-base">Loading messages...</span>
             </div>
-          ))}
-        </div>
-        <Link to="/announcements">
-          <button className="mt-6 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-300">
-            Back to Announcements
-          </button>
-        </Link>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="bg-red-50 text-red-800 p-3 rounded-md mb-4 text-sm font-medium">
+            {error}
+          </div>
+        )}
+
+        {/* Tabs */}
+        {!loading && !error && (
+          <div className="flex flex-wrap border-b border-gray-300 mb-4 gap-2 sm:gap-0">
+            <button
+              className={`px-3 py-2 sm:px-4 sm:py-2 font-medium text-sm sm:text-base ${
+                activeTab === 'all'
+                  ? 'border-b-2 border-blue-500 text-blue-600'
+                  : 'text-gray-600 hover:text-blue-500'
+              }`}
+              onClick={() => setActiveTab('all')}
+            >
+              All
+            </button>
+            <button
+              className={`px-3 py-2 sm:px-4 sm:py-2 font-medium text-sm sm:text-base ${
+                activeTab === 'announcements'
+                  ? 'border-b-2 border-blue-500 text-blue-600'
+                  : 'text-gray-600 hover:text-blue-500'
+              }`}
+              onClick={() => setActiveTab('announcements')}
+            >
+              Announcements
+            </button>
+            <button
+              className={`px-3 py-2 sm:px-4 sm:py-2 font-medium text-sm sm:text-base ${
+                activeTab === 'cmd'
+                  ? 'border-b-2 border-blue-500 text-blue-600'
+                  : 'text-gray-600 hover:text-blue-500'
+              }`}
+              onClick={() => setActiveTab('cmd')}
+            >
+              CMD Messages
+            </button>
+          </div>
+        )}
+
+        {/* Messages */}
+        {!loading && !error && (
+          <div className="space-y-4">
+            {filteredMessages.length === 0 ? (
+              <p className="text-gray-600 text-center text-sm sm:text-base">
+                No {activeTab === 'all' ? 'messages' : activeTab === 'announcements' ? 'announcements' : 'CMD messages'} found.
+              </p>
+            ) : (
+              filteredMessages.map((msg) => (
+                <div
+                  key={msg._id || msg.id}
+                  className="bg-white p-3 sm:p-4 rounded-lg shadow border border-gray-200"
+                >
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-800">{msg.title}</h3>
+                  <p className="text-gray-600 text-sm sm:text-base">{msg.content}</p>
+                  <p className="text-xs sm:text-sm text-gray-400">
+                    {formatDate(msg.date)} - {msg.type === 'announcement' ? 'Announcement' : 'CMD Message'}
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* Back Button */}
+        {!loading && !error && (
+          <Link to="/">
+            <button className="mt-4 sm:mt-6 bg-blue-500 text-white px-4 sm:px-6 py-2 rounded-md hover:bg-blue-600 transition-colors shadow-sm hover:shadow-md text-sm sm:text-base">
+              Back to Announcements
+            </button>
+          </Link>
+        )}
       </div>
     </div>
   );

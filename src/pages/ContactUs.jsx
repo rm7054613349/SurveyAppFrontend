@@ -44,14 +44,14 @@ const ContactUs = () => {
   ];
 
   const otherBranches = [
-    { name: 'BHIMTAL', address: 'Head Office & Factory for SSMED' },
-    { name: 'MUMBAI', address: 'Branch Office, Berkeley, CA' },
+    { name: 'BHIMTAL', address: 'S S Medical Systems (I) Pvt. Ltd.F2, Bhimtal Industrial Estate, BhimtalDistrict Nainital, Uttarakhand-263136  , Phone: 05942-248138   Mob: 7534812029' },
+    { name: 'MUMBAI', address: 'Branch Office' },
     { name: 'AHMEDABAD', address: 'Branch Office' },
     { name: 'VIZAG', address: 'Branch Office' },
     { name: 'GUWAHATI', address: 'Branch Office' },
     { name: 'BENGALURU', address: 'Branch Office' },
-    { name: 'KERALA', address: '606 Walnut St, Mountain View, CA' },
-    { name: 'UNITED KINGDOM', address: '#2, New Hawthorne Gardens, Apt. 24, The Hollies, Park Avenue Mosley Hill, Liverpool L18, 8FE, England, U.K' },
+    { name: 'KERALA', address: '' },
+    { name: 'UNITED KINGDOM', address: '' },
   ];
 
   return (

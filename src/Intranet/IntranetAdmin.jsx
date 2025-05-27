@@ -7,6 +7,7 @@ import { AuthContext } from '../context/AuthContext';
 import announcementImage from '../assets/announcementImage.jpg';
 import eventCalendarImage from '../assets/eventCalendarImage.jpg';
 import dataCenterImage from '../assets/dataCenterImage.jpg';
+import AnnouncementForm from '../Intranet/components/AnnouncementForm'
 
 // Framer Motion animation variants
 const containerVariants = {
@@ -38,7 +39,7 @@ function IntranetAdmin() {
   }, [user, navigate]);
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
+    <div className="p-4 sm:p-6 lg:p-8 bg-[#afeeee]">
       {/* Announcement Section */}
       <motion.div
         variants={slideInLeft}
@@ -64,7 +65,7 @@ function IntranetAdmin() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => navigate('/announcements')}
+            onClick={() => navigate('/admin/announcementsform')}
             className="px-4 py-2 bg-teal-500 text-white text-sm font-medium rounded-full hover:bg-teal-600 transition-colors shadow-md hover:shadow-lg w-fit"
             aria-label="Navigate to announcements"
           >

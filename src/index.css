@@ -82,3 +82,10 @@ body {
   opacity: 1;
   z-index: 10;
 }
+
+.slick-prev, .slick-next {
+  z-index: 10;
+}
+.slick-prev::before, .slick-next::before {
+  content: none;
+}

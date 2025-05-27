@@ -656,6 +656,8 @@ const fetchWithAu = async (url, options = {}) => {
     throw err;
   }
 };
+
+
 export const changePassword = async (currentPassword, newPassword) => {
   if (!currentPassword || !newPassword) {
     console.error('Current and new password are required');
@@ -674,5 +676,70 @@ export const changePassword = async (currentPassword, newPassword) => {
   } catch (err) {
     console.error('Change password error:', err.message);
     throw err;
+  }
+};
+
+
+
+//Code for nnouncement
+const API = axios.create({
+  baseURL: API_URL,
+});
+
+API.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  console.log(`Requesting: ${config.method.toUpperCase()} ${config.url}`, { headers: config.headers });
+  return config;
+}, (error) => {
+  console.error('Request interceptor error:', error);
+  return Promise.reject(error);
+});
+
+API.interceptors.response.use(
+  (response) => {
+    console.log(`Response from ${response.config.url}:`, response.data);
+    return response;
+  },
+  (error) => {
+    const errorMsg = error.response?.data?.message || 'An unexpected error occurred';
+    console.error('Response error:', {
+      url: error.config?.url,
+      status: error.response?.status,
+      message: errorMsg,
+    });
+    toast.error(errorMsg);
+    return Promise.reject(error);
+  }
+);
+
+// Admin APIs
+export const createMessage = async (data) => {
+  try {
+    console.log('Creating message with data:', data);
+    const response = await API.post('/admin/messages', data);
+    console.log('Message created successfully:', response.data);
+    toast.success('Message created successfully!');
+    return response.data;
+  } catch (error) {
+    const errorMsg = error.response?.data?.message || 'Error creating message';
+    console.error('Create message error:', errorMsg);
+    throw new Error(errorMsg);
+  }
+};
+
+// Employee APIs
+export const getMessages = async () => {
+  try {
+    console.log('Fetching messages');
+    const response = await API.get('/employee/messages');
+    console.log('Messages fetched successfully:', response.data);
+    return response.data;
+  } catch (error) {
+    const errorMsg = error.response?.data?.message || 'Error fetching messages';
+    console.error('Get messages error:', errorMsg);
+    throw new Error(errorMsg);
   }
 };

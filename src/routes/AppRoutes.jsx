@@ -21,6 +21,7 @@ import IntranetHome from '../Intranet/Home'
 import IntranetAdmin from '../Intranet/IntranetAdmin';
 import Announcements from '../Intranet/Announcement';
 import AllAnnouncements from '../Intranet/AllAnnouncements';
+import Announcementform from '../Intranet/components/AnnouncementForm';
 
 
 function AppRoutes() {
@@ -238,8 +239,34 @@ function AppRoutes() {
           {/* <Route path="/announcements" element={<Announcements />} />
           {/* <Route path="/events" element={<Events />} /> */}
           {/* <Route path="/data-center" element={<DataCenter />} /> */} 
-          <Route path="/announcements" element={<Announcements />} />
-          <Route path="/all-announcements" element={<AllAnnouncements />} />
+
+        <Route 
+         path="/employee/announcements" 
+         element={
+         <ProtectedRoute allowedRole={["employee"]}>
+            <Announcements />
+          </ProtectedRoute>
+         } />
+
+
+         <Route 
+         path="/employee/all-announcements" 
+         element={
+         <ProtectedRoute allowedRole={["employee"]}>
+            <AllAnnouncements />
+          </ProtectedRoute>
+         } />
+
+        
+        {/* announcement form */}
+          <Route 
+         path="/admin/announcementsform" 
+         element={
+         <ProtectedRoute allowedRole={["admin"]}>
+            <Announcementform/>
+          </ProtectedRoute>
+         } />
+
 
 
       {/* Fallback Route */}

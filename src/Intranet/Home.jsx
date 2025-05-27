@@ -1,10 +1,12 @@
 import { motion } from 'framer-motion';
 import { useContext, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import OwlCarousel from 'react-owl-carousel';
 import 'owl.carousel/dist/assets/owl.carousel.css';
 import 'owl.carousel/dist/assets/owl.theme.default.css';
+import Announcement from '../Intranet/Announcement'; // Import Announcement component
+import EventCalendar from '../Intranet/EventCalendar'; // Import EventCalendar component
 
 // Import images
 import carouselImage1 from '../assets/AL1.jpg';
@@ -93,26 +95,74 @@ function Home() {
     <>
       {/* Main Content */}
       <div className="p-4 sm:p-6 lg:p-8 bg-[#afeeee] ">
-        {/* Carousel Section */}
-        <motion.div
-          variants={slideInLeft}
-          initial="hidden"
-          animate="visible"
-          className="mb-6 sm:mb-8 max-w-3xl mx-auto"
-        >
-          <OwlCarousel className="owl-theme" {...carouselOptions}>
-            {carouselImages.map((image, index) => (
-              <div key={index} className="item relative">
-                <img
-                  src={image.src}
-                  alt={image.alt}
-                  className="w-full max-w-[600px] max-h-[480px] mx-auto rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 object-cover"
-                  loading="lazy"
-                />
+        {/* Carousel Section (Conditional based on user role) */}
+        {user?.role === 'employee' ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 sm:mb-8 max-w-7xl mx-auto">
+            {/* Subsection 1: Announcements */}
+            <motion.div
+              variants={slideInLeft}
+              initial="hidden"
+              animate="visible"
+              className="bg-white rounded-xl shadow-lg p-6"
+            >
+              <h4 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">Announcements</h4>
+              <div className="max-h-96 overflow-y-auto">
+                <Announcement />
               </div>
-            ))}
-          </OwlCarousel>
-        </motion.div>
+              <Link to="/employee/all-announcements" className="mt-4 inline-block">
+                <button className="px-4 py-2 bg-[#00ced1] text-black text-sm font-medium rounded-full hover:bg-teal-600 transition-colors shadow-md hover:shadow-lg">
+                  View All Announcements
+                </button>
+              </Link>
+            </motion.div>
+
+            {/* Subsection 2: Carousel */}
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="bg-white rounded-xl shadow-lg p-6"
+            >
+              {/* <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">Featured</h2> */}
+              <OwlCarousel className="owl-theme" {...carouselOptions}>
+                {carouselImages.map((image, index) => (
+                  <div key={index} className="item relative">
+                    <img
+                      src={image.src}
+                      alt={image.alt}
+                      className="w-full max-w-[500px] max-h-[480px] mx-auto rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                ))}
+              </OwlCarousel>
+            </motion.div>
+
+            {/* Subsection 3: Event Calendar */}
+            {/* {user?.role === 'employee' && <EventCalendar />} */}
+          </div>
+        ) : (
+          /* Original Carousel Section for Admins */
+          <motion.div
+            variants={slideInLeft}
+            initial="hidden"
+            animate="visible"
+            className="mb-6 sm:mb-8 max-w-3xl mx-auto"
+          >
+            <OwlCarousel className="owl-theme" {...carouselOptions}>
+              {carouselImages.map((image, index) => (
+                <div key={index} className="item relative">
+                  <img
+                    src={image.src}
+                    alt={image.alt}
+                    className="w-full max-w-[600px] max-h-[480px] mx-auto rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 object-cover"
+                    loading="lazy"
+                  />
+                </div>
+              ))}
+            </OwlCarousel>
+          </motion.div>
+        )}
 
         {/* Intranet Section */}
         <motion.div
@@ -131,7 +181,7 @@ function Home() {
           </div>
           <div className="sm:w-1/2 flex flex-col justify-center">
             <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-4">
-              {user?.role === 'admin' ? 'Intranet Data Control' : 'Welcome to Intranet world!'}
+              {user?.role === 'admin' ? 'Intranet Data Control' : 'Welcome to Document Center!'}
             </h2>
             <p className="text-gray-600 dark:text-gray-300 mb-4 sm:mb-6 text-sm sm:text-base leading-relaxed">
               {user?.role === 'admin'
