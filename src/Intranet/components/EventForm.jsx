@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { motion } from 'framer-motion';
-import { createMessage } from '../../services/api';
-
+import { createEvent } from '../../services/api';
+import { toast } from 'react-toastify';
 
 const formVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
-const AnnouncementForm = () => {
+const EventForm = () => {
   const [messageType, setMessageType] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -18,7 +18,7 @@ const AnnouncementForm = () => {
 
   const onSubmit = async (data) => {
     if (!messageType) {
-      setErrorMessage('Please select a message type');
+      setErrorMessage('Please select an event type');
       setTimeout(() => setErrorMessage(''), 5000);
       return;
     }
@@ -26,13 +26,20 @@ const AnnouncementForm = () => {
     setErrorMessage('');
     setIsLoading(true);
     try {
-      await createMessage({ ...data, type: messageType });
-      setSuccessMessage('Message created successfully!');
+      // Combine date and time into a single ISO string
+      const eventDateTime = new Date(`${data.date}T${data.time}:00`).toISOString();
+      await createEvent({ 
+        type: messageType,
+        title: data.title,
+        content: data.content,
+        date: eventDateTime
+      });
+      setSuccessMessage('Event created successfully!');
       reset();
       setMessageType('');
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
-      const errorMsg = error.message || 'Error creating message';
+      const errorMsg = error.message || 'Error creating event';
       setErrorMessage(errorMsg);
       setTimeout(() => setErrorMessage(''), 5000);
     } finally {
@@ -60,7 +67,7 @@ const AnnouncementForm = () => {
         )}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Message Type
+            Event Type
           </label>
           <select
             value={messageType}
@@ -71,10 +78,11 @@ const AnnouncementForm = () => {
             disabled={isLoading}
           >
             <option value="" disabled>
-              Select a message type
+              Select an event type
             </option>
-            <option value="announcement">Announcement</option>
-            <option value="cmd">CMD Message</option>
+            <option value="event">Event</option>
+            <option value="workshop">Workshop</option>
+            <option value="seminar">Seminar</option>
           </select>
           {errors.messageType && (
             <p className="text-red-500 text-xs mt-1">{errors.messageType.message}</p>
@@ -83,11 +91,11 @@ const AnnouncementForm = () => {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Title
+              Event Title
             </label>
             <input
               type="text"
-              {...register('title', { required: 'Title is required' })}
+              {...register('title', { required: 'Event title is required' })}
               className={`w-full p-2 border ${
                 errors.title ? 'border-red-500' : 'border-gray-300'
               } rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm disabled:bg-gray-100`}
@@ -99,10 +107,10 @@ const AnnouncementForm = () => {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Content
+              Event Description
             </label>
             <textarea
-              {...register('content', { required: 'Content is required' })}
+              {...register('content', { required: 'Event description is required' })}
               className={`w-full p-2 border ${
                 errors.content ? 'border-red-500' : 'border-gray-300'
               } rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm disabled:bg-gray-100`}
@@ -115,11 +123,11 @@ const AnnouncementForm = () => {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Date
+              Event Date
             </label>
             <input
               type="date"
-              {...register('date', { required: 'Date is required' })}
+              {...register('date', { required: 'Event date is required' })}
               className={`w-full p-2 border ${
                 errors.date ? 'border-red-500' : 'border-gray-300'
               } rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm disabled:bg-gray-100`}
@@ -127,6 +135,22 @@ const AnnouncementForm = () => {
             />
             {errors.date && (
               <p className="text-red-500 text-xs mt-1">{errors.date.message}</p>
+            )}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Event Time
+            </label>
+            <input
+              type="time"
+              {...register('time', { required: 'Event time is required' })}
+              className={`w-full p-2 border ${
+                errors.time ? 'border-red-500' : 'border-gray-300'
+              } rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm disabled:bg-gray-100`}
+              disabled={isLoading}
+            />
+            {errors.time && (
+              <p className="text-red-500 text-xs mt-1">{errors.time.message}</p>
             )}
           </div>
           <motion.button
@@ -163,7 +187,7 @@ const AnnouncementForm = () => {
                 Submitting...
               </div>
             ) : (
-              'Submit'
+              'Submit Event'
             )}
           </motion.button>
         </form>
@@ -172,4 +196,4 @@ const AnnouncementForm = () => {
   );
 };
 
-export default AnnouncementForm;
+export default EventForm;

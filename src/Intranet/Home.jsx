@@ -7,6 +7,7 @@ import 'owl.carousel/dist/assets/owl.carousel.css';
 import 'owl.carousel/dist/assets/owl.theme.default.css';
 import Announcement from '../Intranet/Announcement'; // Import Announcement component
 import EventCalendar from '../Intranet/EventCalendar'; // Import EventCalendar component
+import { FaFolder, FaArrowLeft, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 // Import images
 import carouselImage1 from '../assets/AL1.jpg';
@@ -36,6 +37,25 @@ const slideInRight = {
   visible: { opacity: 1, x: 0, transition: { duration: 0.8, ease: 'easeOut' } },
 };
 
+// Custom arrows
+const PrevArrow = ({ onClick }) => (
+  <button
+    className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 text-white text-2xl bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-75"
+    onClick={onClick}
+  >
+    <FaChevronLeft />
+  </button>
+);
+
+const NextArrow = ({ onClick }) => (
+  <button
+    className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 text-white text-2xl bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-75"
+    onClick={onClick}
+  >
+    <FaChevronRight />
+  </button>
+);
+
 // Owl Carousel options
 const carouselOptions = {
   loop: true,
@@ -46,12 +66,8 @@ const carouselOptions = {
   autoplayTimeout: 4000,
   autoplayHoverPause: true,
   smartSpeed: 1800,
-  navText: [
-    '<span class="owl-nav-prev text-white bg-teal-500 rounded-full p-3 text-lg">❮</span>',
-    '<span class="owl-nav-next text-white bg-teal-500 rounded-full p-3 text-lg">❯</span>',
-  ],
-  animateOut: 'fadeOut',
-  animateIn: 'fadeIn',
+  prevArrow: <PrevArrow />,
+  nextArrow: <NextArrow />,
   responsive: {
     0: { items: 1 },
     600: { items: 1 },
@@ -59,16 +75,16 @@ const carouselOptions = {
   },
 };
 
-// Carousel images array
+// Carousel images array with captions
 const carouselImages = [
-  { src: carouselImage1, alt: 'Team collaboration in workplace' },
-  { src: carouselImage2, alt: 'Modern office environment' },
-  { src: carouselImage3, alt: 'Corporate team meeting' },
-  { src: carouselImage4, alt: 'Team collaboration in workplace' },
-  { src: carouselImage5, alt: 'Modern office environment' },
-  { src: carouselImage6, alt: 'Corporate team meeting' },
-  { src: carouselImage8, alt: 'Modern office environment' },
-  { src: carouselImage9, alt: 'Corporate team meeting' },
+  { src: carouselImage1, alt: 'Team collaboration in workplace', caption: 'Teamwork in Action' },
+  { src: carouselImage2, alt: 'Modern office environment', caption: 'Innovative Workspace' },
+  { src: carouselImage3, alt: 'Corporate team meeting', caption: 'Strategic Discussions' },
+  { src: carouselImage4, alt: 'Team collaboration in workplace', caption: 'Collaborative Success' },
+  { src: carouselImage5, alt: 'Modern office environment', caption: 'Modern Work Culture' },
+  { src: carouselImage6, alt: 'Corporate team meeting', caption: 'Team Synergy' },
+  { src: carouselImage8, alt: 'Modern office environment', caption: 'Dynamic Office' },
+  { src: carouselImage9, alt: 'Corporate team meeting', caption: 'Leadership Summit' },
 ];
 
 function Home() {
@@ -94,7 +110,7 @@ function Home() {
   return (
     <>
       {/* Main Content */}
-      <div className="p-4 sm:p-6 lg:p-8 bg-[#afeeee] ">
+      <div className="p-4 sm:p-6 lg:p-8 bg-[#afeeee]">
         {/* Carousel Section (Conditional based on user role) */}
         {user?.role === 'employee' ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 sm:mb-8 max-w-7xl mx-auto">
@@ -105,12 +121,11 @@ function Home() {
               animate="visible"
               className="bg-white rounded-xl shadow-lg p-6"
             >
-              <h4 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">Announcements</h4>
               <div className="max-h-96 overflow-y-auto">
                 <Announcement />
               </div>
-              <Link to="/employee/all-announcements" className="mt-4 inline-block">
-                <button className="px-4 py-2 bg-[#00ced1] text-black text-sm font-medium rounded-full hover:bg-teal-600 transition-colors shadow-md hover:shadow-lg">
+              <Link to="/employee/all-announcements" className="mt-4 px-6 inline-block">
+                <button className="px-3 py-2 bg-[#00ced1] text-black text-sm font-medium rounded-full hover:bg-teal-600 transition-colors shadow-md hover:shadow-lg">
                   View All Announcements
                 </button>
               </Link>
@@ -123,8 +138,7 @@ function Home() {
               animate="visible"
               className="bg-white rounded-xl shadow-lg p-6"
             >
-              {/* <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">Featured</h2> */}
-              <OwlCarousel className="owl-theme" {...carouselOptions}>
+              <OwlCarousel className="owl-theme relative" {...carouselOptions}>
                 {carouselImages.map((image, index) => (
                   <div key={index} className="item relative">
                     <img
@@ -133,13 +147,18 @@ function Home() {
                       className="w-full max-w-[500px] max-h-[480px] mx-auto rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 object-cover"
                       loading="lazy"
                     />
+                    <div className="absolute bottom-1 left-0 right-0 text-center">
+                      <span className="bg-black bg-opacity-60 text-white text-sm px-3 py-1 rounded-md">
+                        {image.caption}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </OwlCarousel>
             </motion.div>
 
             {/* Subsection 3: Event Calendar */}
-            {/* {user?.role === 'employee' && <EventCalendar />} */}
+            {user?.role === 'employee' && <EventCalendar />}
           </div>
         ) : (
           /* Original Carousel Section for Admins */
@@ -149,7 +168,7 @@ function Home() {
             animate="visible"
             className="mb-6 sm:mb-8 max-w-3xl mx-auto"
           >
-            <OwlCarousel className="owl-theme" {...carouselOptions}>
+            <OwlCarousel className="owl-theme relative" {...carouselOptions}>
               {carouselImages.map((image, index) => (
                 <div key={index} className="item relative">
                   <img
@@ -158,6 +177,12 @@ function Home() {
                     className="w-full max-w-[600px] max-h-[480px] mx-auto rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 object-cover"
                     loading="lazy"
                   />
+                  <div className="absolute bottom-4 left-0 right-0 text-center">
+                    <span className="bg-black bg-opacity-60 text-white text-sm px-3 py-1 rounded-md">
+                      {image.caption}
+                    </span>
+                  </div>
+                  {/* TODO: Add editing mechanism (e.g., input field or admin interface) to update image.caption dynamically */}
                 </div>
               ))}
             </OwlCarousel>
@@ -222,7 +247,6 @@ function Home() {
                 className="px-4 py-2 bg-teal-500 text-white text-sm font-medium rounded-full hover:bg-teal-600 transition-colors shadow-md hover:shadow-lg w-fit"
                 aria-label="Navigate to performance dashboard"
               >
-                Go To
               </motion.button>
             </div>
             <div className="sm:w-1/2 flex items-center order-0 sm:order-1">

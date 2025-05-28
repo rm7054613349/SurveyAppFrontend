@@ -186,7 +186,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleUserProfileClick}
-                className="w-10 h-10 bg-blue-800 text-white rounded-full flex items-center justify-center font-bold shadow-md cursor-pointer text-lg"
+                className="w-10 h-10 bg-[#014D4E] text-white rounded-full flex items-center justify-center font-bold shadow-md cursor-pointer text-lg"
               >
                 {getUserInitial()}
               </motion.div>
@@ -194,7 +194,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
                 whileHover={buttonHover}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleLogout}
-                className="w-10 h-10 bg-orange-500 text-white rounded-full flex items-center justify-center shadow-md hover:bg-orange-600 transition-colors focus:outline-none"
+                className="w-10 h-10 bg-[#014D4E] text-white rounded-full flex items-center justify-center shadow-md  transition-colors focus:outline-none"
               >
                 <svg
                   className="w-5 h-5"
@@ -266,7 +266,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={handleUserProfileClick}
-                    className="w-10 h-10 bg-blue-800 text-white rounded-full flex items-center justify-center font-bold shadow-md cursor-pointer text-lg"
+                    className="w-10 h-10 bg-[#014D4E] text-white rounded-full flex items-center justify-center font-bold shadow-md cursor-pointer text-lg"
                   >
                     {getUserInitial()}
                   </motion.div>
@@ -274,7 +274,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
                     whileHover={buttonHover}
                     whileTap={{ scale: 0.95 }}
                     onClick={handleLogout}
-                    className="w-10 h-10 bg-orange-500 text-white rounded-full flex items-center justify-center shadow-md hover:bg-orange-600 transition-colors focus:outline-none"
+                    className="w-10 h-10 bg-[#014D4E] text-white rounded-full flex items-center justify-center shadow-md  transition-colors focus:outline-none"
                   >
                     <svg
                       className="w-5 h-5"

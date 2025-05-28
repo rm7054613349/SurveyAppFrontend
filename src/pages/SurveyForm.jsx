@@ -771,142 +771,208 @@ function SurveyForm() {
       {/* Animated Background */}
       <div className="absolute inset-0  bg-[#afeeee] opacity-20 animate-gradient-bg" />
 
-      {/* Sections View */}
-      {!subsectionId && !currentSubsection && !selectedSection && (
-        <div className="mb-16 flex flex-col items-center relative z-10">
-          <h2 className="text-5xl font-extrabold text-gray-800 dark:text-gray-100 mb-12 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-pink-500">
-            Select a Section
-          </h2>
+
+
+  {/* Sections View */}
+{!subsectionId && !currentSubsection && !selectedSection && (
+  <div className="mb-16 flex flex-col items-center relative z-10">
+    <h2 className="text-4xl font-extrabold dark:text-gray-100 mb-12 text-center bg-clip-text from-blue-400 to-pink-500">
+      Select a Section
+    </h2>
+    <motion.div
+      className="grid rounded-[2rem] grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 w-full h-auto py-10"
+      variants={{ visible: { transition: { staggerChildren: 0.2 } } }}
+      initial="hidden"
+      animate="visible"
+    >
+      {sections.length > 0 ? (
+        sections.map(section => (
           <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 w-full h-auto py-10"
-            variants={{ visible: { transition: { staggerChildren: 0.2 } } }}
-            initial="hidden"
-            animate="visible"
+            key={section._id}
+            variants={sectionVariants}
+            whileHover="hover"
+            className={`relative p-8 rounded-[2rem] shadow-xl cursor-pointer transition-all duration-300 pointer-events-auto ${
+              selectedSection === section._id
+                ? 'border-transparent  '
+                : 'border-transparent text-gray-900  '
+            }`}
+            style={{
+              borderRadius: '2rem', // Ensure border-radius is applied
+            }}
+            onClick={(e) => handleSectionClick(section._id, e)}
           >
-            {sections.length > 0 ? (
-              sections.map(section => (
-                <motion.div
-                  key={section._id}
-                  variants={sectionVariants}
-                  whileHover="hover"
-                  className={`p-8 rounded-[2.5rem] shadow-xl cursor-pointer transition-all duration-300 bg-white dark:bg-gray-800 bg-opacity-60 backdrop-blur-xl border-2 pointer-events-auto ${
-                    selectedSection === section._id
-                      ? 'border-transparent bg-gradient-to-br from-blue-400 to-pink-500 text-white'
-                      : 'border-blue-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-50/80 dark:hover:bg-gray-700/80 hover:shadow-lg'
-                  }`}
-                  style={{
-                    borderImage: selectedSection === section._id ? 'none' : 'linear-gradient(to right, #60a5fa, #f472b6) 1',
-                  }}
-                  onClick={(e) => handleSectionClick(section._id, e)}
-                >
-                  <h3 className="text-2xl font-extrabold text-center">{section.name || 'Untitled Section'}</h3>
-                  <p className="text-sm text-center mt-4 opacity-80">Explore available subsections</p>
-                </motion.div>
-              ))
-            ) : (
-              <motion.p variants={sectionVariants} className="text-gray-600 dark:text-gray-400 text-center col-span-full">
-                No sections available.
-              </motion.p>
-            )}
+            {/* Gradient Border for non-selected sections */}
+            {!selectedSection || selectedSection !== section._id ? (
+              <div
+                className="absolute inset-0 rounded-[2rem] pointer-events-none"
+                style={{
+                  border: '2px solid transparent',
+                  borderRadius: '2rem',
+                  background: 'linear-gradient(to right, #60a5fa, #f472b6) border-box',
+                  WebkitMask: 'linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)',
+                  WebkitMaskComposite: 'destination-out',
+                  maskComposite: 'exclude',
+                }}
+              />
+            ) : null}
+            {/* Inner content container to constrain background */}
+            <div
+              className={`relative z-10 p-4 rounded-[1.5rem] ${
+                selectedSection === section._id
+                  ? 'bg-transparent'
+                  : ' dark:bg-gray-800 bg-opacity-60 backdrop-blur-xl'
+              }`}
+            >
+              <h3 className="text-2xl font-extrabold text-center">
+                {section.name || 'Untitled Section'}
+              </h3>
+              <p className="text-sm text-center mt-4 opacity-80">
+                Explore available subsections
+              </p>
+            </div>
           </motion.div>
-        </div>
+        ))
+      ) : (
+        <motion.p variants={sectionVariants} className="text-gray-600 dark:text-gray-400 text-center col-span-full">
+          No sections available.
+        </motion.p>
       )}
+    </motion.div>
+  </div>
+)}
 
+
+
+      
+
+      
       {/* Subsections View */}
-      {!subsectionId && selectedSection && !currentSubsection && (
-        <AnimatePresence>
-          <div className="mb-16 flex flex-col items-center relative z-10 ">
-            <button
-              onClick={() => {
-                setSelectedSection('');
-                setCurrentSubsection('');
-                localStorage.setItem('selectedSection', '');
-                localStorage.setItem('currentSubsection', '');
-                navigate('/employee/survey', { replace: true });
-              }}
-              className="absolute top-4 left-4 p-3 bg-blue-400 dark:bg-blue-500 text-white rounded-full hover:bg-blue-500 dark:hover:bg-blue-600 hover:scale-110 hover:shadow-lg transition-all ring-2 ring-blue-200 dark:ring-blue-700 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-600 ring-offset-2 pointer-events-auto"
-              aria-label="Back to Sections"
-            >
-              <ArrowLeftIcon className="h-6 w-6" />
-            </button>
-            <h2 className="text-4xl font-extrabold text-black dark:text-gray-100 mt-3 mb-3 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-pink-500">
-              Levels
-            </h2>
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-              variants={{ visible: { transition: { staggerChildren: 0.2 } } }}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 w-full h-auto py-10"
-            >
-              {filteredSubsections.length ? (
-                filteredSubsections.map((subsection, index) => {
-                  const isLocked = isSubsectionLocked(subsection._id, index);
-                  const isCompleted = completedSubsections.has(subsection._id);
-                  const isFileUpload = isFileUploadSubsection(subsection._id);
-                  const isDescriptive = isDescriptiveSubsection(subsection._id);
-                  const isOptional = isOptionalSubsection(subsection._id);
-                  const isMultipleChoice = isMultipleChoiceSubsection(subsection._id);
-                  const fileUrl = isFileUpload ? getAdminFileUrl(subsection._id) : null;
-                  const score = subsectionScores[subsection._id] || 0;
+{!subsectionId && selectedSection && !currentSubsection && (
+  <AnimatePresence>
+    <div className="mb-16 flex flex-col items-center relative z-10">
+      <button
+        onClick={() => {
+          setSelectedSection('');
+          setCurrentSubsection('');
+          localStorage.setItem('selectedSection', '');
+          localStorage.setItem('currentSubsection', '');
+          navigate('/employee/survey', { replace: true });
+        }}
+        className="absolute top-4 left-4 p-3 bg-blue-400 dark:bg-blue-500 text-white rounded-full hover:bg-blue-500 dark:hover:bg-blue-600 hover:scale-110 hover:shadow-lg transition-all ring-2 ring-blue-200 dark:ring-blue-700 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-600 ring-offset-2 pointer-events-auto"
+        aria-label="Back to Sections"
+      >
+        <ArrowLeftIcon className="h-6 w-6" />
+      </button>
+      <h2 className="text-4xl font-extrabold dark:text-gray-100 mb-12 text-center bg-clip-text from-blue-400 to-pink-500">
+        Levels
+      </h2>
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        exit="hidden"
+        variants={{ visible: { transition: { staggerChildren: 0.2 } } }}
+        className="grid grid-cols-1 cursor-pointer sm:grid-cols-2 lg:grid-cols-3 gap-10 w-full h-auto py-10"
+      >
+        {filteredSubsections.length ? (
+          filteredSubsections.map((subsection, index) => {
+            const isLocked = isSubsectionLocked(subsection._id, index);
+            const isCompleted = completedSubsections.has(subsection._id);
+            const isFileUpload = isFileUploadSubsection(subsection._id);
+            const isDescriptive = isDescriptiveSubsection(subsection._id);
+            const isOptional = isOptionalSubsection(subsection._id);
+            const isMultipleChoice = isMultipleChoiceSubsection(subsection._id);
+            const fileUrl = isFileUpload ? getAdminFileUrl(subsection._id) : null;
+            const score = subsectionScores[subsection._id] || 0;
 
-                  return (
-                    <motion.div
-                      key={subsection._id}
-                      variants={subsectionVariants}
-                      whileHover={isLocked ? {} : 'hover'}
-                      className={`p-6 rounded-[2.5rem] shadow-xl flex flex-col items-center justify-between relative transition-all duration-300 bg-white dark:bg-gray-800 bg-opacity-60 backdrop-blur-xl border-2 pointer-events-auto ${
-                        isLocked
-                          ? 'border-rose-200 dark:border-rose-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
-                          : isCompleted
-                          ? 'border-emerald-300 dark:border-emerald-600 bg-emerald-50/80 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300'
-                          : 'border-blue-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-50/80 dark:hover:bg-gray-700/80 hover:shadow-lg'
-                      }`}
-                      style={{
-                        borderImage: isLocked || isCompleted ? 'none' : 'linear-gradient(to right, #60a5fa, #f472b6) 1',
-                      }}
-                      onClick={() => !isLocked && handleSubsectionClick(subsection._id, index)}
-                    >
-                      <div className="flex items-center justify-center mb-4">
-                        {isLocked ? (
-                          <LockClosedIcon className="h-6 w-6 text-rose-400" />
-                        ) : isCompleted ? (
-                          <CheckCircleIcon className="h-6 w-6 text-emerald-500" />
-                        ) : (
-                          <LockOpenIcon className="h-6 w-6 text-emerald-500" />
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-lg font-extrabold text-center">{subsection.name || 'Untitled Subsection'}</h4>
-                        {isMultipleChoice && isCompleted && (
-                          <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
-                            ({score.toFixed(2)}%)
-                          </span>
-                        )}
-                      </div>
-                      {(isFileUpload || isDescriptive || isOptional) && (
-                        <span className="text-sm text-blue-400 dark:text-blue-300 mt-2 font-medium">
-                          {isFileUpload ? 'File Upload' : isDescriptive ? 'Descriptive' : 'Optional'}
-                        </span>
-                      )}
-                      {isFileUpload && fileUrl && (
-                        <span className="text-sm text-emerald-600 dark:text-emerald-400 flex items-center gap-2 mt-2">
-                          <DocumentIcon className="h-5 w-5" />
-                          File Available
-                        </span>
-                      )}
-                    </motion.div>
-                  );
-                })
-              ) : (
-                <motion.p variants={subsectionVariants} className="text-gray-600 dark:text-gray-400 text-center col-span-full">
-                  No subsections available.
-                </motion.p>
-              )}
-            </motion.div>
-          </div>
-        </AnimatePresence>
-      )}
+            return (
+              <motion.div
+                key={subsection._id}
+                variants={subsectionVariants}
+                whileHover={isLocked ? {} : 'houndred'}
+                className={`relative p-6 rounded-[2.5rem]  flex flex-col items-center justify-between  duration-300 pointer-events-auto ${
+                  isLocked
+                    ? 'relative p-6 rounded-[2rem]  flex flex-col items-center justify-between  duration-300 pointer-events-auto cursor-not-allowed'
+                    : isCompleted
+                    ? 'border-transparent bg-emerald-50/80 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300'
+                    : 'border-transparent text-gray-900 dark:text-gray-100  hover:shadow-lg'
+                }`}
+                style={{
+                  borderRadius: '2.5rem', // Ensure border-radius is applied
+                }}
+                onClick={() => !isLocked && handleSubsectionClick(subsection._id, index)}
+              >
+                {/* Gradient Border for non-locked, non-completed subsections */}
+                {!isLocked && !isCompleted ? (
+                  <div
+                    className="absolute inset-0 rounded-[2.5rem] pointer-events-none"
+                    style={{
+                      border: '2px solid transparent',
+                      borderRadius: '2.5rem',
+                      background: 'linear-gradient(to right, #60a5fa, #f472b6) border-box',
+                      WebkitMask: 'linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)',
+                      WebkitMaskComposite: 'destination-out',
+                      maskComposite: 'exclude',
+                    }}
+                  />
+                ) : null}
+                {/* Inner content container to constrain background */}
+                <div
+                  className={`relative z-10 p-4 rounded-[2rem] flex flex-col items-center justify-between ${
+                    isLocked
+                      ? ' dark:bg-gray-800 bg-opacity-60 backdrop-blur-xl border-2 border-rose-200 dark:border-rose-700'
+                      : isCompleted
+                      ? 'bg-emerald-50/80 dark:bg-emerald-900/50'
+                      : ' dark:bg-gray-800 bg-opacity-60 backdrop-blur-xl'
+                  }`}
+                >
+                  <div className="flex items-center justify-center mb-4">
+                    {isLocked ? (
+                      <LockClosedIcon className="h-6 w-6 text-rose-400" />
+                    ) : isCompleted ? (
+                      <CheckCircleIcon className="h-6 w-6 text-emerald-500" />
+                    ) : (
+                      <LockOpenIcon className="h-6 w-6 text-emerald-500" />
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-lg font-extrabold text-center">
+                      {subsection.name || 'Untitled Subsection'}
+                    </h4>
+                    {isMultipleChoice && isCompleted && (
+                      <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                        ({score.toFixed(2)}%)
+                      </span>
+                    )}
+                  </div>
+                  {(isFileUpload || isDescriptive || isOptional) && (
+                    <span className="text-sm text-blue-400 dark:text-blue-300 mt-2 font-medium">
+                      {isFileUpload ? 'File Upload' : isDescriptive ? 'Descriptive' : 'Optional'}
+                    </span>
+                  )}
+                  {isFileUpload && fileUrl && (
+                    <span className="text-sm text-emerald-600 dark:text-emerald-400 flex items-center gap-2 mt-2">
+                      <DocumentIcon className="h-5 w-5" />
+                      File Available
+                    </span>
+                  )}
+                </div>
+              </motion.div>
+            );
+          })
+        ) : (
+          <motion.p variants={subsectionVariants} className="text-gray-600 dark:text-gray-400 text-center col-span-full">
+            No subsections available.
+          </motion.p>
+        )}
+      </motion.div>
+    </div>
+  </AnimatePresence>
+)}
+
+
+
+
+
 
       {/* Subsection Questions View */}
       {currentSubsection && (
@@ -931,7 +997,7 @@ function SurveyForm() {
                   disabled={isButtonLoading}
                   className={`px-6 py-2 bg-blue-400 dark:bg-blue-500 text-white rounded-lg font-medium transition-all ring-2 ring-blue-200 dark:ring-blue-700 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-600 ring-offset-2 pointer-events-auto flex items-center justify-center ${
                     isButtonLoading
-                      ? 'bg-blue-300 dark:bg-blue-600 cursor-not-allowed animate-pulse'
+                      ? 'bg-blue-300 dark:bg-blue-600 cursor-pointer animate-pulse'
                       : 'hover:bg-blue-500 dark:hover:bg-blue-600 hover:scale-110 hover:shadow-lg'
                   }`}
                   aria-label="View File"
@@ -1075,7 +1141,7 @@ function SurveyForm() {
                     disabled={currentQuestionIndex === 0}
                     className={`px-6 py-2 rounded-lg font-medium transition-all pointer-events-auto ${
                       currentQuestionIndex === 0
-                        ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                        ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-pointer'
                         : 'bg-blue-400 dark:bg-blue-500 text-white hover:bg-blue-500 dark:hover:bg-blue-600 hover:scale-110 hover:shadow-lg ring-2 ring-blue-200 dark:ring-blue-700 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-600 ring-offset-2'
                     }`}
                   >
@@ -1086,7 +1152,7 @@ function SurveyForm() {
                     disabled={currentQuestionIndex === filteredSurveys.length - 1}
                     className={`px-6 py-2 rounded-lg font-medium transition-all pointer-events-auto ${
                       currentQuestionIndex === filteredSurveys.length - 1
-                        ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                        ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-pointer'
                         : 'bg-blue-400 dark:bg-blue-500 text-white hover:bg-blue-500 dark:hover:bg-blue-600 hover:scale-110 hover:shadow-lg ring-2 ring-blue-200 dark:ring-blue-700 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-600 ring-offset-2'
                     }`}
                   >
@@ -1110,7 +1176,7 @@ function SurveyForm() {
                 disabled={submitting}
                 className={`px-6 py-2 rounded-lg font-medium transition-all pointer-events-auto ${
                   submitting
-                    ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                    ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-pointer'
                     : 'bg-blue-400 dark:bg-blue-500 text-white hover:bg-blue-500 dark:hover:bg-blue-600 hover:scale-110 hover:shadow-lg ring-2 ring-blue-200 dark:ring-blue-700 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-600 ring-offset-2'
                 }`}
               >
@@ -1120,6 +1186,10 @@ function SurveyForm() {
           </div>
         </motion.div>
       )}
+
+
+
+      
 
       {/* Submit Confirmation Popup (unchanged) */}
       <AnimatePresence>

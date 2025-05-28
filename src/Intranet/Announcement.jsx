@@ -136,12 +136,12 @@ const Announcement = () => {
       {/* Tabs and Messages */}
       {!loading && !error && (
         <div className="max-w-4xl mx-auto">
-          <div className="bg-[#00ced1] p-1 rounded-full flex flex-wrap gap-2 mb-4 sm:mb-6">
+          <div className="bg-[#afeeee] p-1 rounded-full flex flex-wrap gap-2 mb-4 sm:mb-6">
             <button
               className={`flex-1 px-4 py-2 text-sm sm:text-base font-medium rounded-full ${
                 activeTab === 'announcements'
-                  ? 'bg-blue-500 text-white'
-                  : 'text-gray-600 hover:bg-blue-200'
+                  ? 'bg-[#00ced1] text-white'
+                  : 'text-gray-600 '
               }`}
               onClick={() => setActiveTab('announcements')}
             >
@@ -149,7 +149,7 @@ const Announcement = () => {
             </button>
             <button
               className={`flex-1 px-4 py-2 text-sm sm:text-base font-medium rounded-full ${
-                activeTab === 'cmd' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-blue-200'
+                activeTab === 'cmd' ? 'bg-[#00ced1] text-white' : 'text-gray-600 '
               }`}
               onClick={() => setActiveTab('cmd')}
             >

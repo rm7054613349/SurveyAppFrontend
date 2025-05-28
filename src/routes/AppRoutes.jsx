@@ -22,6 +22,7 @@ import IntranetAdmin from '../Intranet/IntranetAdmin';
 import Announcements from '../Intranet/Announcement';
 import AllAnnouncements from '../Intranet/AllAnnouncements';
 import Announcementform from '../Intranet/components/AnnouncementForm';
+import EventForm from  '../Intranet/components/EventForm'
 
 
 function AppRoutes() {
@@ -240,6 +241,8 @@ function AppRoutes() {
           {/* <Route path="/events" element={<Events />} /> */}
           {/* <Route path="/data-center" element={<DataCenter />} /> */} 
 
+
+
         <Route 
          path="/employee/announcements" 
          element={
@@ -265,6 +268,15 @@ function AppRoutes() {
          <ProtectedRoute allowedRole={["admin"]}>
             <Announcementform/>
           </ProtectedRoute>
+         } />
+
+         {/* event form */}
+           <Route 
+            path="/admin/eventform" 
+            element={
+            <ProtectedRoute allowedRole={["admin"]}>
+                <EventForm/>
+              </ProtectedRoute>
          } />
 
 

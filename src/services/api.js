@@ -681,7 +681,7 @@ export const changePassword = async (currentPassword, newPassword) => {
 
 
 
-//Code for nnouncement
+//Code for Announcement
 const API = axios.create({
   baseURL: API_URL,
 });
@@ -740,6 +740,43 @@ export const getMessages = async () => {
   } catch (error) {
     const errorMsg = error.response?.data?.message || 'Error fetching messages';
     console.error('Get messages error:', errorMsg);
+    throw new Error(errorMsg);
+  }
+};
+
+
+
+
+//Code for Event
+//Admin
+export const createEvent = async (data) => {
+  try {
+    if (!data || !data.title || !data.content || !data.date || !data.type) {
+      throw new Error('Missing required event fields');
+    }
+    
+    console.log('Creating event with data:', data);
+    const response = await API.post('/adminevent/event', data); // Send date as ISO string with time
+    console.log('Event created successfully:', response.data);
+    toast.success('Event created successfully!');
+    return response.data;
+  } catch (error) {
+    const errorMsg = error.response?.data?.message || error.message || 'Error creating event';
+    console.error('Create event error:', errorMsg);
+    toast.error(errorMsg);
+    throw new Error(errorMsg);
+  }
+};
+
+export const getEvent = async () => {
+  try {
+    console.log('Fetching events');
+    const response = await API.get('/employeeevent/event');
+    console.log('Events fetched successfully:', response.data);
+    return response.data;
+  } catch (error) {
+    const errorMsg = error.response?.data?.message || 'Error fetching events';
+    console.error('Get events error:', errorMsg);
     throw new Error(errorMsg);
   }
 };
