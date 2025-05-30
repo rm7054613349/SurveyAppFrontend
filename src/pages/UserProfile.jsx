@@ -156,7 +156,7 @@ function UserProfile() {
         <div className="flex flex-col items-center mb-8">
           <motion.div
             whileHover={{ scale: 1.05 }}
-            className="w-20 h-20 bg-blue-500 dark:bg-blue-600 text-white rounded-full flex items-center justify-center text-3xl font-bold shadow-lg mb-4"
+            className="w-20 h-20 bg-[#014D4E] dark:bg-blue-600 text-white rounded-full flex items-center justify-center text-3xl font-bold shadow-lg mb-4"
           >
             {getUserInitial()}
           </motion.div>
@@ -206,7 +206,7 @@ function UserProfile() {
             whileHover={buttonHover}
             whileTap={{ scale: 0.98 }}
             onClick={() => setShowChangePassword(true)}
-            className="w-full py-3 bg-blue-600 dark:bg-blue-500 text-white rounded-lg font-medium shadow-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+            className="w-full py-3 bg-[#00ced1] dark:bg-blue-500 text-back rounded-lg font-medium shadow-md  dark:hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
           >
             Change Password
           </motion.button>
@@ -214,7 +214,7 @@ function UserProfile() {
             whileHover={buttonHover}
             whileTap={{ scale: 0.98 }}
             onClick={() => navigate(user.role === 'admin' ? '/admin/dashboard' : '/employee')}
-            className="w-full py-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg font-medium shadow-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+            className="w-full py-3 bg-[#00ced1] dark:bg-gray-700 text-black dark:text-gray-100 rounded-lg font-medium shadow-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
           >
             Back to Dashboard
           </motion.button>

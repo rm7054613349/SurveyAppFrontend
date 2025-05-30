@@ -46,7 +46,7 @@ const folders = {
     { image: AwardAL2, caption: 'Presentation Highlights' },
     { image: AwardAL3, caption: 'Leadership Q&A' },
     { image: AwardAL4, caption: 'Team Announcements' },
-    { image: AwardAL5, caption: 'Appreciation Speech' },
+    { image: AwardAL5, caption:'Appreciation Speech' },
     { image: AwardAL6, caption: 'Achievements Recap' },
     { image: AwardAL7, caption: 'Group Photo' }
   ],
@@ -57,7 +57,7 @@ const folders = {
     { image: AwardAL4, caption: 'Leadership Token' },
     { image: AwardAL5, caption: 'Best Innovator' },
     { image: AwardAL6, caption: 'Top Collaborator' },
-    { image: AwardAL7, caption: 'Milestone Achiever' }
+    { image: AwardAL7, caption: 'Milestone Award' }
   ]
 };
 
@@ -79,6 +79,7 @@ const Gallery = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedCaption, setSelectedCaption] = useState(null);
 
+  // Load saved folder from localStorage on mount
   useEffect(() => {
     const savedFolder = localStorage.getItem('selectedFolder');
     if (savedFolder && folders[savedFolder]) {
@@ -89,6 +90,7 @@ const Gallery = () => {
     }
   }, []);
 
+  // Save selected folder to localStorage when it changes
   useEffect(() => {
     if (selectedFolder) {
       localStorage.setItem('selectedFolder', selectedFolder);
@@ -96,6 +98,19 @@ const Gallery = () => {
       localStorage.removeItem('selectedFolder');
     }
   }, [selectedFolder]);
+
+  // Prevent background scrolling when modal is open
+  useEffect(() => {
+    if (selectedImage) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    // Cleanup on component unmount or modal close
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [selectedImage]);
 
   const sliderSettings = {
     dots: true,
@@ -234,11 +249,10 @@ const Gallery = () => {
             {Object.keys(folders).map((folder) => (
               <div
                 key={folder}
-                className="  p-6 text-center cursor-pointer  duration-300 flex flex-col items-center justify-center"
+                className="p-6 text-center cursor-pointer duration-300 flex flex-col items-center justify-center"
                 onClick={() => setSelectedFolder(folder)}
               >
                 <FaFolder className="text-6xl text-[#014D4E] mb-4" />
-
                 <span className="text-xl text-gray-800 font-semibold">
                   {capitalizeFirstLetter(folder)}
                 </span>
@@ -254,7 +268,7 @@ const Gallery = () => {
                     <img
                       src={item.image}
                       alt={`${selectedFolder}-${index}`}
-                      className="w-full h-70 object-cover rounded-xl shadow-lg cursor-pointer"
+                      className="slider-image"
                       onClick={() => {
                         setSelectedImage(item.image);
                         setSelectedCaption(item.caption);

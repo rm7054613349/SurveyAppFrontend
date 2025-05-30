@@ -88,8 +88,8 @@ const AllAnnouncements = () => {
             <button
               className={`px-3 py-2 sm:px-4 sm:py-2 font-medium text-sm sm:text-base ${
                 activeTab === 'all'
-                  ? 'border-b-2 border-blue-500 text-blue-600'
-                  : 'text-gray-600 hover:text-blue-500'
+                  ? 'border-b-2 border-[#00ced1] text-[#00ced1]'
+                  : 'text-black '
               }`}
               onClick={() => setActiveTab('all')}
             >
@@ -98,8 +98,8 @@ const AllAnnouncements = () => {
             <button
               className={`px-3 py-2 sm:px-4 sm:py-2 font-medium text-sm sm:text-base ${
                 activeTab === 'announcements'
-                  ? 'border-b-2 border-blue-500 text-blue-600'
-                  : 'text-gray-600 hover:text-blue-500'
+                  ? 'border-b-2 border-[#00ced1] text-[#00ced1]'
+                  : 'text-black '
               }`}
               onClick={() => setActiveTab('announcements')}
             >
@@ -108,8 +108,8 @@ const AllAnnouncements = () => {
             <button
               className={`px-3 py-2 sm:px-4 sm:py-2 font-medium text-sm sm:text-base ${
                 activeTab === 'cmd'
-                  ? 'border-b-2 border-blue-500 text-blue-600'
-                  : 'text-gray-600 hover:text-blue-500'
+                  ? 'border-b-2 border-[#00ced1] text-[#00ced1]'
+                  : 'text-black'
               }`}
               onClick={() => setActiveTab('cmd')}
             >
@@ -145,7 +145,7 @@ const AllAnnouncements = () => {
         {/* Back Button */}
         {!loading && !error && (
           <Link to="/">
-            <button className="mt-4 sm:mt-6 bg-blue-500 text-white px-4 sm:px-6 py-2 rounded-md hover:bg-blue-600 transition-colors shadow-sm hover:shadow-md text-sm sm:text-base">
+            <button className="mt-4 sm:mt-6 bg-[#00ced1] text-white px-4 sm:px-6 py-2 rounded-md  transition-colors shadow-sm hover:shadow-md text-sm sm:text-base">
               Back to Announcements
             </button>
           </Link>

@@ -155,8 +155,8 @@ const EventForm = () => {
           </div>
           <motion.button
             type="submit"
-            className={`w-full py-2 px-4 text-white text-sm font-medium rounded-md ${
-              isLoading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
+            className={`w-full py-2 px-4 text-black text-sm font-medium rounded-md ${
+              isLoading ? 'bg-[#00ced1] cursor-not-allowed' : 'bg-[#00ced1] '
             } transition-colors shadow-sm hover:shadow-md`}
             whileHover={{ scale: isLoading ? 1 : 1.03 }}
             whileTap={{ scale: isLoading ? 1 : 0.97 }}

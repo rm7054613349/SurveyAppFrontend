@@ -79,7 +79,7 @@ function Login() {
           {...fadeIn}
           transition={{ delay: 0.4 }}
           type="submit"
-          className="w-full bg-primary-blue text-white p-3 rounded-lg"
+          className="w-full bg-[#00ced1] text-white p-3 rounded-lg"
         >
           Login
         </motion.button>

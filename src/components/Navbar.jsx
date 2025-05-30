@@ -227,7 +227,7 @@ function Navbar({ darkMode, toggleDarkMode }) {
         variants={sideMenuVariants}
         initial="closed"
         animate={isMobileMenuOpen ? 'open' : 'closed'}
-        className="fixed top-0 right-0 h-full w-64 bg-gray-100 dark:bg-gray-800 bg-opacity-95 md:hidden z-40"
+        className="fixed top-0 right-0 h-full w-64 bg-[#00ced1] dark:bg-gray-800 bg-opacity-95 md:hidden z-40"
       >
         <motion.div
           className="flex flex-col p-4 mt-16 space-y-6"

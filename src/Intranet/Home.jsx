@@ -1,13 +1,13 @@
 import { motion } from 'framer-motion';
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import OwlCarousel from 'react-owl-carousel';
-import 'owl.carousel/dist/assets/owl.carousel.css';
-import 'owl.carousel/dist/assets/owl.theme.default.css';
-import Announcement from '../Intranet/Announcement'; // Import Announcement component
-import EventCalendar from '../Intranet/EventCalendar'; // Import EventCalendar component
-import { FaFolder, FaArrowLeft, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
+import Announcement from '../Intranet/Announcement';
+import EventCalendar from '../Intranet/EventCalendar';
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 // Import images
 import carouselImage1 from '../assets/AL1.jpg';
@@ -40,8 +40,9 @@ const slideInRight = {
 // Custom arrows
 const PrevArrow = ({ onClick }) => (
   <button
-    className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 text-white text-2xl bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-75"
+    className="inline-block mx-2 text-gray-500 text-lg rounded-full p-2 cursor-pointer"
     onClick={onClick}
+    aria-label="Previous slide"
   >
     <FaChevronLeft />
   </button>
@@ -49,47 +50,104 @@ const PrevArrow = ({ onClick }) => (
 
 const NextArrow = ({ onClick }) => (
   <button
-    className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 text-white text-2xl bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-75"
+    className="inline-block mx-2 text-gray-500 text-lg rounded-full p-2 cursor-pointer"
     onClick={onClick}
+    aria-label="Next slide"
   >
     <FaChevronRight />
   </button>
 );
 
-// Owl Carousel options
-const carouselOptions = {
-  loop: true,
-  margin: 0,
-  nav: true,
-  items: 1,
+// React Slick settings
+const slickSettings = {
+  dots: false,
+  infinite: true,
+  speed: 800,
+  slidesToShow: 1,
+  slidesToScroll: 1,
   autoplay: true,
-  autoplayTimeout: 4000,
-  autoplayHoverPause: true,
-  smartSpeed: 1800,
-  prevArrow: <PrevArrow />,
-  nextArrow: <NextArrow />,
-  responsive: {
-    0: { items: 1 },
-    600: { items: 1 },
-    1000: { items: 1 },
-  },
+  autoplaySpeed: 4000,
+  pauseOnHover: true,
+  arrows: false,
+  initialSlide: 0,
+  responsive: [
+    {
+      breakpoint: 1024,
+      settings: {
+        slidesToShow: 1,
+        slidesToScroll: 1,
+      },
+    },
+    {
+      breakpoint: 768,
+      settings: {
+        slidesToShow: 1,
+        slidesToScroll: 1,
+      },
+    },
+    {
+      breakpoint: 480,
+      settings: {
+        slidesToShow: 1,
+        slidesToScroll: 1,
+      },
+    },
+  ],
 };
 
 // Carousel images array with captions
 const carouselImages = [
   { src: carouselImage1, alt: 'Team collaboration in workplace', caption: 'Teamwork in Action' },
-  { src: carouselImage2, alt: 'Modern office environment', caption: 'Innovative Workspace' },
+  { src: carouselImage2, alt: 'Modern workplace environment', caption: 'Innovative Workspace' },
   { src: carouselImage3, alt: 'Corporate team meeting', caption: 'Strategic Discussions' },
   { src: carouselImage4, alt: 'Team collaboration in workplace', caption: 'Collaborative Success' },
-  { src: carouselImage5, alt: 'Modern office environment', caption: 'Modern Work Culture' },
+  { src: carouselImage5, alt: 'Modern workplace environment', caption: 'Role-based UI' },
   { src: carouselImage6, alt: 'Corporate team meeting', caption: 'Team Synergy' },
-  { src: carouselImage8, alt: 'Modern office environment', caption: 'Dynamic Office' },
+  { src: carouselImage8, alt: 'Modern workplace environment', caption: 'Dynamic Office' },
   { src: carouselImage9, alt: 'Corporate team meeting', caption: 'Leadership Summit' },
 ];
 
 function Home() {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [imagesLoaded, setImagesLoaded] = useState(false);
+  const sliderRef = useRef(null);
+
+  // Preload images with timeout fallback
+  useEffect(() => {
+    let loadedCount = 0;
+    const totalImages = carouselImages.length;
+    const timeout = setTimeout(() => {
+      if (!imagesLoaded) {
+        console.warn('Image preloading timed out after 5s');
+        setImagesLoaded(true);
+      }
+    }, 5000);
+
+    const handleImageLoad = () => {
+      loadedCount += 1;
+      if (loadedCount === totalImages) {
+        console.log('All images preloaded successfully');
+        setImagesLoaded(true);
+        clearTimeout(timeout);
+      }
+    };
+
+    carouselImages.forEach((image) => {
+      const img = new Image();
+      img.src = image.src;
+      img.onload = () => {
+        console.log(`Loaded image: ${image.src}`);
+        handleImageLoad();
+      };
+      img.onerror = () => {
+        console.warn(`Failed to load image: ${image.src}`);
+        handleImageLoad();
+      };
+    });
+
+    return () => clearTimeout(timeout);
+  }, [imagesLoaded]);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -125,7 +183,7 @@ function Home() {
                 <Announcement />
               </div>
               <Link to="/employee/all-announcements" className="mt-4 px-6 inline-block">
-                <button className="px-3 py-2 bg-[#00ced1] text-black text-sm font-medium rounded-full hover:bg-teal-600 transition-colors shadow-md hover:shadow-lg">
+                <button className="px-3 py-2 bg-[#00ced1] text-black text-sm font-medium rounded-full  transition-colors shadow-md hover:shadow-lg">
                   View All Announcements
                 </button>
               </Link>
@@ -138,27 +196,46 @@ function Home() {
               animate="visible"
               className="bg-white rounded-xl shadow-lg p-6"
             >
-              <OwlCarousel className="owl-theme relative" {...carouselOptions}>
-                {carouselImages.map((image, index) => (
-                  <div key={index} className="item relative">
-                    <img
-                      src={image.src}
-                      alt={image.alt}
-                      className="w-full max-w-[500px] max-h-[480px] mx-auto rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 object-cover"
-                      loading="lazy"
-                    />
-                    <div className="absolute bottom-1 left-0 right-0 text-center">
-                      <span className="bg-black bg-opacity-60 text-white text-sm px-3 py-1 rounded-md">
-                        {image.caption}
-                      </span>
-                    </div>
+              {imagesLoaded ? (
+                <div className="relative">
+                  <Slider ref={sliderRef} className="relative" {...slickSettings}>
+                    {carouselImages.map((image, index) => (
+                      <div key={index} className="relative ">
+                        <img
+                          src={image.src}
+                          alt={image.alt}
+                          className="w-full w-[600px] h-[270px] mx-auto rounded-xl shadow-lg transition-shadow duration-300 object-cover"
+                          style={{ opacity: 1, filter: 'none' }}
+                          onError={(e) => {
+                            e.target.src = 'https://via.placeholder.com/500x480/333333/FFFFFF?text=Image+Not+Found';
+                          }}
+                        />
+                        <div className="text-center mt-2">
+                          <span className="bg-[#00ced1] bg-opacity-60 text-black text-sm px-3 py-1 rounded-md">
+                            {image.caption}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </Slider>
+                  <div className="flex justify-center mt-4">
+                    <PrevArrow onClick={() => sliderRef.current?.slickPrev()} />
+                    <NextArrow onClick={() => sliderRef.current?.slickNext()} />
                   </div>
-                ))}
-              </OwlCarousel>
+                </div>
+              ) : (
+                <div className="w-full h-64 flex items-center justify-center bg-gray-200">
+                  <p className="text-gray-600">Loading carousel...</p>
+                </div>
+              )}
             </motion.div>
 
             {/* Subsection 3: Event Calendar */}
-            {user?.role === 'employee' && <EventCalendar />}
+            {user?.role === 'employee' && (
+             
+                <EventCalendar />
+            
+            )}
           </div>
         ) : (
           /* Original Carousel Section for Admins */
@@ -168,24 +245,38 @@ function Home() {
             animate="visible"
             className="mb-6 sm:mb-8 max-w-3xl mx-auto"
           >
-            <OwlCarousel className="owl-theme relative" {...carouselOptions}>
-              {carouselImages.map((image, index) => (
-                <div key={index} className="item relative">
-                  <img
-                    src={image.src}
-                    alt={image.alt}
-                    className="w-full max-w-[600px] max-h-[480px] mx-auto rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 object-cover"
-                    loading="lazy"
-                  />
-                  <div className="absolute bottom-4 left-0 right-0 text-center">
-                    <span className="bg-black bg-opacity-60 text-white text-sm px-3 py-1 rounded-md">
-                      {image.caption}
-                    </span>
-                  </div>
-                  {/* TODO: Add editing mechanism (e.g., input field or admin interface) to update image.caption dynamically */}
+            {imagesLoaded ? (
+              <div className="relative">
+                <Slider ref={sliderRef} className="relative" {...slickSettings}>
+                  {carouselImages.map((image, index) => (
+                    <div key={index} className="relative ">
+                      <img
+                        src={image.src}
+                        alt={image.alt}
+                        className="w-full max-w-[600px] max-h-[480px] mx-auto rounded-xl shadow-lg transition-shadow duration-300 object-cover"
+                        style={{ opacity: 1, filter: 'none' }}
+                        onError={(e) => {
+                          e.target.src = 'https://via.placeholder.com/600x480/333333/FFFFFF?text=Image+Not+Found';
+                        }}
+                      />
+                      <div className="text-center mt-2">
+                        <span className="bg-[#00ced1] bg-opacity-60 text-black text-sm px-3 py-1 rounded-md">
+                          {image.caption}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </Slider>
+                <div className="flex justify-center mt-4">
+                  <PrevArrow onClick={() => sliderRef.current?.slickPrev()} />
+                  <NextArrow onClick={() => sliderRef.current?.slickNext()} />
                 </div>
-              ))}
-            </OwlCarousel>
+              </div>
+            ) : (
+              <div className="w-full h-64 flex items-center justify-center bg-gray-200">
+                <p className="text-gray-600">Loading carousel...</p>
+              </div>
+            )}
           </motion.div>
         )}
 
@@ -247,6 +338,7 @@ function Home() {
                 className="px-4 py-2 bg-teal-500 text-white text-sm font-medium rounded-full hover:bg-teal-600 transition-colors shadow-md hover:shadow-lg w-fit"
                 aria-label="Navigate to performance dashboard"
               >
+                Go To
               </motion.button>
             </div>
             <div className="sm:w-1/2 flex items-center order-0 sm:order-1">

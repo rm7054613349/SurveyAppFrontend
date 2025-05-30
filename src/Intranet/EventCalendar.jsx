@@ -3,61 +3,112 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { getEvent } from '../services/api'; // Import the getEvent API
+import { getEvent } from '../services/api';
 
-// Custom CSS for circular dates, custom toolbar, highlights, and modal
+// Updated Custom CSS
 const customStyles = `
   .rbc-month-view .rbc-day-bg {
     border-radius: 50%;
     margin: 4px auto;
-    height: 34px;
-    width: 34px;
+    height: 38px;
+    width: 38px;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
     box-sizing: border-box;
-    background-color: #f9fafb; /* gray-50 for lighter background */
+    background-color: #f9fafb;
+    aspect-ratio: 1/1; /* Ensure perfect circle */
+    overflow: hidden; /* Prevent content overflow */
+    cursor: pointer; /* Indicate clickable area */
+    border: 1px solid #d1d5db; /* Thicker border for definition */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  }
+  .rbc-month-view .rbc-day-bg.has-event {
+    background-color: #b3e4e5; /* Light cyan for days with events */
+    border-color: #14b8a6; /* Darker border for event days */
   }
   .rbc-month-view .rbc-date-cell {
-    color: #2563eb; /* blue-600 */
-    font-size: 13px;
-    font-weight: 500;
+    color: black;
+    font-size: 14px;
+    font-weight: 600; /* Bolder font for clarity */
     text-align: center;
     padding: 0;
-    line-height: 34px;
-    height: 100%;
-    width: 100%;
+    line-height: 38px;
+    height: 38px;
+    width: 38px;
+    border-radius: 50%;
+    aspect-ratio: 1/1; /* Ensure perfect circle */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer; /* Indicate clickable area */
+    background-color: transparent; /* No background conflict */
+    z-index: 1; /* Text above background */
   }
   .rbc-month-view .rbc-date-cell a {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
     height: 100%;
     text-decoration: none;
     color: inherit;
     line-height: inherit;
+    border-radius: 50%;
   }
   .rbc-month-view .rbc-event {
-    display: none; /* Hide events in month view */
-  }
-  .rbc-month-view .rbc-day-bg.has-event {
-    background-color: rgb(37, 235, 235); /* cyan for event dates */
+    display: none;
   }
   .rbc-month-view .rbc-today {
-    background-color: #dbeafe; /* blue-100 for today's date */
+    background-color: #dbeafe;
+    border-color: #3b82f6; /* Blue border for today */
   }
-  .rbc-month-view .rbc-selected {
-    background-color: #bfdbfe; /* blue-200 for selected date */
-    color: #ffffff; /* white text for selected date */
+  .rbc-month-view .rbc-selected, .rbc-month-view .rbc-day-bg.rbc-selected {
+    background-color: #bfdbfe;
+    color: #ffffff;
+    border-color: #3b82f6; /* Consistent selected border */
+  }
+  .rbc-month-view .rbc-off-range-bg {
+    background-color: #e5e7eb;
+    opacity: 0.6;
   }
   .rbc-calendar {
     font-family: 'Inter', sans-serif;
   }
   .rbc-month-view .rbc-row {
-    min-height: 46px;
+    min-height: 48px; /* Increased row height for spacing */
   }
-  .rbc-month-view .rbc-month-row {
-    overflow: hidden;
+  .rbc-month-view .rbc-row-segment {
+    padding: 4px; /* Add padding for spacing between cells */
+  }
+  .rbc-time-view .rbc-event {
+    background-color: #14b8a6;
+    color: white;
+    border-radius: 4px;
+    border: none;
+    padding: 4px 6px;
+    font-size: 12px;
+    min-height: 40px;
+    height: auto;
+    line-height: 1.3;
+    white-space: normal;
+    word-wrap: break-word;
+    width: 100%;
+    box-sizing: border-box;
+    cursor: pointer;
+  }
+  .rbc-time-view .rbc-events-container {
+    width: 100%;
+  }
+  .rbc-time-view .rbc-event-label {
+    font-size: 10px;
+    color: #fff;
+  }
+  .rbc-time-view .rbc-time-slot.has-event {
+    background-color: #00ced1; /* Cyan for time slots with events */
+  }
+  .rbc-time-view .rbc-time-slot {
+    background-color: #f9fafb;
   }
   .custom-toolbar {
     display: flex;
@@ -70,12 +121,12 @@ const customStyles = `
   .custom-toolbar-label {
     font-size: 16px;
     font-weight: 600;
-    color: #1f2937; /* gray-800 */
+    color: #1f2937;
     text-align: center;
   }
   .custom-toolbar-controls {
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: center;
     gap: 6px;
@@ -89,63 +140,124 @@ const customStyles = `
     font-size: 12px;
     line-height: 1.4;
     border-radius: 5px;
-    background-color: #f3f4f6; /* gray-100 */
-    border: 1px solid #d1d5db; /* gray-300 */
-    color: #374151; /* gray-700 */
+    background-color: #f3f4f6;
+    border: 1px solid #d1d5db;
+    color: #374151;
     cursor: pointer;
     white-space: nowrap;
   }
   .custom-btn-group button:hover {
-    background-color: #e5e7eb; /* gray-200 */
+    background-color: #e5e7eb;
   }
   .custom-btn-group button.rbc-active {
-    background-color: #2563eb; /* blue-600 */
+    background-color: #00ced1;
     color: white;
-    border-color: #2563eb;
+    border-color: #00ced1;
   }
   .event-modal {
     max-height: 80vh;
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: #d1d5db #f9fafb;
+    max-width: 450px;
+    width: 90%;
+    padding: 20px;
+    position: relative;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    margin: auto; /* Center horizontally */
   }
   .event-modal::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
   }
   .event-modal::-webkit-scrollbar-track {
     background: #f9fafb;
+    border-radius: 4px;
   }
   .event-modal::-webkit-scrollbar-thumb {
     background: #d1d5db;
     border-radius: 4px;
   }
+  .event-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 12px;
+  }
+  .event-modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f2937;
+  }
   .event-item {
-    background-color: #f9fafb; /* gray-50 */
-    border-radius: 6px;
+    background-color: #f9fafb;
+    border-radius: 8px;
     padding: 12px;
     margin-bottom: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #14b8a6; /* Visual hierarchy with colored border */
   }
   .event-item p {
-    margin: 4px 0;
+    margin: 6px 0;
     line-height: 1.5;
+    font-size: 13px;
+    display: flex;
+    flex-wrap: wrap;
   }
   .event-item .label {
     font-weight: 600;
-    color: #1f2937; /* gray-800 */
+    color: #1f2937;
+    min-width: 80px; /* Align labels */
+  }
+  .event-item .value {
+    color: #374151;
+    flex: 1;
+  }
+  .close-icon {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    cursor: pointer;
+    color: #374151;
+    width: 24px;
+    height: 24px;
+    transition: color 0.2s ease;
+  }
+  .close-icon:hover {
+    color: #1f2937;
   }
   @media (max-width: 640px) {
     .rbc-month-view .rbc-day-bg {
-      height: 30px;
-      width: 30px;
-      margin: 2px auto;
+      height: 34px;
+      width: 34px;
+      margin: 3px auto;
+      aspect-ratio: 1/1;
+      overflow: hidden;
+      border: 1px solid #d1d5db;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    .rbc-month-view .rbc-day-bg.has-event {
+      background-color: #b3e4e5;
+      border-color: #14b8a6;
     }
     .rbc-month-view .rbc-date-cell {
       font-size: 12px;
-      line-height: 30px;
+      line-height: 34px;
+      height: 34px;
+      width: 34px;
+      aspect-ratio: 1/1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .rbc-month-view .rbc-row {
-      min-height: 40px;
+      min-height: 44px;
+    }
+    .rbc-month-view .rbc-row-segment {
+      padding: 3px;
     }
     .custom-toolbar {
       gap: 6px;
@@ -160,20 +272,60 @@ const customStyles = `
     }
     .event-modal {
       max-width: 90%;
+      padding: 16px;
+      max-height: 75vh;
+    }
+    .rbc-calendar {
+      height: 350px !important;
+    }
+    .rbc-time-view .rbc-event {
+      font-size: 10px;
+      padding: 3px 4px;
+      min-height: 35px;
+    }
+    .close-icon {
+      width: 20px;
+      height: 20px;
+    }
+    .event-modal-title {
+      font-size: 16px;
+    }
+    .event-item {
+      padding: 10px;
+    }
+    .event-item p {
+      font-size: 12px;
     }
   }
   @media (max-width: 400px) {
     .rbc-month-view .rbc-day-bg {
-      height: 26px;
-      width: 26px;
-      margin: 1px auto;
+      height: 30px;
+      width: 30px;
+      margin: 2px auto;
+      aspect-ratio: 1/1;
+      overflow: hidden;
+      border: 1px solid #d1d5db;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    .rbc-month-view .rbc-day-bg.has-event {
+      background-color: #b3e4e5;
+      border-color: #14b8a6;
     }
     .rbc-month-view .rbc-date-cell {
-      font-size: 10px;
-      line-height: 26px;
+      font-size: 11px;
+      line-height: 30px;
+      height: 30px;
+      width: 30px;
+      aspect-ratio: 1/1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .rbc-month-view .rbc-row {
-      min-height: 34px;
+      min-height: 40px;
+    }
+    .rbc-month-view .rbc-row-segment {
+      padding: 2px;
     }
     .custom-toolbar {
       gap: 4px;
@@ -188,6 +340,29 @@ const customStyles = `
     }
     .event-modal {
       max-width: 95%;
+      padding: 12px;
+      max-height: 70vh;
+    }
+    .rbc-calendar {
+      height: 300px !important;
+    }
+    .rbc-time-view .rbc-event {
+      font-size: 9px;
+      padding: 2px 3px;
+      min-height: 30px;
+    }
+    .close-icon {
+      width: 18px;
+      height: 18px;
+    }
+    .event-modal-title {
+      font-size: 14px;
+    }
+    .event-item {
+      padding: 8px;
+    }
+    .event-item p {
+      font-size: 11px;
     }
   }
 `;
@@ -199,16 +374,16 @@ const containerVariants = {
 };
 
 const modalVariants = {
-  hidden: { opacity: 0, scale: 0.8 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.3, ease: 'easeOut' } },
-  exit: { opacity: 0, scale: 0.8, transition: { duration: 0.2 } },
+  hidden: { opacity: 0, scale: 0.8, y: 50 },
+  visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' } },
+  exit: { opacity: 0, scale: 0.8, y: 50, transition: { duration: 0.2 } },
 };
 
 // Setup moment localizer for react-big-calendar
 const localizer = momentLocalizer(moment);
 
 // Custom Toolbar Component
-const CustomToolbar = ({ label, onNavigate, onView }) => {
+const CustomToolbar = ({ label, onNavigate, onView, view }) => {
   return (
     <div className="custom-toolbar">
       <div className="custom-toolbar-label">{label}</div>
@@ -221,19 +396,13 @@ const CustomToolbar = ({ label, onNavigate, onView }) => {
         <div className="custom-btn-group">
           <button
             onClick={() => onView('month')}
-            className={onView.current === 'month' ? 'rbc-active' : ''}
+            className={view === 'month' ? 'rbc-active' : ''}
           >
             Month
           </button>
           <button
-            onClick={() => onView('week')}
-            className={onView.current === 'week' ? 'rbc-active' : ''}
-          >
-            Week
-          </button>
-          <button
             onClick={() => onView('day')}
-            className={onView.current === 'day' ? 'rbc-active' : ''}
+            className={view === 'day' ? 'rbc-active' : ''}
           >
             Day
           </button>
@@ -243,28 +412,51 @@ const CustomToolbar = ({ label, onNavigate, onView }) => {
   );
 };
 
+// Custom Event Component
+const CustomEvent = ({ event }) => (
+  <div className="rbc-event-content">
+    <div>{event.title}</div>
+  </div>
+);
+
 function EventCalendar() {
   const [events, setEvents] = useState([]);
-  const [selectedDateEvents, setSelectedDateEvents] = useState([]);
+  const [selectedEvents, setSelectedEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [currentDate, setCurrentDate] = useState(new Date()); // Current date: May 28, 2025, 3:06 PM IST
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentView, setCurrentView] = useState('month');
 
-  // Fetch events from API
+  // Prevent background scrolling when modal is open
+  useEffect(() => {
+    if (selectedEvents.length > 0) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    // Cleanup on component unmount or modal close
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [selectedEvents]);
+
+  // Fetch events and filter out past events
   useEffect(() => {
     const fetchEvents = async () => {
       setIsLoading(true);
       try {
         const data = await getEvent();
-        // Map API response to calendar event format
-        const formattedEvents = data.map((event) => ({
-          id: event._id, // Use _id from MongoDB
-          type: event.type,
-          title: event.title,
-          content: event.content,
-          start: new Date(event.date), // Parse date-time for calendar
-          end: new Date(event.date), // Single-day events
-        }));
+        const currentDateTime = moment();
+        const formattedEvents = data
+          .filter((event) => moment(event.date).isSameOrAfter(currentDateTime, 'day'))
+          .map((event) => ({
+            id: event._id,
+            type: event.type,
+            title: event.title,
+            content: event.content,
+            start: new Date(event.date),
+            end: new Date(event.date),
+          }));
         setEvents(formattedEvents);
         setIsLoading(false);
       } catch (err) {
@@ -275,36 +467,74 @@ function EventCalendar() {
     fetchEvents();
   }, []);
 
-  // Custom event styling (for week/day views)
-  const eventStyleGetter = (event) => ({
+  // Custom event styling
+  const eventStyleGetter = (event, start, end, isSelected) => ({
     style: {
-      backgroundColor: '#14b8a6', // teal-500
+      backgroundColor: '#14b8a6',
       color: 'white',
-      borderRadius: '5px',
+      borderRadius: '4px',
       border: 'none',
       cursor: 'pointer',
-      padding: '4px 8px',
+      padding: '4px 6px',
+      fontSize: '12px',
+      minHeight: '40px',
+      width: '100%',
     },
   });
 
-  // Custom date cell styling to highlight dates with events
+  // Updated date cell styling for month view
   const dayPropGetter = (date) => {
     const hasEvent = events.some((event) =>
       moment(date).isSame(event.start, 'day')
     );
+    const isSelected = moment(date).isSame(currentDate, 'day') && currentView === 'day';
     return {
-      className: hasEvent ? 'has-event' : '',
+      className: `${hasEvent ? 'has-event' : ''} ${isSelected ? 'rbc-selected' : ''}`,
+      style: {
+        backgroundColor: isSelected ? '#bfdbfe' : hasEvent ? '#b3e4e5' : '#f9fafb',
+        color: isSelected ? '#ffffff' : 'black',
+      },
     };
   };
 
-  // Handle date selection to show events for that day
+  // Slot styling for day view
+  const slotPropGetter = (date) => {
+    const hasEvent = events.some(
+      (event) =>
+        moment(date).isSameOrAfter(event.start) &&
+        moment(date).isSameOrBefore(event.end)
+    );
+    return {
+      className: hasEvent ? 'has-event' : '',
+      style: { backgroundColor: hasEvent ? '#00ced1' : '#f9fafb' },
+    };
+  };
+
+  // Updated slot selection to navigate to day view
   const handleSelectSlot = ({ start }) => {
+    setCurrentDate(start); // Update current date
+    setCurrentView('day'); // Switch to day view
     const selectedDate = moment(start).startOf('day');
     const eventsOnDate = events.filter((event) =>
       moment(event.start).isSame(selectedDate, 'day')
     );
     if (eventsOnDate.length > 0) {
-      setSelectedDateEvents(eventsOnDate);
+      setSelectedEvents(eventsOnDate); // Show events in modal
+    }
+  };
+
+  // Handle event click
+  const handleSelectEvent = (event) => {
+    if (currentView === 'day') {
+      const selectedTime = moment(event.start);
+      const eventsAtTime = events.filter((e) =>
+        moment(e.start).isSame(selectedTime, 'minute')
+      );
+      setSelectedEvents(eventsAtTime);
+    } else {
+      setCurrentDate(event.start); // Update current date
+      setCurrentView('day'); // Switch to day view
+      setSelectedEvents([event]);
     }
   };
 
@@ -313,9 +543,14 @@ function EventCalendar() {
     setCurrentDate(newDate);
   };
 
+  // Handle view change
+  const handleViewChange = (view) => {
+    setCurrentView(view);
+  };
+
   // Close modal
   const closeModal = () => {
-    setSelectedDateEvents([]);
+    setSelectedEvents([]);
   };
 
   return (
@@ -323,39 +558,43 @@ function EventCalendar() {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="bg-white rounded-xl shadow-lg p-4 max-w-lg mx-auto w-full"
+      className="bg-white rounded-xl shadow-lg p-3 sm:p-4 md:p-5 lg:p-6 max-w-[95%] sm:max-w-[90%] md:max-w-2xl lg:max-w-3xl mx-auto w-full"
     >
       <style>{customStyles}</style>
 
       {isLoading && <p className="text-gray-600 text-center">Loading events...</p>}
       {error && <p className="text-red-500 text-center">{error}</p>}
 
-      <div className="overflow-hidden">
-        <Calendar
-          localizer={localizer}
-          events={events}
-          startAccessor="start"
-          endAccessor="end"
-          date={currentDate}
-          onNavigate={handleNavigate}
-          style={{ height: '400px', minHeight: '300px' }}
-          eventPropGetter={eventStyleGetter}
-          dayPropGetter={dayPropGetter}
-          className="rbc-calendar"
-          views={['month', 'week', 'day']}
-          defaultView="month"
-          popup
-          selectable
-          onSelectSlot={handleSelectSlot}
-          components={{
-            toolbar: CustomToolbar,
-          }}
-        />
-      </div>
+      <Calendar
+        localizer={localizer}
+        events={events}
+        startAccessor="start"
+        endAccessor="end"
+        date={currentDate}
+        onNavigate={handleNavigate}
+        style={{ height: '400px', minHeight: '320px' }}
+        eventPropGetter={eventStyleGetter}
+        dayPropGetter={dayPropGetter}
+        slotPropGetter={slotPropGetter}
+        className="rbc-calendar"
+        views={['month', 'day']}
+        defaultView="month"
+        popup
+        selectable
+        onSelectSlot={handleSelectSlot}
+        onSelectEvent={handleSelectEvent}
+        onView={handleViewChange}
+        components={{
+          toolbar: CustomToolbar,
+          event: CustomEvent,
+        }}
+        step={30}
+        timeslots={2}
+      />
 
       {/* Event Details Modal */}
       <AnimatePresence>
-        {selectedDateEvents.length > 0 && (
+        {selectedEvents.length > 0 && (
           <motion.div
             variants={modalVariants}
             initial="hidden"
@@ -365,39 +604,51 @@ function EventCalendar() {
             role="dialog"
             aria-labelledby="event-details-title"
           >
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 event-modal">
-              <h3
-                id="event-details-title"
-                className="text-xl font-semibold text-gray-800 mb-4"
-              >
-                Events on {moment(selectedDateEvents[0].start).format('MMMM Do YYYY')}
-              </h3>
+            <div className="event-modal">
+              <div className="event-modal-header">
+                <h3
+                  id="event-details-title"
+                  className="event-modal-title"
+                >
+                  Events on {moment(selectedEvents[0].start).format('MMMM Do YYYY, h:mm A')}
+                </h3>
+                <svg
+                  className="close-icon"
+                  onClick={closeModal}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-label="Close event details"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </div>
               <div className="space-y-4">
-                {selectedDateEvents.map((event) => (
+                {selectedEvents.map((event) => (
                   <div key={event.id} className="event-item">
-                    <p className="text-sm">
-                      <span className="label">Type:</span> {event.type}
+                    <p>
+                      <span className="label">Type:</span>
+                      <span className="value">{event.type}</span>
                     </p>
-                    <p className="text-sm">
-                      <span className="label">Title:</span> {event.title}
+                    <p>
+                      <span className="label">Title:</span>
+                      <span className="value">{event.title}</span>
                     </p>
-                    <p className="text-sm">
-                      <span className="label">Content:</span> {event.content}
+                    <p>
+                      <span className="label">Content:</span>
+                      <span className="value">{event.content}</span>
                     </p>
-                    <p className="text-sm">
-                      <span className="label">Date:</span>{' '}
-                      {moment(event.start).format('MMMM Do YYYY, h:mm A')}
+                    <p>
+                      <span className="label">Date:</span>
+                      <span className="value">{moment(event.start).format('MMMM Do YYYY, h:mm A')}</span>
                     </p>
                   </div>
                 ))}
               </div>
-              <button
-                onClick={closeModal}
-                className="mt-6 w-full bg-teal-500 text-white px-4 py-2 rounded hover:bg-teal-600 text-sm font-medium"
-                aria-label="Close event details"
-              >
-                Close
-              </button>
             </div>
           </motion.div>
         )}
