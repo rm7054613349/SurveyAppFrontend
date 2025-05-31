@@ -240,7 +240,7 @@ const Gallery = () => {
               <FaArrowLeft />
             </button>
           )}
-          <h1 className="text-4xl font-bold text-black text-center flex-1 drop-shadow-lg">
+          <h1 className="text-3xl font-roboto text-black text-center flex-1 drop-shadow-lg">
             {selectedFolder ? capitalizeFirstLetter(selectedFolder) : 'Media Gallery'}
           </h1>
         </div>

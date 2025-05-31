@@ -63,7 +63,7 @@ const ContactUs = () => {
         variants={{ visible: { transition: { staggerChildren: 0.2 } } }}
         className="max-w-7xl mx-auto mb-16"
       >
-        <h2 className="text-4xl font-bold text-center text-gray-800 mb-10">
+        <h2 className="text-3xl font-roboto text-center text-gray-800 mb-10">
           Our Locations
         </h2>
 
@@ -132,7 +132,7 @@ const ContactUs = () => {
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-6">
           <motion.a
-            href="https://docs.google.com/forms/d/e/1FAIpQLSfhBUfKv-4zJhpfb5eZlHMutCAjdJjkYAKFMYuYVRwVAcce6w/viewform?usp=header" // Replace with actual Google Form link
+            href="https://docs.google.com/forms/d/e/1FAIpQLSfUaJ3ROo0SFBcj5EDPT-3j9a5dXS976ZiFvLoIaWuyMjAdlg/viewform?usp=header" // Replace with actual Google Form link
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block bg-white text-blue-600 font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-100 transition-colors duration-300"

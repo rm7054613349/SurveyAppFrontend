@@ -167,7 +167,7 @@ function Home() {
       {!user && (
         <>
           <h2
-            className="text-4xl font-bold mt-8 sm:mt-10 md:mt-12 mb-6 sm:mb-8 md:mb-10 text-gray-900 dark:text-white text-center"
+            className="text-3xl font-roboto mt-8 sm:mt-10 md:mt-12 mb-6 sm:mb-8 md:mb-10 text-gray-900 dark:text-white text-center"
           >
             SSMED Central – Your Workplace Dashboard
           </h2>

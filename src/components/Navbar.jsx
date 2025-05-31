@@ -29,13 +29,19 @@ const containerVariants = {
   visible: { transition: { staggerChildren: 0.1 } },
 };
 
+const tooltipVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
+};
+
 function Navbar({ darkMode, toggleDarkMode }) {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [hoveredButton, setHoveredButton] = useState(null);
 
   const handleLogout = () => {
-     logout();
+    logout();
     console.log('Navbar: User logged out. Redirecting to /...');
     navigate('/');
     setIsMobileMenuOpen(false);
@@ -72,13 +78,11 @@ function Navbar({ darkMode, toggleDarkMode }) {
     navigate('/profile');
   };
 
-  // Define active and inactive link styles for desktop
   const navLinkStyle = ({ isActive }) =>
     `font-inter text-lg sm:text-base lg:text-lg ${
       isActive ? 'text-white border-b-2 border-white' : 'text-black hover:text-gray-600'
     } transition-colors duration-200`;
 
-  // Define active and inactive link styles for mobile menu
   const mobileNavLinkStyle = ({ isActive }) =>
     `block text-lg text-center font-inter ${
       isActive ? 'text-blue-800 font-bold' : 'text-gray-800'
@@ -130,32 +134,32 @@ function Navbar({ darkMode, toggleDarkMode }) {
           <div className="flex items-center space-x-4 lg:space-x-6">
             {user?.role === 'employee' ? (
               <>
-                  <motion.div whileHover={{ scale: 1.05 }}>
-                    <NavLink
-                      to="/Intranet/Home"
-                      className={navLinkStyle}
-                      end
-                      onClick={handleHomeClick}
-                    >
-                      Home
-                    </NavLink>
-                  </motion.div>
-                  <motion.div whileHover={{ scale: 1.05 }}>
-                    <NavLink to="/employee" className={navLinkStyle} end>
-                      Assessment
-                    </NavLink>
-                  </motion.div>
-                  <motion.div whileHover={{ scale: 1.05 }}>
-                    <NavLink to="/media" className={navLinkStyle} end>
-                      Media
-                    </NavLink>
-                  </motion.div>
-                  <motion.div whileHover={{ scale: 1.05 }}>
-                    <NavLink to="/contact" className={navLinkStyle} end>
-                      Contact Us
-                    </NavLink>
-                  </motion.div>
-                </>
+                <motion.div whileHover={{ scale: 1.05 }}>
+                  <NavLink
+                    to="/Intranet/Home"
+                    className={navLinkStyle}
+                    end
+                    onClick={handleHomeClick}
+                  >
+                    Home
+                  </NavLink>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }}>
+                  <NavLink to="/employee" className={navLinkStyle} end>
+                    Assessment
+                  </NavLink>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }}>
+                  <NavLink to="/media" className={navLinkStyle} end>
+                    Media
+                  </NavLink>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }}>
+                  <NavLink to="/contact" className={navLinkStyle} end>
+                    Contact Us
+                  </NavLink>
+                </motion.div>
+              </>
             ) : user?.role === 'admin' ? (
               <>
                 <motion.div whileHover={{ scale: 1.05 }}>
@@ -182,42 +186,97 @@ function Navbar({ darkMode, toggleDarkMode }) {
         <div className="hidden md:flex items-center space-x-3 lg:space-x-4">
           {user ? (
             <>
+              <div className="relative">
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleUserProfileClick}
+                  onHoverStart={() => setHoveredButton('profile')}
+                  onHoverEnd={() => setHoveredButton(null)}
+                  className="w-10 h-10 bg-[#014D4E] text-white rounded-full flex items-center justify-center font-bold shadow-md cursor-pointer text-lg"
+                >
+                  {getUserInitial()}
+                </motion.div>
+                <motion.div
+                  variants={tooltipVariants}
+                  initial="hidden"
+                  animate={hoveredButton === 'profile' ? 'visible' : 'hidden'}
+                  className="absolute top-12 left-1/2 transform -translate-x-1/2 text-gray-600 text-sm font-inter"
+                >
+                  Profile
+                </motion.div>
+              </div>
+              <div className="relative">
+                <motion.button
+                  whileHover={buttonHover}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleLogout}
+                  onHoverStart={() => setHoveredButton('logout')}
+                  onHoverEnd={() => setHoveredButton(null)}
+                  className="w-10 h-10 bg-[#014D4E] text-white rounded-full flex items-center justify-center shadow-md transition-colors focus:outline-none"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                    />
+                  </svg>
+                </motion.button>
+                <motion.div
+                  variants={tooltipVariants}
+                  initial="hidden"
+                  animate={hoveredButton === 'logout' ? 'visible' : 'hidden'}
+                  className="absolute top-12 left-1/2 transform -translate-x-1/2 text-gray-600 text-sm font-inter"
+                >
+                  Logout
+                </motion.div>
+              </div>
+            </>
+          ) : (
+            <div className="relative">
               <motion.div
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={handleUserProfileClick}
-                className="w-10 h-10 bg-[#014D4E] text-white rounded-full flex items-center justify-center font-bold shadow-md cursor-pointer text-lg"
+                onHoverStart={() => setHoveredButton('login')}
+                onHoverEnd={() => setHoveredButton(null)}
               >
-                {getUserInitial()}
-              </motion.div>
-              <motion.button
-                whileHover={buttonHover}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleLogout}
-                className="w-10 h-10 bg-[#014D4E] text-white rounded-full flex items-center justify-center shadow-md  transition-colors focus:outline-none"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
+                <NavLink
+                  to="/login"
+                  className="w-10 h-10 bg-[#014D4E] text-white rounded-full flex items-center justify-center shadow-md transition-colors"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                  />
-                </svg>
-              </motion.button>
-            </>
-          ) : (
-            <motion.div whileHover={{ scale: 1.05 }}>
-              <NavLink to="/login" className={navLinkStyle}>
-                Get Started
-              </NavLink>
-            </motion.div>
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                    />
+                  </svg>
+                </NavLink>
+              </motion.div>
+              <motion.div
+                variants={tooltipVariants}
+                initial="hidden"
+                animate={hoveredButton === 'login' ? 'visible' : 'hidden'}
+                className="absolute top-12 left-1/2 transform -translate-x-1/2 text-gray-600 text-sm font-inter"
+              >
+                Login
+              </motion.div>
+            </div>
           )}
         </div>
       </div>
@@ -262,49 +321,100 @@ function Navbar({ darkMode, toggleDarkMode }) {
             {user ? (
               <>
                 <div className="flex flex-col items-center space-y-4">
-                  <motion.div
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleUserProfileClick}
-                    className="w-10 h-10 bg-[#014D4E] text-white rounded-full flex items-center justify-center font-bold shadow-md cursor-pointer text-lg"
-                  >
-                    {getUserInitial()}
-                  </motion.div>
-                  <motion.button
-                    whileHover={buttonHover}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleLogout}
-                    className="w-10 h-10 bg-[#014D4E] text-white rounded-full flex items-center justify-center shadow-md  transition-colors focus:outline-none"
-                  >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
+                  <div className="relative">
+                    <motion.div
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={handleUserProfileClick}
+                      onHoverStart={() => setHoveredButton('profile')}
+                      onHoverEnd={() => setHoveredButton(null)}
+                      className="w-10 h-10 bg-[#014D4E] text-white rounded-full flex items-center justify-center font-bold shadow-md cursor-pointer text-lg"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                      />
-                    </svg>
-                  </motion.button>
+                      {getUserInitial()}
+                    </motion.div>
+                    <motion.div
+                      variants={tooltipVariants}
+                      initial="hidden"
+                      animate={hoveredButton === 'profile' ? 'visible' : 'hidden'}
+                      className="absolute top-12 left-1/2 transform -translate-x-1/2 text-gray-600 text-sm font-inter"
+                    >
+                      Profile
+                    </motion.div>
+                  </div>
+                  <div className="relative">
+                    <motion.button
+                      whileHover={buttonHover}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={handleLogout}
+                      onHoverStart={() => setHoveredButton('logout')}
+                      onHoverEnd={() => setHoveredButton(null)}
+                      className="w-10 h-10 bg-[#014D4E] text-white rounded-full flex items-center justify-center shadow-md transition-colors focus:outline-none"
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                        />
+                      </svg>
+                    </motion.button>
+                    <motion.div
+                      variants={tooltipVariants}
+                      initial="hidden"
+                      animate={hoveredButton === 'logout' ? 'visible' : 'hidden'}
+                      className="absolute top-12 left-1/2 transform -translate-x-1/2 text-gray-600 text-sm font-inter"
+                    >
+                      Logout
+                    </motion.div>
+                  </div>
                 </div>
               </>
             ) : (
               <div className="flex flex-col items-center space-y-4">
-                <motion.div whileHover={{ scale: 1.05 }} className="w-full">
-                  <NavLink
-                    to="/login"
-                    className={mobileNavLinkStyle}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    end
+                <div className="relative">
+                  <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    onHoverStart={() => setHoveredButton('login')}
+                    onHoverEnd={() => setHoveredButton(null)}
                   >
-                    Get Started
-                  </NavLink>
-                </motion.div>
+                    <NavLink
+                      to="/login"
+                      className="w-10 h-10 bg-[#014D4E] text-white rounded-full flex items-center justify-center shadow-md transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                        />
+                      </svg>
+                    </NavLink>
+                  </motion.div>
+                  <motion.div
+                    variants={tooltipVariants}
+                    initial="hidden"
+                    animate={hoveredButton === 'login' ? 'visible' : 'hidden'}
+                    className="absolute top-12 left-1/2 transform -translate-x-1/2 text-gray-600 text-sm font-inter"
+                  >
+                    Login
+                  </motion.div>
+                </div>
               </div>
             )}
           </motion.div>
@@ -331,16 +441,6 @@ function Navbar({ darkMode, toggleDarkMode }) {
                     Assessment
                   </NavLink>
                 </motion.div>
-                {/* <motion.div whileHover={{ scale: 1.05 }} className="w-full">
-                  <NavLink
-                    to="/employee/all-announcements"
-                    className={mobileNavLinkStyle}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    end
-                  >
-                    All Announcements
-                  </NavLink>
-                </motion.div> */}
                 <motion.div whileHover={{ scale: 1.05 }} className="w-full">
                   <NavLink
                     to="/media"

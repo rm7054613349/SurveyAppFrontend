@@ -23,6 +23,8 @@ import Announcements from '../Intranet/Announcement';
 import AllAnnouncements from '../Intranet/AllAnnouncements';
 import Announcementform from '../Intranet/components/AnnouncementForm';
 import EventForm from  '../Intranet/components/EventForm'
+import DocumentCenterForm from '../Intranet/components/DocumentCenterForm'
+import EmployeeDocumentCenter from '../Intranet/DocumentCenter'
 
 
 function AppRoutes() {
@@ -277,6 +279,26 @@ function AppRoutes() {
             <ProtectedRoute allowedRole={["admin"]}>
                 <EventForm/>
               </ProtectedRoute>
+         } />
+
+
+          {/* Document Center form */}
+           <Route 
+            path="/admin/documentcenter" 
+            element={
+            <ProtectedRoute allowedRole={["admin"]}>
+                <DocumentCenterForm/>
+             </ProtectedRoute>
+         } />
+
+
+
+         <Route 
+         path="/employee/employeedocumentcenter" 
+         element={
+         <ProtectedRoute allowedRole={["employee"]}>
+            <EmployeeDocumentCenter />
+          </ProtectedRoute>
          } />
 
 

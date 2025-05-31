@@ -14,6 +14,8 @@ export default {
       },
       fontFamily: {
         inter: ['Inter', 'sans-serif'],
+         opensans: ['"Open Sans"', 'sans-serif'],
+         roboto: ['"Roboto"', 'sans-serif'],
       },
       animation: {
         'spin-slow': 'spin 3s linear infinite',
@@ -24,4 +26,5 @@ export default {
   plugins: [],
   darkMode: 'class',
 };
+
 

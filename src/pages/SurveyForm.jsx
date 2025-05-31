@@ -776,7 +776,7 @@ function SurveyForm() {
   {/* Sections View */}
 {!subsectionId && !currentSubsection && !selectedSection && (
   <div className="mb-16 flex flex-col items-center relative z-10">
-    <h2 className="text-4xl font-extrabold dark:text-gray-100 mb-12 text-center bg-clip-text from-blue-400 to-pink-500">
+    <h2 className="text-3xl font-roboto dark:text-gray-100 mb-12 text-center bg-clip-text from-blue-400 to-pink-500">
       Select a Section
     </h2>
     <motion.div
@@ -863,7 +863,7 @@ function SurveyForm() {
       >
         <ArrowLeftIcon className="h-6 w-6" />
       </button>
-      <h2 className="text-4xl font-extrabold dark:text-gray-100 mb-12 text-center bg-clip-text from-blue-400 to-pink-500">
+      <h2 className="text-3xl font-roboto dark:text-gray-100 mb-12 text-center bg-clip-text from-blue-400 to-pink-500">
         Levels
       </h2>
       <motion.div

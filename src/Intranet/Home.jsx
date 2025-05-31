@@ -307,7 +307,7 @@ function Home() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => navigate(user?.role === 'admin' ? '/intranet-admin' : '/dashboard')}
+              onClick={() => navigate(user?.role === 'admin' ? '/intranet-admin' : '/employee/employeedocumentcenter')}
               className="px-4 py-2 bg-teal-500 text-white text-sm font-medium rounded-full hover:bg-teal-600 transition-colors shadow-md hover:shadow-lg w-fit"
               aria-label="Navigate to dashboard"
             >

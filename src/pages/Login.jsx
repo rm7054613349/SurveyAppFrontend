@@ -37,7 +37,7 @@ function Login() {
   return (
     <motion.div {...pageTransition} className="w-full flex-1 py-20 flex flex-col items-center justify-start min-h-screen bg-[#afeeee] dark:bg-gray-900 px-4 sm:px-6 md:px-8">
      
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-card-bg  dark:bg-card-dark-bg p-8 rounded-lg shadow-lg content-box">
+      <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-md bg-white rounded-lg shadow-md p-6 space-y-4">
         <motion.div {...fadeIn} transition={{ delay: 0.1 }}>
           <label className="block mb-2 text-gray-700 dark:text-gray-300">Email</label>
           <input
@@ -66,7 +66,7 @@ function Login() {
           <label className="block mb-2 text-gray-700 dark:text-gray-300">Role</label>
           <select
             {...register('role', { required: 'Role is required' })}
-            className="w-full p-3 border rounded dark:bg-gray-800 dark:text-white"
+            className="w-full p-3 border rounded  dark:text-white"
           >
             <option value="">Select Role</option>
             <option value="employee">Employee</option>
@@ -79,7 +79,7 @@ function Login() {
           {...fadeIn}
           transition={{ delay: 0.4 }}
           type="submit"
-          className="w-full bg-[#00ced1] text-white p-3 rounded-lg"
+          className=" w-full bg-[#00ced1] text-white p-3 rounded-lg"
         >
           Login
         </motion.button>
